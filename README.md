@@ -1,4 +1,4 @@
-# SentinelX Somnia Guardian
+# SentinelX
 
 SentinelX is an infrastructure layer that protects Somnia builders from oracle
 drift and stale data. Over the 5‑day sprint we are assembling a guarded price

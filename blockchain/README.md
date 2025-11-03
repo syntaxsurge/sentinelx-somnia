@@ -1,7 +1,6 @@
 # SentinelX Hardhat Workspace
 
-This workspace contains the SentinelX Somnia Guardian smart contracts used
-during the 5‑day MVP sprint.
+This workspace contains the SentinelX smart contracts.
 
 ## Contracts
 
