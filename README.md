@@ -57,6 +57,7 @@ Copy `.env.example` to `.env.local` and set the following values:
 NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network
 NEXT_PUBLIC_PROTOFIRE_ETH_USD=0xd9132c1d762D432672493F640a63B758891B449e
 NEXT_PUBLIC_DIA_WETH_USD=0x786c7893F8c26b80d42088749562eDb50Ba9601E
+CONVEX_DEPLOYMENT=dev:your-local-deployment-or-https://your-deployment.convex.site
 ```
 
 Optional settings (for agent integrations) can be added as needed. Set

@@ -1,4 +1,4 @@
-import { ConvexHttpClient } from 'convex/browser'
+import { ConvexClient } from 'convex/browser'
 
 function resolveConvexUrl(): string {
   const candidates = [
@@ -17,11 +17,11 @@ function resolveConvexUrl(): string {
   )
 }
 
-let client: ConvexHttpClient | null = null
+let client: ConvexClient | null = null
 
-export function getConvexClient(): ConvexHttpClient {
+export function getConvexClient(): ConvexClient {
   if (!client) {
-    client = new ConvexHttpClient(resolveConvexUrl())
+    client = new ConvexClient(resolveConvexUrl())
   }
   return client
 }
