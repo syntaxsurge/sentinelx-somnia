@@ -1,4 +1,4 @@
-import { mutation, query } from 'convex/server'
+import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
 
 export const list = query({
@@ -6,6 +6,9 @@ export const list = query({
   handler: async (ctx, args) => {
     if (args.monitorId) {
       const monitorId = ctx.db.normalizeId('monitors', args.monitorId)
+      if (!monitorId) {
+        return []
+      }
       return await ctx.db
         .query('incidents')
         .withIndex('by_monitor', q => q.eq('monitorId', monitorId))
@@ -28,6 +31,9 @@ export const record = mutation({
   },
   handler: async (ctx, args) => {
     const monitorId = ctx.db.normalizeId('monitors', args.monitorId)
+    if (!monitorId) {
+      throw new Error('Monitor not found')
+    }
     return await ctx.db.insert('incidents', {
       ...args,
       monitorId,

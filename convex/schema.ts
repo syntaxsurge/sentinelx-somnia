@@ -1,41 +1,42 @@
-import { defineSchema, defineTable, s } from 'convex/schema'
+import { defineSchema, defineTable } from 'convex/server'
+import { v } from 'convex/values'
 
 export default defineSchema({
   tenants: defineTable({
-    owner: s.string(),
-    name: s.string(),
-    createdAt: s.number()
+    owner: v.string(),
+    name: v.string(),
+    createdAt: v.number()
   }).index('by_owner', ['owner']),
 
   monitors: defineTable({
-    tenantId: s.id('tenants'),
-    contractAddress: s.string(),
-    guardianAddress: s.string(),
-    routerAddress: s.string(),
-    oracleKey: s.string(),
-    protofireFeed: s.string(),
-    diaFeed: s.string(),
-    maxDeviationBps: s.number(),
-    staleAfterSeconds: s.number(),
-    status: s.optional(s.string()),
-    createdAt: s.number()
+    tenantId: v.id('tenants'),
+    contractAddress: v.string(),
+    guardianAddress: v.string(),
+    routerAddress: v.string(),
+    oracleKey: v.string(),
+    protofireFeed: v.string(),
+    diaFeed: v.string(),
+    maxDeviationBps: v.number(),
+    staleAfterSeconds: v.number(),
+    status: v.optional(v.string()),
+    createdAt: v.number()
   }).index('by_tenant', ['tenantId']),
 
   incidents: defineTable({
-    monitorId: s.id('monitors'),
-    occurredAt: s.number(),
-    safe: s.boolean(),
-    bothFresh: s.boolean(),
-    action: s.string(),
-    txHash: s.optional(s.string()),
-    summary: s.optional(s.string()),
-    details: s.optional(s.record(s.string(), s.any()))
+    monitorId: v.id('monitors'),
+    occurredAt: v.number(),
+    safe: v.boolean(),
+    bothFresh: v.boolean(),
+    action: v.string(),
+    txHash: v.optional(v.string()),
+    summary: v.optional(v.string()),
+    details: v.optional(v.any())
   }).index('by_monitor', ['monitorId']),
 
   apiKeys: defineTable({
-    tenantId: s.id('tenants'),
-    keyHash: s.string(),
-    createdAt: s.number(),
-    label: s.string()
+    tenantId: v.id('tenants'),
+    keyHash: v.string(),
+    createdAt: v.number(),
+    label: v.string()
   }).index('by_tenant', ['tenantId'])
 })

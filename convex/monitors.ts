@@ -1,4 +1,4 @@
-import { internalMutation, mutation, query } from 'convex/server'
+import { internalMutation, mutation, query } from './_generated/server'
 import { v } from 'convex/values'
 
 export const list = query({
@@ -6,6 +6,9 @@ export const list = query({
   handler: async (ctx, args) => {
     if (args.tenantId) {
       const tenantId = ctx.db.normalizeId('tenants', args.tenantId)
+      if (!tenantId) {
+        return []
+      }
       return await ctx.db
         .query('monitors')
         .withIndex('by_tenant', q => q.eq('tenantId', tenantId))
@@ -29,6 +32,9 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const tenantId = ctx.db.normalizeId('tenants', args.tenantId)
+    if (!tenantId) {
+      throw new Error('Tenant not found')
+    }
     const { tenantId: _ignored, ...rest } = args
 
     return await ctx.db.insert('monitors', {
@@ -57,6 +63,9 @@ export const setStatus = mutation({
   },
   handler: async (ctx, args) => {
     const monitorId = ctx.db.normalizeId('monitors', args.monitorId)
+    if (!monitorId) {
+      throw new Error('Monitor not found')
+    }
     await ctx.db.patch(monitorId, { status: args.status })
   }
 })
