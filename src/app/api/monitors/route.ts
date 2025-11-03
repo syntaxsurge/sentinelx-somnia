@@ -5,7 +5,7 @@ import { getConvexClient } from '@/lib/convexClient'
 export async function GET(request: Request) {
   const client = getConvexClient()
   const { searchParams } = new URL(request.url)
-  const tenantParam = searchParams.get('tenantId')
+  const tenantParam = searchParams.get('tenantId') ?? undefined
   const monitors = await client.query('monitors:list' as any, {
     tenantId: tenantParam
   })
