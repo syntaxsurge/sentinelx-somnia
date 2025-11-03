@@ -1,0 +1,29 @@
+{
+  "name": "sentinelx-hardhat",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "lint:check-solidity": "solhint \"contracts/**/*.sol\"",
+    "lint:fix-solidity": "solhint \"contracts/**/*.sol\" --fix"
+  },
+  "devDependencies": {
+    "chai": "^4.5.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "dotenv": "^16.4.7",
+    "hardhat": "^2.22.4",
+    "prettier": "^3.2.5",
+    "prettier-plugin-solidity": "^1.4.2",
+    "ts-node": "^10.9.2",
+    "solhint": "^4.5.2",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "ethers": "^6.12.2"
+  }
+}
