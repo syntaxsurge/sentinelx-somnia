@@ -3,6 +3,96 @@
 @tailwind utilities;
 
 :root {
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 25% 30%;
+
+  --accent: 188 74% 48%;
+  --accent-foreground: 196 100% 12%;
+  --accent-dark: 188 76% 39%;
+  --accent-darker: 188 76% 22%;
+
+  --primary: 188 76% 39%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 240 5% 95%;
+  --secondary-foreground: 222 47% 11%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  --border: 215 23% 85%;
+  --input: 214 20% 80%;
+  --ring: 188 76% 39%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --brand-teal: 188 76% 39%;
+  --brand-teal-light: 188 70% 68%;
+  --brand-teal-lighter: 188 70% 80%;
+  --brand-teal-dark: 188 76% 28%;
+  --brand-teal-darker: 188 76% 18%;
+
+  --brand-orange: 24 95% 56%;
+  --brand-orange-light: 24 95% 66%;
+  --brand-orange-lighter: 24 95% 76%;
+  --brand-orange-dark: 24 95% 46%;
+  --brand-orange-darker: 24 95% 36%;
+
+  --radius: 0.75rem;
+
+  color-scheme: light;
+}
+
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+
+  --muted: 216 34% 17%;
+  --muted-foreground: 215 20% 72%;
+
+  --accent: 188 76% 39%;
+  --accent-foreground: 210 40% 8%;
+  --accent-dark: 188 78% 33%;
+  --accent-darker: 188 83% 20%;
+
+  --primary: 188 76% 39%;
+  --primary-foreground: 210 40% 8%;
+
+  --secondary: 218 27% 17%;
+  --secondary-foreground: 210 40% 98%;
+
+  --card: 222 47% 12%;
+  --card-foreground: 210 40% 96%;
+
+  --popover: 222 47% 9%;
+  --popover-foreground: 210 40% 98%;
+
+  --border: 218 27% 25%;
+  --input: 218 27% 20%;
+  --ring: 188 76% 39%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --brand-teal: 188 76% 39%;
+  --brand-teal-light: 188 76% 52%;
+  --brand-teal-lighter: 188 76% 68%;
+  --brand-teal-dark: 188 76% 28%;
+  --brand-teal-darker: 188 76% 18%;
+
+  --brand-orange: 24 95% 56%;
+  --brand-orange-light: 24 95% 62%;
+  --brand-orange-lighter: 24 95% 72%;
+  --brand-orange-dark: 24 95% 40%;
+  --brand-orange-darker: 24 95% 32%;
+
   color-scheme: dark;
 }
 
@@ -14,4 +104,16 @@ body {
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }

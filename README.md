@@ -1,9 +1,8 @@
 # SentinelX
 
 SentinelX is an infrastructure layer that protects Somnia builders from oracle
-drift and stale data. We are assembling a guarded price
-surface, guardian automation, and a Convex-backed observability layer for Somnia
-applications.
+drift and stale data. We are assembling a guarded price surface, guardian
+automation, and a Convex-backed observability layer for Somnia applications.
 
 ## Feature overview
 
@@ -15,6 +14,8 @@ applications.
   monitor tables, incident stream, and a manual policy trigger. REST endpoints
   (`/api/tenants`, `/api/monitors`, `/api/incidents`, `/api/jobs/run-policy`)
   drive automation and integrations.
+- **Playbook** – `/docs` consolidates deployment commands, environment variable
+  expectations, and REST payload examples for quick onboarding.
 - **Policy runner** – `src/jobs/policyRunner.ts` reads `SafeOracleRouter` on
   Somnia Testnet, logs enriched incidents, and updates monitor status. The job
   is accessible via the dashboard button or `pnpm policy:run` CLI helper.
@@ -39,7 +40,7 @@ applications.
 pnpm install
 pnpm dev               # launches Next.js
 
-# In another terminal (optional for contract iteraction)
+# In another terminal (optional for contract interaction)
 cd blockchain
 pnpm install
 pnpm compile

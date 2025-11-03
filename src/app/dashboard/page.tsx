@@ -1,6 +1,11 @@
+import Link from 'next/link'
+
+import { ArrowUpRight } from 'lucide-react'
+
 import { CreateMonitorForm } from '@/components/create-monitor-form'
 import { CreateTenantForm } from '@/components/create-tenant-form'
 import { RunPolicyButton } from '@/components/run-policy-button'
+import { cn } from '@/lib/utils'
 
 function resolveBaseUrl() {
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL
@@ -33,81 +38,166 @@ export default async function DashboardPage() {
   const monitors = (monitorsPayload?.monitors ?? []) as any[]
   const incidents = (incidentsPayload?.incidents ?? []) as any[]
   const tenants = (tenantsPayload?.tenants ?? []) as any[]
+  const attentionCount = monitors.filter(
+    monitor => monitor.status === 'attention'
+  ).length
+
+  const stats = [
+    { label: 'Tenants', value: tenants.length, hint: 'Guarded apps onboarded' },
+    {
+      label: 'Monitors',
+      value: monitors.length,
+      hint: 'Active dual-oracle observers'
+    },
+    {
+      label: 'Incidents',
+      value: incidents.length,
+      hint: 'Logged policy evaluations'
+    },
+    {
+      label: 'Attention required',
+      value: attentionCount,
+      hint: 'Monitors breached deviation or freshness'
+    }
+  ]
 
   return (
-    <main className='mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-12 px-6 py-16'>
-      <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
-        <div>
-          <h1 className='text-4xl font-semibold text-white'>
-            SentinelX Dashboard
+    <div className='mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 pb-16 sm:px-6'>
+      <header className='mt-4 flex flex-col gap-6 rounded-3xl border border-border bg-card/80 p-6 shadow-xl md:flex-row md:items-center md:justify-between'>
+        <div className='space-y-3'>
+          <span className='inline-flex items-center gap-2 rounded-full border border-brand-teal/40 bg-brand-teal/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-brand-teal'>
+            Operations
+          </span>
+          <h1 className='text-3xl font-semibold text-foreground'>
+            SentinelX Control Plane
           </h1>
-          <p className='mt-2 text-sm text-slate-200'>
-            Active monitors, incidents, and policy execution controls.
+          <p className='max-w-2xl text-sm text-muted-foreground'>
+            Manage tenants, register monitors, and trigger policy evaluations.
+            Every action syncs with Convex to maintain an auditable history of
+            price deviations and guardian decisions.
           </p>
+          <div className='flex flex-wrap items-center gap-3 text-xs text-muted-foreground'>
+            <span>
+              Router: {process.env.SENTINELX_ROUTER_ADDRESS ?? 'not set'}
+            </span>
+            <Link
+              href='/docs'
+              className='inline-flex items-center gap-1 text-brand-teal transition hover:text-brand-teal-light'
+            >
+              View integration docs
+              <ArrowUpRight className='h-3 w-3' />
+            </Link>
+          </div>
         </div>
         <RunPolicyButton />
       </header>
 
-      <section className='grid gap-6 rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur'>
-        <h2 className='text-xl font-semibold text-white'>Create tenant</h2>
-        <CreateTenantForm />
+      <section className='grid gap-4 rounded-3xl border border-border bg-card/70 p-6 shadow-inner md:grid-cols-4'>
+        {stats.map(stat => (
+          <div key={stat.label} className='space-y-2'>
+            <p className='text-xs font-semibold uppercase tracking-[0.35em] text-brand-orange'>
+              {stat.label}
+            </p>
+            <p className='text-2xl font-semibold text-foreground'>
+              {stat.value}
+            </p>
+            <p className='text-xs text-muted-foreground'>{stat.hint}</p>
+          </div>
+        ))}
       </section>
 
-      <section className='grid gap-6 rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur'>
-        <h2 className='text-xl font-semibold text-white'>Register monitor</h2>
-        <CreateMonitorForm
-          tenants={tenants}
-          defaults={{
-            routerAddress: process.env.SENTINELX_ROUTER_ADDRESS,
-            protofireFeed: process.env.NEXT_PUBLIC_PROTOFIRE_ETH_USD,
-            diaFeed: process.env.NEXT_PUBLIC_DIA_WETH_USD
-          }}
-        />
+      <section className='grid gap-6 md:grid-cols-[1.3fr_1fr]'>
+        <div className='space-y-4 rounded-3xl border border-border bg-card/70 p-6 shadow-lg'>
+          <header className='space-y-2'>
+            <h2 className='text-xl font-semibold text-foreground'>
+              Register monitor
+            </h2>
+            <p className='text-xs text-muted-foreground'>
+              Feeds default to Somnia Shannon Testnet ETH/USD, but you can
+              override addresses per monitor.
+            </p>
+          </header>
+          <CreateMonitorForm
+            tenants={tenants}
+            defaults={{
+              routerAddress: process.env.SENTINELX_ROUTER_ADDRESS,
+              protofireFeed: process.env.NEXT_PUBLIC_PROTOFIRE_ETH_USD,
+              diaFeed: process.env.NEXT_PUBLIC_DIA_WETH_USD
+            }}
+          />
+        </div>
+        <div className='space-y-4 rounded-3xl border border-border bg-card/70 p-6 shadow-lg'>
+          <header className='space-y-2'>
+            <h2 className='text-xl font-semibold text-foreground'>
+              Create tenant
+            </h2>
+            <p className='text-xs text-muted-foreground'>
+              Each tenant scopes monitors, incidents, and API keys. Owners map
+              to guardian operators.
+            </p>
+          </header>
+          <CreateTenantForm />
+        </div>
       </section>
 
-      <section className='grid gap-6 rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur'>
-        <h2 className='text-xl font-semibold text-white'>Monitors</h2>
-        <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-white/10 text-left text-sm text-slate-200'>
-            <thead>
+      <section className='space-y-4 rounded-3xl border border-border bg-card/80 p-6 shadow-xl'>
+        <header className='flex flex-col gap-2 md:flex-row md:items-center md:justify-between'>
+          <div>
+            <h2 className='text-xl font-semibold text-foreground'>Monitors</h2>
+            <p className='text-xs text-muted-foreground'>
+              Track every Guardable contract, its oracle pair, and current
+              status.
+            </p>
+          </div>
+          <span className='text-xs text-muted-foreground'>
+            {monitors.length} record{monitors.length === 1 ? '' : 's'}
+          </span>
+        </header>
+        <div className='overflow-hidden rounded-2xl border border-border'>
+          <table className='min-w-full divide-y divide-border text-left text-sm'>
+            <thead className='bg-background/60 text-xs uppercase tracking-[0.25em] text-muted-foreground'>
               <tr>
-                <th className='px-4 py-2 font-medium'>Contract</th>
-                <th className='px-4 py-2 font-medium'>Router</th>
-                <th className='px-4 py-2 font-medium'>Oracle key</th>
-                <th className='px-4 py-2 font-medium'>Deviation (bps)</th>
-                <th className='px-4 py-2 font-medium'>Guardian</th>
-                <th className='px-4 py-2 font-medium'>Status</th>
+                <th className='px-4 py-3 font-medium'>Contract</th>
+                <th className='px-4 py-3 font-medium'>Oracle key</th>
+                <th className='px-4 py-3 font-medium'>Feeds</th>
+                <th className='px-4 py-3 font-medium'>Deviation</th>
+                <th className='px-4 py-3 font-medium'>Guardian</th>
+                <th className='px-4 py-3 font-medium'>Status</th>
               </tr>
             </thead>
-            <tbody className='divide-y divide-white/5'>
+            <tbody className='divide-y divide-border/70 bg-background/50 text-sm'>
               {monitors.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className='px-4 py-6 text-center text-slate-400'
+                    className='px-4 py-6 text-center text-muted-foreground'
                   >
-                    No monitors found. Create one via the API to see it listed
-                    here.
+                    No monitors registered yet.
                   </td>
                 </tr>
               ) : (
                 monitors.map(monitor => (
                   <tr key={JSON.stringify(monitor._id)}>
-                    <td className='px-4 py-3 font-mono text-xs'>
+                    <td className='px-4 py-4 font-mono text-xs'>
                       {monitor.contractAddress}
                     </td>
-                    <td className='px-4 py-3 font-mono text-xs'>
-                      {monitor.routerAddress}
+                    <td className='px-4 py-4'>{monitor.oracleKey}</td>
+                    <td className='px-4 py-4 font-mono text-xs'>
+                      <div className='space-y-1'>
+                        <p className='truncate text-muted-foreground'>
+                          P: {monitor.protofireFeed}
+                        </p>
+                        <p className='truncate text-muted-foreground'>
+                          D: {monitor.diaFeed}
+                        </p>
+                      </div>
                     </td>
-                    <td className='px-4 py-3'>{monitor.oracleKey}</td>
-                    <td className='px-4 py-3'>{monitor.maxDeviationBps}</td>
-                    <td className='px-4 py-3 font-mono text-xs'>
+                    <td className='px-4 py-4'>{monitor.maxDeviationBps} bps</td>
+                    <td className='px-4 py-4 font-mono text-xs'>
                       {monitor.guardianAddress}
                     </td>
-                    <td className='px-4 py-3'>
-                      <span className='rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs uppercase tracking-widest'>
-                        {monitor.status ?? 'unknown'}
-                      </span>
+                    <td className='px-4 py-4'>
+                      <StatusBadge status={monitor.status ?? 'unknown'} />
                     </td>
                   </tr>
                 ))
@@ -117,34 +207,87 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <section className='grid gap-6 rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur'>
-        <h2 className='text-xl font-semibold text-white'>Incident stream</h2>
-        <div className='flex flex-col gap-4'>
+      <section className='space-y-4 rounded-3xl border border-border bg-card/80 p-6 shadow-xl'>
+        <header className='flex flex-col gap-2 md:flex-row md:items-center md:justify-between'>
+          <div>
+            <h2 className='text-xl font-semibold text-foreground'>
+              Incident stream
+            </h2>
+            <p className='text-xs text-muted-foreground'>
+              Latest policy decisions with deviation context and status updates.
+            </p>
+          </div>
+          <span className='text-xs text-muted-foreground'>
+            {incidents.length} event{incidents.length === 1 ? '' : 's'}
+          </span>
+        </header>
+        <div className='space-y-3'>
           {incidents.length === 0 ? (
-            <p className='text-sm text-slate-300'>No incidents recorded yet.</p>
+            <p className='text-sm text-muted-foreground'>
+              No incidents recorded yet. Run the policy evaluation to create the
+              first log entry.
+            </p>
           ) : (
             incidents.map(incident => (
               <article
                 key={JSON.stringify(incident._id)}
-                className='rounded-lg border border-white/10 bg-white/10 p-4 text-sm text-slate-200'
+                className='rounded-2xl border border-border bg-background/70 p-5 shadow-inner'
               >
-                <header className='flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-wider text-emerald-200'>
+                <div className='flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.3em] text-brand-teal'>
                   <span>{incident.action}</span>
-                  <span>{new Date(incident.occurredAt).toLocaleString()}</span>
-                </header>
-                <p className='mt-2 text-slate-100'>
+                  <span>
+                    {new Date(incident.occurredAt).toLocaleString(undefined, {
+                      hour12: false
+                    })}
+                  </span>
+                </div>
+                <p className='mt-3 text-sm text-foreground'>
                   {incident.summary ?? 'No summary provided.'}
                 </p>
-                <p className='mt-2 text-xs text-slate-300'>
+                <p className='mt-3 text-xs text-muted-foreground'>
                   Safe: {incident.safe ? 'yes' : 'no'} · Fresh:{' '}
                   {incident.bothFresh ? 'yes' : 'no'}
+                  {incident.txHash ? (
+                    <>
+                      {' '}
+                      · Tx:{' '}
+                      <span className='font-mono'>
+                        {incident.txHash.slice(0, 10)}…
+                        {incident.txHash.slice(-6)}
+                      </span>
+                    </>
+                  ) : null}
                 </p>
               </article>
             ))
           )}
         </div>
       </section>
-    </main>
+    </div>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const normalized = status.toLowerCase()
+  let variant: 'default' | 'attention' | 'unknown' = 'default'
+
+  if (normalized === 'attention') {
+    variant = 'attention'
+  } else if (normalized === 'unknown') {
+    variant = 'unknown'
+  }
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em]',
+        variant === 'default' && 'bg-brand-teal/15 text-brand-teal',
+        variant === 'attention' && 'bg-brand-orange/15 text-brand-orange',
+        variant === 'unknown' && 'bg-muted text-muted-foreground'
+      )}
+    >
+      {status}
+    </span>
   )
 }
 

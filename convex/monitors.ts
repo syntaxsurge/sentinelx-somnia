@@ -1,5 +1,6 @@
-import { internalMutation, mutation, query } from './_generated/server'
 import { v } from 'convex/values'
+
+import { internalMutation, mutation, query } from './_generated/server'
 
 export const list = query({
   args: { tenantId: v.optional(v.union(v.id('tenants'), v.string())) },

@@ -78,7 +78,7 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
 
   if (!hasTenants) {
     return (
-      <p className='text-sm text-slate-300'>
+      <p className='text-sm text-muted-foreground'>
         Add a tenant before registering monitors.
       </p>
     )
@@ -87,11 +87,17 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className='grid gap-3 rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-slate-200'
+      className='grid gap-6 rounded-2xl border border-border bg-card/70 p-5 text-sm text-foreground shadow-inner'
     >
+      <p className='text-xs text-muted-foreground'>
+        Monitors evaluate a guarded contract against the paired Protofire and
+        DIA feeds. All fields below map directly to Convex records and on-chain
+        transactions.
+      </p>
+
       <div className='grid gap-1'>
         <label
-          className='text-xs font-semibold uppercase tracking-widest text-emerald-200'
+          className='text-xs font-semibold uppercase tracking-[0.35em] text-brand-teal'
           htmlFor='monitor-tenant'
         >
           Tenant
@@ -101,7 +107,7 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
           value={form.tenantId}
           onChange={updateField('tenantId')}
           required
-          className='rounded-md border border-white/10 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-400'
+          className='rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/40'
         >
           {tenants.map(tenant => (
             <option key={tenant._id} value={tenant._id}>
@@ -112,61 +118,68 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
         </select>
       </div>
 
-      <div className='grid gap-1 md:grid-cols-2 md:gap-4'>
+      <div className='grid gap-4 md:grid-cols-2'>
         <Field
           id='monitor-contract'
-          label='Contract address'
+          label='Guarded contract'
+          description='The contract SentinelX should observe (implements GuardablePausable).'
           value={form.contractAddress}
           onChange={updateField('contractAddress')}
           required
         />
         <Field
           id='monitor-guardian'
-          label='Guardian address'
+          label='Guardian hub'
+          description='GuardianHub or guardian EOA allowed to call pause/unpause.'
           value={form.guardianAddress}
           onChange={updateField('guardianAddress')}
           required
         />
       </div>
 
-      <div className='grid gap-1 md:grid-cols-2 md:gap-4'>
+      <div className='grid gap-4 md:grid-cols-2'>
         <Field
           id='monitor-router'
-          label='SafeOracleRouter address'
+          label='SafeOracleRouter'
+          description='Address of the deployed SentinelX router.'
           value={form.routerAddress}
           onChange={updateField('routerAddress')}
           required
         />
         <Field
           id='monitor-oracle-key'
-          label='Oracle key '
+          label='Oracle key'
+          description='UTF-8 string hashed to bytes32. Example: ETH/USD.'
           value={form.oracleKey}
           onChange={updateField('oracleKey')}
           required
         />
       </div>
 
-      <div className='grid gap-1 md:grid-cols-2 md:gap-4'>
+      <div className='grid gap-4 md:grid-cols-2'>
         <Field
           id='monitor-protofire'
-          label='Protofire feed address'
+          label='Protofire feed'
+          description='AggregatorV3 feed address from Protofire Chainlink.'
           value={form.protofireFeed}
           onChange={updateField('protofireFeed')}
           required
         />
         <Field
           id='monitor-dia'
-          label='DIA feed address'
+          label='DIA feed'
+          description='DIA adapter implementing AggregatorV3 interface.'
           value={form.diaFeed}
           onChange={updateField('diaFeed')}
           required
         />
       </div>
 
-      <div className='grid gap-1 md:grid-cols-2 md:gap-4'>
+      <div className='grid gap-4 md:grid-cols-2'>
         <Field
           id='monitor-deviation'
           label='Max deviation (bps)'
+          description='1% = 100 basis points. Policy flags values above this threshold.'
           type='number'
           min='10'
           max='2000'
@@ -177,6 +190,7 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
         <Field
           id='monitor-stale'
           label='Staleness window (seconds)'
+          description='If either feed updates after this window, the policy marks it stale.'
           type='number'
           min='60'
           value={form.staleAfterSeconds}
@@ -185,15 +199,15 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
         />
       </div>
 
-      <div className='flex items-center gap-3'>
+      <div className='flex flex-wrap items-center gap-3'>
         <button
           type='submit'
           disabled={pending}
-          className='rounded-md bg-emerald-500 px-4 py-2 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60'
+          className='text-brand-teal-foreground inline-flex items-center gap-2 rounded-lg bg-brand-teal px-4 py-2 font-semibold transition hover:bg-brand-teal-light disabled:cursor-not-allowed disabled:opacity-60'
         >
           {pending ? 'Saving…' : 'Register monitor'}
         </button>
-        {error ? <p className='text-xs text-red-300'>{error}</p> : null}
+        {error ? <p className='text-xs text-destructive'>{error}</p> : null}
       </div>
     </form>
   )
@@ -202,6 +216,7 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
 type FieldProps = {
   id: string
   label: string
+  description?: string
   value: string
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   required?: boolean
@@ -213,6 +228,7 @@ type FieldProps = {
 function Field({
   id,
   label,
+  description,
   value,
   onChange,
   required,
@@ -221,10 +237,10 @@ function Field({
   max
 }: FieldProps) {
   return (
-    <div className='flex flex-col gap-1'>
+    <div className='flex flex-col gap-2'>
       <label
         htmlFor={id}
-        className='text-xs font-semibold uppercase tracking-widest text-emerald-200'
+        className='text-xs font-semibold uppercase tracking-[0.35em] text-brand-teal'
       >
         {label}
       </label>
@@ -236,8 +252,12 @@ function Field({
         type={type}
         min={min}
         max={max}
-        className='rounded-md border border-white/10 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-emerald-400'
+        placeholder='0x…'
+        className='rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/40'
       />
+      {description ? (
+        <p className='text-xs text-muted-foreground'>{description}</p>
+      ) : null}
     </div>
   )
 }
