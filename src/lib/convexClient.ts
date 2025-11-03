@@ -1,27 +1,39 @@
-import { ConvexClient } from 'convex/browser'
+import { ConvexHttpClient } from 'convex/browser'
 
 function resolveConvexUrl(): string {
-  const candidates = [
+  const raw = [
     process.env.CONVEX_DEPLOYMENT_URL,
     process.env.CONVEX_DEPLOYMENT
-  ]
+  ].find(Boolean)
 
-  for (const value of candidates) {
-    if (value && value.trim().length > 0) {
-      return value
-    }
+  if (!raw) {
+    throw new Error(
+      'Set CONVEX_DEPLOYMENT_URL or CONVEX_DEPLOYMENT before using the SentinelX API.'
+    )
+  }
+
+  if (raw.startsWith('https://') || raw.startsWith('http://')) {
+    return raw
+  }
+
+  if (raw.startsWith('dev:')) {
+    const local =
+      process.env.CONVEX_LOCAL_URL ??
+      process.env.NEXT_PUBLIC_CONVEX_URL ??
+      'http://127.0.0.1:8000'
+    return local
   }
 
   throw new Error(
-    'Set CONVEX_DEPLOYMENT_URL or CONVEX_DEPLOYMENT before using the SentinelX API.'
+    `Unsupported Convex deployment value "${raw}". Provide an https:// URL or set CONVEX_LOCAL_URL for dev deployments.`
   )
 }
 
-let client: ConvexClient | null = null
+let client: ConvexHttpClient | null = null
 
-export function getConvexClient(): ConvexClient {
+export function getConvexClient(): ConvexHttpClient {
   if (!client) {
-    client = new ConvexClient(resolveConvexUrl())
+    client = new ConvexHttpClient(resolveConvexUrl())
   }
   return client
 }
