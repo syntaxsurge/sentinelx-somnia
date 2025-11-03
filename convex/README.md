@@ -10,6 +10,3 @@ captures:
   snapshots.
 - **apiKeys** – hashed API keys for external integrations (webhooks,
   dashboards).
-
-Additional query and mutation functions will be implemented in future days of
-the sprint.

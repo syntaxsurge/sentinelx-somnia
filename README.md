@@ -1,7 +1,7 @@
 # SentinelX
 
 SentinelX is an infrastructure layer that protects Somnia builders from oracle
-drift and stale data. Over the 5‑day sprint we are assembling a guarded price
+drift and stale data. We are assembling a guarded price
 surface, guardian automation, and a Convex-backed observability layer for Somnia
 applications.
 

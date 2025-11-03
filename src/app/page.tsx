@@ -45,57 +45,6 @@ export default function HomePage() {
           </article>
         ))}
       </section>
-
-      <section className='grid gap-6 rounded-xl border border-white/10 bg-white/5 p-8 backdrop-blur'>
-        <h2 className='text-2xl font-semibold text-white'>Sprint Progress</h2>
-        <div className='grid gap-6 md:grid-cols-2'>
-          <div>
-            <h3 className='text-sm font-semibold uppercase tracking-wide text-emerald-200'>
-              Day 1
-            </h3>
-            <ul className='mt-3 grid gap-3 text-sm text-slate-200'>
-              <li>
-                ✅ Core contracts (SafeOracleRouter, GuardianHub, guardable
-                mixin, demo paywall).
-              </li>
-              <li>
-                ✅ Hardhat workspace aligned to Somnia Shannon Testnet (50312).
-              </li>
-              <li>
-                ✅ Repository reset to SentinelX naming with fresh marketing
-                shell.
-              </li>
-              <li>
-                ✅ Convex schema drafted for tenants, monitors, incidents, and
-                keys.
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className='text-sm font-semibold uppercase tracking-wide text-emerald-200'>
-              Day 2
-            </h3>
-            <ul className='mt-3 grid gap-3 text-sm text-slate-200'>
-              <li>
-                ✅ Ignition module + unit tests for guardianship and oracle
-                safety.
-              </li>
-              <li>
-                ✅ Convex mutations/queries with REST endpoints for tenants,
-                monitors, incidents.
-              </li>
-              <li>
-                ✅ Convex client helper for server routes with typed ID
-                handling.
-              </li>
-              <li>
-                ✅ Repository scrubbed of legacy references and docs updated for
-                Day 2 scope.
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
     </main>
   )
 }
