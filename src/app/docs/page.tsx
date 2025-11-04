@@ -73,6 +73,13 @@ const apiEndpoints = [
     payload: '{}'
   },
   {
+    method: 'GET',
+    path: '/api/status',
+    description:
+      'Health check endpoint. Returns { ok, routerConfigured, convexConnected } with 200/503 status codes.',
+    payload: '—'
+  },
+  {
     method: 'POST',
     path: '/api/api-keys',
     description:

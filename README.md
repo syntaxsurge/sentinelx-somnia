@@ -13,7 +13,7 @@ automation, and a Convex-backed observability layer for Somnia applications.
 - **Dashboard & API** – `/dashboard` provides tenant/monitor creation, live
   monitor tables, incident stream, API key issuance, and a manual policy
   trigger. REST endpoints (`/api/tenants`, `/api/monitors`, `/api/incidents`,
-  `/api/api-keys`, `/api/jobs/run-policy`) drive automation and integrations.
+  `/api/api-keys`, `/api/status`, `/api/jobs/run-policy`) drive automation and integrations.
 - **Credential management** – Create scoped automation credentials from the
   dashboard or REST API; secrets are returned once and stored as SHA-256 hashes
   in Convex.

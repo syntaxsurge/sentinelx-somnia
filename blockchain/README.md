@@ -28,8 +28,47 @@ SOMNIA_RPC_URL=https://dream-rpc.somnia.network
 ```bash
 pnpm install        # inside the blockchain folder
 pnpm compile        # generate artifacts
-pnpm test           # run Hardhat tests (to be added on Day 2)
 ```
 
 Artifacts produced in this workspace are synced into the Next.js frontend via
 `pnpm contracts:sync-abis` from the repository root.
+
+## Deployment flow
+
+1. **Install dependencies (once):**
+
+   ```bash
+   pnpm install
+   ```
+
+2. **Compile and run tests (optional but recommended):**
+
+   ```bash
+   pnpm compile
+   pnpm test                      # runs Hardhat tests
+   ```
+
+3. **Deploy with Hardhat Ignition to Somnia Shannon Testnet:**
+
+   ```bash
+   pnpm exec hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somniatestnet
+   ```
+
+   Ignition will print the deployed addresses for:
+   - `GuardianHub`
+   - `SafeOracleRouter`
+   - `SOMIPaymentGuarded`
+
+4. **Verify contracts (optional):**
+
+   ```bash
+   pnpm exec hardhat verify --network somniatestnet <DEPLOYED_ADDRESS> <constructor args>
+   ```
+
+5. **Sync ABIs back to the Next.js app:**
+
+   From the repository root:
+
+   ```bash
+   pnpm contracts:sync-abis
+   ```
