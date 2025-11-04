@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const session = await getIronSession<{ user?: SessionUser }>(
     cookieStore as any,
     sessionOptions

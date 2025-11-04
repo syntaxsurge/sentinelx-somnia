@@ -7,33 +7,35 @@ import {
 } from '@rainbow-me/rainbowkit'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import '@rainbow-me/rainbowkit/styles.css'
-import { WagmiProvider, http } from 'wagmi'
+import { WagmiProvider, createConfig, http } from 'wagmi'
 
 import { somniaShannon } from '@/lib/chains'
 
 if (typeof window === 'undefined') {
-  import('fake-indexeddb').then(mod => {
-    const { indexedDB, IDBKeyRange } = mod as {
-      indexedDB: IDBFactory
-      IDBKeyRange: typeof globalThis.IDBKeyRange
-    }
-    if (typeof globalThis.indexedDB === 'undefined') {
-      Object.defineProperty(globalThis, 'indexedDB', {
-        value: indexedDB,
-        configurable: false,
-        enumerable: false
-      })
-    }
-    if (typeof globalThis.IDBKeyRange === 'undefined') {
-      Object.defineProperty(globalThis, 'IDBKeyRange', {
-        value: IDBKeyRange,
-        configurable: false,
-        enumerable: false
-      })
-    }
-  }).catch(error => {
-    console.warn('Failed to polyfill indexedDB for SSR:', error)
-  })
+  import('fake-indexeddb')
+    .then(mod => {
+      const { indexedDB, IDBKeyRange } = mod as {
+        indexedDB: IDBFactory
+        IDBKeyRange: typeof globalThis.IDBKeyRange
+      }
+      if (typeof globalThis.indexedDB === 'undefined') {
+        Object.defineProperty(globalThis, 'indexedDB', {
+          value: indexedDB,
+          configurable: false,
+          enumerable: false
+        })
+      }
+      if (typeof globalThis.IDBKeyRange === 'undefined') {
+        Object.defineProperty(globalThis, 'IDBKeyRange', {
+          value: IDBKeyRange,
+          configurable: false,
+          enumerable: false
+        })
+      }
+    })
+    .catch(error => {
+      console.warn('Failed to polyfill indexedDB for SSR:', error)
+    })
 }
 
 const queryClient = new QueryClient()
@@ -50,15 +52,28 @@ if (!process.env.NEXT_PUBLIC_WALLETCONNECT_ID) {
   )
 }
 
-const wagmiConfig = getDefaultConfig({
-  appName: 'SentinelX',
-  projectId: walletConnectId,
-  chains: [somniaShannon],
-  transports: {
-    [somniaShannon.id]: http('https://dream-rpc.somnia.network')
-  },
-  ssr: true
-})
+const wagmiConfig = (() => {
+  if (typeof window === 'undefined') {
+    return createConfig({
+      chains: [somniaShannon],
+      transports: {
+        [somniaShannon.id]: http('https://dream-rpc.somnia.network')
+      },
+      ssr: true,
+      connectors: []
+    })
+  }
+
+  return getDefaultConfig({
+    appName: 'SentinelX',
+    projectId: walletConnectId,
+    chains: [somniaShannon],
+    transports: {
+      [somniaShannon.id]: http('https://dream-rpc.somnia.network')
+    },
+    ssr: true
+  })
+})()
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
