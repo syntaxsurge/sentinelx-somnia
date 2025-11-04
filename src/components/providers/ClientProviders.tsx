@@ -11,6 +11,31 @@ import { WagmiProvider, http } from 'wagmi'
 
 import { somniaShannon } from '@/lib/chains'
 
+if (typeof window === 'undefined') {
+  import('fake-indexeddb').then(mod => {
+    const { indexedDB, IDBKeyRange } = mod as {
+      indexedDB: IDBFactory
+      IDBKeyRange: typeof globalThis.IDBKeyRange
+    }
+    if (typeof globalThis.indexedDB === 'undefined') {
+      Object.defineProperty(globalThis, 'indexedDB', {
+        value: indexedDB,
+        configurable: false,
+        enumerable: false
+      })
+    }
+    if (typeof globalThis.IDBKeyRange === 'undefined') {
+      Object.defineProperty(globalThis, 'IDBKeyRange', {
+        value: IDBKeyRange,
+        configurable: false,
+        enumerable: false
+      })
+    }
+  }).catch(error => {
+    console.warn('Failed to polyfill indexedDB for SSR:', error)
+  })
+}
+
 const queryClient = new QueryClient()
 
 const walletConnectId =

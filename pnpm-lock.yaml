@@ -71,6 +71,9 @@ importers:
       encoding:
         specifier: ^0.1.13
         version: 0.1.13
+      fake-indexeddb:
+        specifier: ^6.2.4
+        version: 6.2.4
       iron-session:
         specifier: ^8.0.1
         version: 8.0.4
@@ -2913,6 +2916,10 @@ packages:
   extension-port-stream@2.1.1:
     resolution: {integrity: sha512-qknp5o5rj2J9CRKfVB8KJr+uXQlrojNZzdESUPhKYLXf97TPcGf6qWWKmpsNNtUyOdzFhab1ON0jzouNxHHvow==}
     engines: {node: '>=12.0.0'}
+
+  fake-indexeddb@6.2.4:
+    resolution: {integrity: sha512-INKeIKEtSViN4yVtEWEUqbsqmaIy7Ls+MfU0yxQVXg67pOJ/sH1ZxcVrP8XrKULUFohcPD9gnmym+qBfEybACw==}
+    engines: {node: '>=18'}
 
   fast-copy@3.0.2:
     resolution: {integrity: sha512-dl0O9Vhju8IrcLndv2eU4ldt1ftXMqqfgN4H1cpmGV7P6jeB9FwpN9a2c8DPGE1Ys88rNUJVYDHq73CGAGOPfQ==}
@@ -8676,6 +8683,8 @@ snapshots:
   extension-port-stream@2.1.1:
     dependencies:
       webextension-polyfill: 0.12.0
+
+  fake-indexeddb@6.2.4: {}
 
   fast-copy@3.0.2: {}
 

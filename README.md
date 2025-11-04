@@ -78,6 +78,13 @@ If `NEXT_PUBLIC_WALLETCONNECT_ID` is omitted locally the app falls back to a
 demo project id and logs a warning—replace it with your WalletConnect Cloud id
 before production.
 
+- `NEXT_PUBLIC_WALLETCONNECT_ID`: visit
+  [cloud.walletconnect.com](https://cloud.walletconnect.com/app), create a free
+  project, and paste the Project ID value here.
+- `SESSION_SECRET`: generate a 32+ character random string (for example,
+  `openssl rand -hex 32`). SentinelX generates a throwaway value in development
+  if you omit it, but production builds must set it explicitly.
+
 ## Repository layout
 
 - `src/app` – Next.js App Router with RainbowKit/SIWE auth, shadcn UI, and REST
