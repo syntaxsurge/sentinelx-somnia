@@ -9,17 +9,6 @@ This script outlines a 7–8 minute walkthrough of SentinelX Somnia Guardian. Ea
 1. **On-screen:** Start on the SentinelX landing hero (`/`), slowly pan across the headline, architecture blocks, and the primary CTA “Launch dashboard”.
    - **Voice-over 1:** “SentinelX is a guardian stack for the Somnia network. It hardens price feeds by cross‑checking Protofire and DIA, logs incidents in Convex, and coordinates guardian actions so protocols fail safe—not open.”
 
-## Segment 2 – Contracts Deploy (Terminal)
-
-1. **On-screen:** Switch to terminal in `blockchain/`. Show `.env` with `PRIVATE_KEY` and `SOMNIA_RPC_URL` set. Run the Ignition deploy.
-   - **Voice-over 2:** “We’ll deploy the on‑chain components: GuardianHub, SafeOracleRouter, and a guarded demo contract. This is on Somnia Shannon Testnet.”
-   - Commands — type exactly:
-     - `cd blockchain`
-     - `pnpm install`
-     - `pnpm compile`
-     - `pnpm exec hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somniatestnet`
-2. **On-screen:** Highlight the three deployed addresses in the terminal output and copy them to a notes panel.
-   - **Voice-over 3:** “Keep these addresses. We’ll paste them into the dashboard: GuardianHub, SafeOracleRouter, and SOMIPaymentGuarded.”
 
 ## Segment 3 – Dashboard Tour (Tenants, Monitors, Incidents)
 
