@@ -74,6 +74,10 @@ Optional settings (for agent integrations) can be added as needed. Set
 `SENTINELX_ROUTER_ADDRESS` to the deployed `SafeOracleRouter` address on Somnia
 Shannon Testnet so the policy runner can evaluate monitors.
 
+If `NEXT_PUBLIC_WALLETCONNECT_ID` is omitted locally the app falls back to a
+demo project id and logs a warning—replace it with your WalletConnect Cloud id
+before production.
+
 ## Repository layout
 
 - `src/app` – Next.js App Router with RainbowKit/SIWE auth, shadcn UI, and REST
