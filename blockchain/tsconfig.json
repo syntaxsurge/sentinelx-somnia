@@ -9,6 +9,6 @@
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["./scripts/**/*.ts", "./test/**/*.ts"],
+  "include": ["./scripts/**/*.ts", "./test/**/*.ts", "./ignition/**/*.ts"],
   "files": ["./hardhat.config.ts"]
 }
