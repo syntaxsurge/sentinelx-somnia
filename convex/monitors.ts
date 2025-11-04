@@ -47,6 +47,23 @@ export const create = mutation({
   }
 })
 
+export const listForTenant = query({
+  args: { tenantId: v.id('tenants') },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('monitors')
+      .withIndex('by_tenant', q => q.eq('tenantId', args.tenantId))
+      .collect()
+  }
+})
+
+export const get = query({
+  args: { monitorId: v.id('monitors') },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.monitorId)
+  }
+})
+
 export const updateStatus = internalMutation({
   args: {
     monitorId: v.id('monitors'),

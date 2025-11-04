@@ -1,9 +1,13 @@
 import type { Metadata } from 'next'
 import NextTopLoader from 'nextjs-toploader'
 
+import { EnsureTenantOnMount } from '@/components/auth/EnsureTenantOnMount'
+import { TopNav } from '@/components/layout/TopNav'
+import { ClientProviders } from '@/components/providers/ClientProviders'
+import { ConvexProviderClient } from '@/components/providers/ConvexProvider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { SiteFooter } from '@/components/site-footer'
-import { SiteHeader } from '@/components/site-header'
+import { Toaster } from '@/components/ui/toaster'
 
 import './globals.css'
 
@@ -22,12 +26,20 @@ export default function RootLayout({
     <html lang='en' suppressHydrationWarning>
       <body className='min-h-screen bg-background text-foreground antialiased'>
         <ThemeProvider>
-          <NextTopLoader showSpinner={false} color='#2dd4bf' />
-          <SiteHeader />
-          <main className='relative flex min-h-[calc(100vh-8rem)] flex-col bg-gradient-to-b from-background via-background to-accent-darker/20 pb-16 pt-12 sm:pt-16'>
-            {children}
-          </main>
-          <SiteFooter />
+          <ConvexProviderClient>
+            <ClientProviders>
+              <NextTopLoader showSpinner={false} color='#2dd4bf' />
+              <EnsureTenantOnMount />
+              <TopNav />
+              <main className='relative flex min-h-[calc(100vh-6rem)] flex-col bg-gradient-to-b from-background via-background to-accent-darker/20 pb-16 pt-12 sm:pt-16'>
+                <div className='mx-auto w-full max-w-6xl px-4 sm:px-6'>
+                  {children}
+                </div>
+              </main>
+              <SiteFooter />
+              <Toaster />
+            </ClientProviders>
+          </ConvexProviderClient>
         </ThemeProvider>
       </body>
     </html>

@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react'
 
 import { Play, RotateCcw } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
+
 export function RunPolicyButton() {
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState<string | null>(null)
@@ -30,12 +32,7 @@ export function RunPolicyButton() {
 
   return (
     <div className='flex flex-col gap-2 text-sm text-foreground'>
-      <button
-        type='button'
-        onClick={handleClick}
-        disabled={pending}
-        className='text-brand-teal-foreground inline-flex items-center gap-2 rounded-lg bg-brand-teal px-4 py-2 font-semibold transition hover:bg-brand-teal-light disabled:cursor-not-allowed disabled:opacity-60'
-      >
+      <Button onClick={handleClick} disabled={pending} size='sm'>
         {pending ? (
           <>
             <RotateCcw className='h-4 w-4 animate-spin' />
@@ -47,7 +44,7 @@ export function RunPolicyButton() {
             Run policy evaluation
           </>
         )}
-      </button>
+      </Button>
       {message ? (
         <p className='text-xs text-brand-teal-light'>{message}</p>
       ) : null}

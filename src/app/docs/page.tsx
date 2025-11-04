@@ -1,197 +1,152 @@
-import Link from 'next/link'
+'use client'
 
-const sections = [
-  {
-    title: 'Deploy on Somnia Shannon Testnet',
-    steps: [
-      'Copy blockchain/.env.example → blockchain/.env and set SOMNIA_RPC_URL + PRIVATE_KEY.',
-      'pnpm install && pnpm --filter sentinelx-hardhat compile',
-      'pnpm --filter sentinelx-hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somniatestnet',
-      'Record GuardianHub, SafeOracleRouter, and SOMIPaymentGuarded addresses.'
-    ]
-  },
-  {
-    title: 'Sync ABIs for the dashboard',
-    steps: [
-      'From repo root run pnpm contracts:sync-abis.',
-      'Verify src/abi contains SafeOracleRouter.json, GuardianHub.json, SOMIPaymentGuarded.json.',
-      'Restart Next.js dev server to pick up refreshed types.'
-    ]
-  },
-  {
-    title: 'Configure environment variables',
-    steps: [
-      'cp .env.example .env.local and set NEXT_PUBLIC_SOMNIA_RPC_URL, SENTINELX_ROUTER_ADDRESS, NEXT_PUBLIC_PROTOFIRE_ETH_USD, NEXT_PUBLIC_DIA_WETH_USD.',
-      'Set CONVEX_DEPLOYMENT_URL to your Convex deployment.',
-      'Optional: set NEXT_PUBLIC_SOMNIA_CHAIN_ID if you run against mainnet.'
-    ]
-  },
-  {
-    title: 'Operate SentinelX',
-    steps: [
-      'Visit /dashboard to create a tenant and register monitors.',
-      'Trigger policy runs via the dashboard button, POST /api/jobs/run-policy, or pnpm policy:run.',
-      'Check Convex tables (tenants, monitors, incidents) for realtime audit trails.'
-    ]
-  },
-  {
-    title: 'Manage API keys',
-    steps: [
-      'Generate keys from the dashboard (Provision API key) or POST /api/api-keys.',
-      'Copy the returned secret once and store it in your secure secrets vault.',
-      'Use GET /api/api-keys?tenantId=<id> to enumerate hashed credentials during audits.'
-    ]
-  }
-]
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-const apiEndpoints = [
-  {
-    method: 'POST',
-    path: '/api/tenants',
-    description: 'Create or resolve a tenant by owner address.',
-    payload: '{ "name": "Vault Ops", "owner": "0xabc..." }'
-  },
-  {
-    method: 'POST',
-    path: '/api/monitors',
-    description:
-      'Register a monitor that links a contract + guardian + feed configuration.',
-    payload:
-      '{ "tenantId": "<convexId>", "contractAddress": "0x1...", "guardianAddress": "0x2...", "routerAddress": "0x3...", "oracleKey": "ETH/USD", "protofireFeed": "0x4...", "diaFeed": "0x5...", "maxDeviationBps": 150, "staleAfterSeconds": 300 }'
-  },
-  {
-    method: 'POST',
-    path: '/api/incidents',
-    description: 'Write an incident record manually (optional).',
-    payload:
-      '{ "monitorId": "<convexId>", "safe": false, "bothFresh": false, "action": "pause-recommended", "summary": "DIA stale, Protofire disagreeing" }'
-  },
-  {
-    method: 'POST',
-    path: '/api/jobs/run-policy',
-    description: 'Execute the policy runner once. Returns { processed }.',
-    payload: '{}'
-  },
-  {
-    method: 'GET',
-    path: '/api/status',
-    description:
-      'Health check endpoint. Returns { ok, routerConfigured, convexConnected } with 200/503 status codes.',
-    payload: '—'
-  },
-  {
-    method: 'POST',
-    path: '/api/api-keys',
-    description:
-      'Create a scoped automation credential. Response includes the plaintext key once.',
-    payload: '{ "tenantId": "<convexId>", "label": "policy-runner-prod" }'
-  },
-  {
-    method: 'GET',
-    path: '/api/api-keys?tenantId=<convexId>',
-    description: 'List hashed API keys bound to a tenant for audits.',
-    payload: '—'
-  }
-]
+function Code({ children }: { children: React.ReactNode }) {
+  return (
+    <pre className='rounded-lg border border-border bg-muted p-4 text-xs leading-relaxed'>
+      <code>{children}</code>
+    </pre>
+  )
+}
 
 export default function DocsPage() {
   return (
-    <div className='mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 pb-16 sm:px-6'>
-      <header className='mt-4 space-y-4'>
-        <span className='inline-flex items-center gap-2 rounded-full border border-brand-teal/40 bg-brand-teal/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-brand-teal'>
-          Playbook
-        </span>
-        <h1 className='text-3xl font-semibold text-foreground'>
-          SentinelX deployment & operations guide
-        </h1>
-        <p className='max-w-3xl text-sm text-muted-foreground'>
-          This playbook covers contract deployment, Convex configuration,
-          environment setup, and REST endpoints so you can operate SentinelX in
-          Somnia production or test environments.
+    <div className='space-y-10 py-10'>
+      <header className='space-y-3'>
+        <h1 className='text-3xl font-semibold'>Integrate SentinelX</h1>
+        <p className='max-w-2xl text-sm text-muted-foreground'>
+          Harden Somnia contracts with dual-oracle validation and GuardianHub
+          enforcement. Follow these steps to deploy the contracts, register
+          monitors, and run the policy agent.
         </p>
+        <div className='flex flex-wrap gap-3'>
+          <Button asChild>
+            <a
+              href='https://github.com/syntaxsurge/sentinelx-somnia'
+              target='_blank'
+              rel='noreferrer'
+            >
+              GitHub repo
+            </a>
+          </Button>
+          <Button asChild variant='secondary'>
+            <a
+              href='https://docs.somnia.network'
+              target='_blank'
+              rel='noreferrer'
+            >
+              Somnia docs
+            </a>
+          </Button>
+        </div>
       </header>
 
-      <section className='grid gap-6 md:grid-cols-2'>
-        {sections.map(section => (
-          <article
-            key={section.title}
-            className='flex flex-col gap-4 rounded-3xl border border-border bg-card/70 p-6 shadow-inner'
-          >
-            <h2 className='text-lg font-semibold text-foreground'>
-              {section.title}
-            </h2>
-            <ol className='space-y-2 text-sm text-muted-foreground'>
-              {section.steps.map(step => (
-                <li key={step} className='flex gap-2'>
-                  <span className='text-brand-teal'>•</span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ol>
-          </article>
-        ))}
-      </section>
+      <Tabs defaultValue='contracts' className='space-y-6'>
+        <TabsList>
+          <TabsTrigger value='contracts'>Contracts</TabsTrigger>
+          <TabsTrigger value='deploy'>Deploy</TabsTrigger>
+          <TabsTrigger value='agent'>Policy agent</TabsTrigger>
+        </TabsList>
 
-      <section className='space-y-4 rounded-3xl border border-border bg-card/80 p-6 shadow-xl'>
-        <header>
-          <h2 className='text-lg font-semibold text-foreground'>
-            REST endpoints
-          </h2>
-          <p className='text-xs text-muted-foreground'>
-            All endpoints require no authentication in dev mode. Secure them
-            behind API keys or allowlists before production go-live.
-          </p>
-        </header>
-        <div className='space-y-4'>
-          {apiEndpoints.map(endpoint => (
-            <article
-              key={endpoint.path}
-              className='rounded-2xl border border-border bg-background/70 p-5 shadow-inner'
-            >
-              <div className='flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-brand-teal'>
-                <span>{endpoint.method}</span>
-                <span className='text-muted-foreground'>{endpoint.path}</span>
-              </div>
-              <p className='mt-3 text-sm text-foreground'>
-                {endpoint.description}
+        <TabsContent value='contracts' className='space-y-4'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Guardable mixin</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-2 text-sm text-muted-foreground'>
+              <p>Add the mixin so GuardianHub can pause unsafe entrypoints.</p>
+              <Code>{`contract MyContract is GuardablePausable {
+  constructor(address guardian) {
+    _initializeGuardian(guardian);
+  }
+
+  function execute() external whenNotPaused {
+    // critical logic
+  }
+}`}</Code>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>SafeOracleRouter</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-2 text-sm text-muted-foreground'>
+              <p>Register Protofire + DIA feeds and the policy thresholds.</p>
+              <Code>{`bytes32 KEY = keccak256(bytes("ETH/USD"));
+safeOracle.configureFeed(
+  KEY,
+  0xd9132c1d762D432672493F640a63B758891B449e, // Protofire
+  0x786c7893F8c26b80d42088749562eDb50Ba9601E, // DIA adapter
+  100,  // deviation in bps (1%)
+  180   // stale window (seconds)
+);`}</Code>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value='deploy' className='space-y-4'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Hardhat Ignition (Somnia testnet)</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-2 text-sm text-muted-foreground'>
+              <Code>{`cd blockchain
+pnpm install
+pnpm compile
+pnpm exec hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somniatestnet`}</Code>
+              <p className='text-xs'>
+                Copy the GuardianHub, SafeOracleRouter, and SOMIPaymentGuarded
+                addresses. Paste them into the New Monitor form or environment
+                variables.
               </p>
-              <pre className='mt-3 overflow-x-auto whitespace-pre-wrap rounded-xl bg-background p-4 text-xs text-muted-foreground'>
-                {endpoint.payload}
-              </pre>
-            </article>
-          ))}
-        </div>
-      </section>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Environment variables</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Code>{`# .env.local
+NEXT_PUBLIC_WALLETCONNECT_ID=your_walletconnect_project_id
+SESSION_SECRET=32+character_random_value
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network`}</Code>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <section className='space-y-4 rounded-3xl border border-border bg-card/70 p-6 shadow-lg'>
-        <h2 className='text-lg font-semibold text-foreground'>References</h2>
-        <ul className='space-y-2 text-sm text-muted-foreground'>
-          <li>
-            <Link
-              href='https://docs.somnia.network'
-              className='text-brand-teal transition hover:text-brand-teal-light'
-            >
-              Somnia developer documentation
-            </Link>
-          </li>
-          <li>
-            <Link
-              href='https://shannon-explorer.somnia.network'
-              className='text-brand-teal transition hover:text-brand-teal-light'
-            >
-              Somnia Shannon Testnet Explorer
-            </Link>
-          </li>
-          <li>
-            <Link
-              href='https://docs.diadata.org'
-              className='text-brand-teal transition hover:text-brand-teal-light'
-            >
-              DIA oracle adapters
-            </Link>
-          </li>
-        </ul>
-      </section>
+        <TabsContent value='agent' className='space-y-4'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Manual run</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Code>{`pnpm policy:run`}</Code>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Vercel cron (every 2 minutes)</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-2 text-sm text-muted-foreground'>
+              <Code>{`{
+  "crons": [
+    { "path": "/api/jobs/run-policy", "schedule": "*/2 * * * *" }
+  ]
+}`}</Code>
+              <p className='text-xs'>
+                The policy runner reads SafeOracleRouter.latest, updates monitor
+                status, records incidents, and can call GuardianHub when safe is
+                false.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

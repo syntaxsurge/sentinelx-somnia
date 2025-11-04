@@ -24,6 +24,9 @@ automation, and a Convex-backed observability layer for Somnia applications.
   is accessible via the dashboard button or `pnpm policy:run` CLI helper.
 - **Observability** – Convex stores tenants, monitors, incidents, and API keys
   with normalized IDs for seamless integration across the stack.
+- **Wallet auth & UI** – RainbowKit/Wagmi handle wallet connect, SIWE issues
+  iron-session cookies, and shadcn/ui provides consistent dashboards, forms,
+  and toasts.
 
 ## Milestone log
 
@@ -60,6 +63,8 @@ Copy `.env.example` to `.env.local` and set the following values:
 NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network
 NEXT_PUBLIC_PROTOFIRE_ETH_USD=0xd9132c1d762D432672493F640a63B758891B449e
 NEXT_PUBLIC_DIA_WETH_USD=0x786c7893F8c26b80d42088749562eDb50Ba9601E
+NEXT_PUBLIC_WALLETCONNECT_ID=your_walletconnect_project_id
+SESSION_SECRET=32+character_random_secret
 CONVEX_DEPLOYMENT=dev:your-local-deployment-or-https://your-deployment.convex.site
 # optional, overrides dev: aliases with explicit URL
 CONVEX_LOCAL_URL=http://127.0.0.1:8000
@@ -71,7 +76,7 @@ Shannon Testnet so the policy runner can evaluate monitors.
 
 ## Repository layout
 
-- `src/app` – Next.js App Router with marketing shell and API routes for Convex
+- `src/app` – Next.js App Router with RainbowKit/SIWE auth, shadcn UI, and REST
   integration.
 - `convex` – Schema plus mutations/queries for tenants, monitors, incidents, and
   API keys.
