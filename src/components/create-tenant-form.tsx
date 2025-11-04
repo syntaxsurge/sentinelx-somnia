@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
+import { isAddress, sanitizeAddress } from '@/lib/validation'
+
 export function CreateTenantForm() {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -15,12 +17,18 @@ export function CreateTenantForm() {
     event.preventDefault()
     setError(null)
 
+    const normalizedOwner = sanitizeAddress(owner)
+    if (!isAddress(normalizedOwner)) {
+      setError('Owner address must be a valid 0x-prefixed Somnia address.')
+      return
+    }
+
     startTransition(async () => {
       try {
         const response = await fetch('/api/tenants', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, owner })
+          body: JSON.stringify({ name, owner: normalizedOwner })
         })
 
         if (!response.ok) {

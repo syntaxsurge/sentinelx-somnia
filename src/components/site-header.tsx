@@ -14,7 +14,7 @@ const navItems: Array<{
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/docs', label: 'Docs' },
   {
-    href: 'https://github.com/sentinelx-labs/sentinelx-somnia-guardian',
+    href: 'https://github.com/syntaxsurge/sentinelx-somnia',
     label: 'GitHub',
     external: true
   }

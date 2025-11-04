@@ -33,6 +33,14 @@ const sections = [
       'Trigger policy runs via the dashboard button, POST /api/jobs/run-policy, or pnpm policy:run.',
       'Check Convex tables (tenants, monitors, incidents) for realtime audit trails.'
     ]
+  },
+  {
+    title: 'Manage API keys',
+    steps: [
+      'Generate keys from the dashboard (Provision API key) or POST /api/api-keys.',
+      'Copy the returned secret once and store it in your secure secrets vault.',
+      'Use GET /api/api-keys?tenantId=<id> to enumerate hashed credentials during audits.'
+    ]
   }
 ]
 
@@ -63,6 +71,19 @@ const apiEndpoints = [
     path: '/api/jobs/run-policy',
     description: 'Execute the policy runner once. Returns { processed }.',
     payload: '{}'
+  },
+  {
+    method: 'POST',
+    path: '/api/api-keys',
+    description:
+      'Create a scoped automation credential. Response includes the plaintext key once.',
+    payload: '{ "tenantId": "<convexId>", "label": "policy-runner-prod" }'
+  },
+  {
+    method: 'GET',
+    path: '/api/api-keys?tenantId=<convexId>',
+    description: 'List hashed API keys bound to a tenant for audits.',
+    payload: '—'
   }
 ]
 

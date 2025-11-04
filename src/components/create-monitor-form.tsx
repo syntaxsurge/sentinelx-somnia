@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
+import { isAddress, isPositiveInteger, sanitizeAddress } from '@/lib/validation'
+
 type Tenant = {
   _id: string
   name: string
@@ -45,6 +47,41 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
     event.preventDefault()
     setError(null)
 
+    const contract = sanitizeAddress(form.contractAddress)
+    const guardian = sanitizeAddress(form.guardianAddress)
+    const routerAddress = sanitizeAddress(form.routerAddress)
+    const protofire = sanitizeAddress(form.protofireFeed)
+    const dia = sanitizeAddress(form.diaFeed)
+
+    if (!isAddress(contract)) {
+      setError('Guarded contract address is invalid.')
+      return
+    }
+    if (!isAddress(guardian)) {
+      setError('Guardian hub address is invalid.')
+      return
+    }
+    if (!isAddress(routerAddress)) {
+      setError('SafeOracleRouter address is invalid.')
+      return
+    }
+    if (!isAddress(protofire)) {
+      setError('Protofire feed address is invalid.')
+      return
+    }
+    if (!isAddress(dia)) {
+      setError('DIA feed address is invalid.')
+      return
+    }
+    if (!isPositiveInteger(form.maxDeviationBps)) {
+      setError('Max deviation must be a positive integer.')
+      return
+    }
+    if (!isPositiveInteger(form.staleAfterSeconds)) {
+      setError('Staleness window must be a positive integer.')
+      return
+    }
+
     startTransition(async () => {
       try {
         const response = await fetch('/api/monitors', {
@@ -52,6 +89,11 @@ export function CreateMonitorForm({ tenants, defaults }: Props) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...form,
+            contractAddress: contract,
+            guardianAddress: guardian,
+            routerAddress,
+            protofireFeed: protofire,
+            diaFeed: dia,
             maxDeviationBps: Number(form.maxDeviationBps),
             staleAfterSeconds: Number(form.staleAfterSeconds)
           })

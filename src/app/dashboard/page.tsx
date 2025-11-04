@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 import { ArrowUpRight } from 'lucide-react'
 
+import { CreateApiKeyForm } from '@/components/create-api-key-form'
 import { CreateMonitorForm } from '@/components/create-monitor-form'
 import { CreateTenantForm } from '@/components/create-tenant-form'
 import { RunPolicyButton } from '@/components/run-policy-button'
@@ -27,20 +28,28 @@ async function fetchJson(path: string) {
 }
 
 export default async function DashboardPage() {
-  const [monitorsPayload, incidentsPayload, tenantsPayload] = await Promise.all(
-    [
+  const [monitorsPayload, incidentsPayload, tenantsPayload, apiKeysPayload] =
+    await Promise.all([
       fetchJson('/api/monitors'),
       fetchJson('/api/incidents'),
-      fetchJson('/api/tenants')
-    ]
-  )
+      fetchJson('/api/tenants'),
+      fetchJson('/api/api-keys')
+    ])
 
   const monitors = (monitorsPayload?.monitors ?? []) as any[]
   const incidents = (incidentsPayload?.incidents ?? []) as any[]
   const tenants = (tenantsPayload?.tenants ?? []) as any[]
+  const apiKeys = (apiKeysPayload?.keys ?? []) as any[]
   const attentionCount = monitors.filter(
     monitor => monitor.status === 'attention'
   ).length
+
+  const identifier = (value: unknown) =>
+    typeof value === 'string' ? value : JSON.stringify(value)
+
+  const tenantMap = new Map(
+    tenants.map(tenant => [identifier(tenant._id), tenant])
+  )
 
   const stats = [
     { label: 'Tenants', value: tenants.length, hint: 'Guarded apps onboarded' },
@@ -58,6 +67,11 @@ export default async function DashboardPage() {
       label: 'Attention required',
       value: attentionCount,
       hint: 'Monitors breached deviation or freshness'
+    },
+    {
+      label: 'API keys',
+      value: apiKeys.length,
+      hint: 'Automation credentials issued'
     }
   ]
 
@@ -92,7 +106,7 @@ export default async function DashboardPage() {
         <RunPolicyButton />
       </header>
 
-      <section className='grid gap-4 rounded-3xl border border-border bg-card/70 p-6 shadow-inner md:grid-cols-4'>
+      <section className='grid gap-4 rounded-3xl border border-border bg-card/70 p-6 shadow-inner md:grid-cols-5'>
         {stats.map(stat => (
           <div key={stat.label} className='space-y-2'>
             <p className='text-xs font-semibold uppercase tracking-[0.35em] text-brand-orange'>
@@ -126,17 +140,110 @@ export default async function DashboardPage() {
             }}
           />
         </div>
-        <div className='space-y-4 rounded-3xl border border-border bg-card/70 p-6 shadow-lg'>
-          <header className='space-y-2'>
-            <h2 className='text-xl font-semibold text-foreground'>
-              Create tenant
-            </h2>
+        <div className='space-y-6'>
+          <div className='space-y-4 rounded-3xl border border-border bg-card/70 p-6 shadow-lg'>
+            <header className='space-y-2'>
+              <h2 className='text-xl font-semibold text-foreground'>
+                Create tenant
+              </h2>
+              <p className='text-xs text-muted-foreground'>
+                Each tenant scopes monitors, incidents, and API keys. Owners map
+                to guardian operators.
+              </p>
+            </header>
+            <CreateTenantForm />
+          </div>
+          <div className='space-y-4 rounded-3xl border border-border bg-card/70 p-6 shadow-lg'>
+            <header className='space-y-2'>
+              <h2 className='text-xl font-semibold text-foreground'>
+                Provision API key
+              </h2>
+              <p className='text-xs text-muted-foreground'>
+                Generate scoped credentials for automation pipelines and store
+                the secret in your secure vault. Keys are hashed in Convex.
+              </p>
+            </header>
+            <CreateApiKeyForm tenants={tenants} />
+          </div>
+        </div>
+      </section>
+
+      <section
+        id='api-keys'
+        className='space-y-4 rounded-3xl border border-border bg-card/80 p-6 shadow-xl'
+      >
+        <header className='flex flex-col gap-2 md:flex-row md:items-center md:justify-between'>
+          <div>
+            <h2 className='text-xl font-semibold text-foreground'>API keys</h2>
             <p className='text-xs text-muted-foreground'>
-              Each tenant scopes monitors, incidents, and API keys. Owners map
-              to guardian operators.
+              Stored as SHA-256 hashes. Rotate regularly and remove unused
+              credentials.
             </p>
-          </header>
-          <CreateTenantForm />
+          </div>
+          <span className='text-xs text-muted-foreground'>
+            {apiKeys.length} key{apiKeys.length === 1 ? '' : 's'}
+          </span>
+        </header>
+        <div className='overflow-hidden rounded-2xl border border-border'>
+          <table className='min-w-full divide-y divide-border text-left text-sm'>
+            <thead className='bg-background/60 text-xs uppercase tracking-[0.25em] text-muted-foreground'>
+              <tr>
+                <th className='px-4 py-3 font-medium'>Label</th>
+                <th className='px-4 py-3 font-medium'>Tenant</th>
+                <th className='px-4 py-3 font-medium'>Key hash</th>
+                <th className='px-4 py-3 font-medium'>Issued</th>
+              </tr>
+            </thead>
+            <tbody className='divide-y divide-border/70 bg-background/50 text-sm'>
+              {apiKeys.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className='px-4 py-6 text-center text-muted-foreground'
+                  >
+                    No API keys issued yet.
+                  </td>
+                </tr>
+              ) : (
+                apiKeys.map(key => {
+                  const tenant = tenantMap.get(identifier(key.tenantId))
+                  return (
+                    <tr key={JSON.stringify(key._id)}>
+                      <td className='px-4 py-4 font-mono text-xs'>
+                        {key.label}
+                      </td>
+                      <td className='px-4 py-4'>
+                        {tenant ? (
+                          <div className='space-y-1'>
+                            <p>{tenant.name}</p>
+                            <p className='font-mono text-[11px] text-muted-foreground'>
+                              {tenant.owner}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className='text-muted-foreground'>
+                            Tenant removed
+                          </span>
+                        )}
+                      </td>
+                      <td className='px-4 py-4 font-mono text-xs text-muted-foreground'>
+                        {typeof key.keyHash === 'string'
+                          ? `${key.keyHash.slice(0, 10)}…${key.keyHash.slice(-6)}`
+                          : 'n/a'}
+                      </td>
+                      <td className='px-4 py-4 text-xs text-muted-foreground'>
+                        {key.createdAt
+                          ? new Date(key.createdAt).toLocaleString(undefined, {
+                              hour12: false
+                            })
+                          : '—'}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
 

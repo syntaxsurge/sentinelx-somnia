@@ -25,3 +25,10 @@ export const create = mutation({
     })
   }
 })
+
+export const listAll = query({
+  args: {},
+  handler: async ctx => {
+    return await ctx.db.query('apiKeys').collect()
+  }
+})

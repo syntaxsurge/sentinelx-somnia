@@ -11,9 +11,12 @@ automation, and a Convex-backed observability layer for Somnia applications.
 - **Guardian automation** – `GuardianHub` coordinates SentinelX operators and
   enforces `GuardablePausable` contracts, including the demo SOMI paywall.
 - **Dashboard & API** – `/dashboard` provides tenant/monitor creation, live
-  monitor tables, incident stream, and a manual policy trigger. REST endpoints
-  (`/api/tenants`, `/api/monitors`, `/api/incidents`, `/api/jobs/run-policy`)
-  drive automation and integrations.
+  monitor tables, incident stream, API key issuance, and a manual policy
+  trigger. REST endpoints (`/api/tenants`, `/api/monitors`, `/api/incidents`,
+  `/api/api-keys`, `/api/jobs/run-policy`) drive automation and integrations.
+- **Credential management** – Create scoped automation credentials from the
+  dashboard or REST API; secrets are returned once and stored as SHA-256 hashes
+  in Convex.
 - **Playbook** – `/docs` consolidates deployment commands, environment variable
   expectations, and REST payload examples for quick onboarding.
 - **Policy runner** – `src/jobs/policyRunner.ts` reads `SafeOracleRouter` on
@@ -31,8 +34,8 @@ automation, and a Convex-backed observability layer for Somnia applications.
 - **Day 3** – Initial dashboard, incident stream, manual policy runner trigger.
 - **Day 4** – Tenant/monitor creation flows, on-chain policy runner integration,
   enriched incident logging.
-- **Day 5** – Production hardening, Somnia Testnet-only configuration, and final
-  documentation/playbook updates.
+- **Day 5** – Production hardening, API key management, Somnia Testnet-only
+  configuration, and final documentation/playbook updates.
 
 ## Quick start
 
@@ -89,9 +92,9 @@ Shannon Testnet so the policy runner can evaluate monitors.
 
 Upcoming milestones include:
 
-- Monitor creation/management workflow inside the dashboard (forms, validation,
-  tenant scoping).
-- Real oracle health evaluation (reading on-chain feeds) inside the policy
-  runner rather than heuristics.
-- Guardian action webhooks (Slack/Discord) with incident digests.
-- Synthetic data seeding + integration tests for the Convex API.
+- Automated guardian enforcement from the policy runner (pause/unpause) with
+  configurable overrides.
+- Webhook adapters (Slack/Discord/HTTP) for incident notifications and key
+  rotation reminders.
+- VRF jitter scheduling plus multi-asset SafeOracle registry management.
+- Integration tests covering REST endpoints and Convex mutations at scale.
