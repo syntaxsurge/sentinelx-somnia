@@ -55,43 +55,43 @@
   --foreground: 210 40% 98%;
 
   --muted: 216 34% 17%;
-  --muted-foreground: 215 20% 72%;
+  --muted-foreground: 215 20% 80%;
 
-  --accent: 188 76% 39%;
-  --accent-foreground: 210 40% 8%;
+  --accent: 188 76% 45%;
+  --accent-foreground: 0 0% 100%;
   --accent-dark: 188 78% 33%;
   --accent-darker: 188 83% 20%;
 
-  --primary: 188 76% 39%;
-  --primary-foreground: 210 40% 8%;
+  --primary: 188 76% 45%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 218 27% 17%;
+  --secondary: 218 27% 20%;
   --secondary-foreground: 210 40% 98%;
 
-  --card: 222 47% 12%;
-  --card-foreground: 210 40% 96%;
+  --card: 222 47% 13%;
+  --card-foreground: 210 40% 98%;
 
-  --popover: 222 47% 9%;
+  --popover: 222 47% 11%;
   --popover-foreground: 210 40% 98%;
 
-  --border: 218 27% 25%;
-  --input: 218 27% 20%;
-  --ring: 188 76% 39%;
+  --border: 218 27% 28%;
+  --input: 218 27% 22%;
+  --ring: 188 76% 45%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --brand-teal: 188 76% 39%;
-  --brand-teal-light: 188 76% 52%;
+  --brand-teal: 188 76% 45%;
+  --brand-teal-light: 188 76% 55%;
   --brand-teal-lighter: 188 76% 68%;
-  --brand-teal-dark: 188 76% 28%;
+  --brand-teal-dark: 188 76% 30%;
   --brand-teal-darker: 188 76% 18%;
 
-  --brand-orange: 24 95% 56%;
-  --brand-orange-light: 24 95% 62%;
-  --brand-orange-lighter: 24 95% 72%;
-  --brand-orange-dark: 24 95% 40%;
-  --brand-orange-darker: 24 95% 32%;
+  --brand-orange: 24 95% 58%;
+  --brand-orange-light: 24 95% 65%;
+  --brand-orange-lighter: 24 95% 75%;
+  --brand-orange-dark: 24 95% 45%;
+  --brand-orange-darker: 24 95% 35%;
 
   color-scheme: dark;
 }

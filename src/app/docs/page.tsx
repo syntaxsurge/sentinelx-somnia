@@ -13,7 +13,11 @@ import {
 } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 
-const BASE_URL = 'https://sentinelx-somnia.vercel.app'
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (typeof window !== 'undefined'
+    ? window.location.origin
+    : 'https://sentinelx-somnia.vercel.app')
 
 const sections: Array<{ id: string; label: string }> = [
   { id: 'overview', label: 'Overview' },
