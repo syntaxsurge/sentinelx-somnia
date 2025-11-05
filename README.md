@@ -38,7 +38,6 @@ automation, and a Convex-backed observability layer for Somnia applications.
 ```bash
 pnpm install
 pnpm dev               # launches Next.js
-pnpm test:e2e          # run Vitest end-to-end checks (auth + policy runner)
 pnpm docs:ingest       # optional - embed docs for the AI copilot
 
 # In another terminal (optional for contract interaction)
@@ -105,7 +104,7 @@ before production.
   `SOMNIA_RPC_URL` from `blockchain/.env`.
 - Run `pnpm lint:check-solidity` inside `blockchain/` after editing contracts.
 - Execute `pnpm typecheck` from the repo root before publishing changes.
-- Run `pnpm lint`, `pnpm test:e2e`, and `pnpm --filter sentinelx-hardhat test`
+- Run `pnpm lint` and `pnpm --filter sentinelx-hardhat test`
   (or `cd blockchain && pnpm test`) prior to release.
 
 ## Next steps

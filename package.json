@@ -18,8 +18,7 @@
     "contracts:sync-abis": "tsx scripts/sync-abis.ts",
     "test:contracts": "pnpm --filter sentinelx-hardhat test",
     "policy:run": "tsx scripts/run-policy.ts",
-    "docs:ingest": "tsx scripts/ingest-docs.ts",
-    "test:e2e": "vitest run"
+    "docs:ingest": "tsx scripts/ingest-docs.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

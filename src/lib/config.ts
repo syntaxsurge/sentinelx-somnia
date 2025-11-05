@@ -68,56 +68,6 @@ async function readChainConfigFromDisk(): Promise<ChainConfig> {
   return parsed
 }
 
-function selectAddress(
-  envKey: string,
-  fallbacks: Array<`0x${string}` | undefined>,
-  aliases: string[] = []
-): `0x${string}` {
-  const normalize = (value: string | undefined): `0x${string}` | null => {
-    if (!value) {
-      return null
-    }
-
-    const trimmed = value.trim()
-    const candidates: string[] = [trimmed]
-    if (trimmed !== trimmed.toLowerCase()) {
-      candidates.push(trimmed.toLowerCase())
-    }
-
-    try {
-      for (const candidate of candidates) {
-        try {
-          return getAddress(candidate as `0x${string}`)
-        } catch {
-          continue
-        }
-      }
-      throw new Error('checksum mismatch')
-    } catch (error) {
-      console.warn(`Invalid address for ${envKey}: ${value}`, error)
-      return null
-    }
-  }
-
-  const searchKeys = [envKey, `NEXT_PUBLIC_${envKey}`, ...aliases]
-  const envValue = searchKeys
-    .map(key => process.env[key])
-    .find(value => value && value.length > 0)
-  const candidates = [
-    envValue,
-    ...fallbacks
-  ]
-
-  for (const candidate of candidates) {
-    const normalized = normalize(candidate)
-    if (normalized) {
-      return normalized
-    }
-  }
-
-  throw new Error(`Missing or invalid address for ${envKey}`)
-}
-
 export async function loadChainConfig(): Promise<ChainConfig> {
   if (cachedConfig) {
     return cachedConfig
@@ -125,11 +75,53 @@ export async function loadChainConfig(): Promise<ChainConfig> {
 
   const base = await readChainConfigFromDisk()
 
-  const guardianHub = selectAddress('GUARDIAN_HUB', [base.guardianHub])
-  const agentInbox = selectAddress('AGENT_INBOX', [base.agentInbox])
-  const oracleRouter = selectAddress('SAFE_ORACLE_ROUTER', [base.oracleRouter])
-  const demoOracle = selectAddress('DEMO_ORACLE', [base.demoOracle])
-  const demoPausable = selectAddress('DEMO_PAUSABLE', [base.demoPausable])
+  const guardianHubEnv = process.env.GUARDIAN_HUB ?? process.env.NEXT_PUBLIC_GUARDIAN_HUB
+  let guardianHub: `0x${string}`
+  try {
+    guardianHub = getAddress((guardianHubEnv ?? base.guardianHub) as `0x${string}`)
+  } catch (error) {
+    console.warn(`Invalid guardian hub address override: ${guardianHubEnv}`, error)
+    guardianHub = getAddress(base.guardianHub)
+  }
+
+  const agentInboxEnv = process.env.AGENT_INBOX ?? process.env.NEXT_PUBLIC_AGENT_INBOX
+  let agentInbox: `0x${string}`
+  try {
+    agentInbox = getAddress((agentInboxEnv ?? base.agentInbox) as `0x${string}`)
+  } catch (error) {
+    console.warn(`Invalid agent inbox address override: ${agentInboxEnv}`, error)
+    agentInbox = getAddress(base.agentInbox)
+  }
+
+  const routerEnv =
+    process.env.SAFE_ORACLE_ROUTER ?? process.env.NEXT_PUBLIC_SAFE_ORACLE_ROUTER
+  let oracleRouter: `0x${string}`
+  try {
+    oracleRouter = getAddress((routerEnv ?? base.oracleRouter) as `0x${string}`)
+  } catch (error) {
+    console.warn(`Invalid safe oracle router override: ${routerEnv}`, error)
+    oracleRouter = getAddress(base.oracleRouter)
+  }
+
+  const demoOracleEnv = process.env.DEMO_ORACLE ?? process.env.NEXT_PUBLIC_DEMO_ORACLE
+  let demoOracle: `0x${string}`
+  try {
+    demoOracle = getAddress((demoOracleEnv ?? base.demoOracle) as `0x${string}`)
+  } catch (error) {
+    console.warn(`Invalid demo oracle override: ${demoOracleEnv}`, error)
+    demoOracle = getAddress(base.demoOracle)
+  }
+
+  const demoPausableEnv =
+    process.env.DEMO_PAUSABLE ?? process.env.NEXT_PUBLIC_DEMO_PAUSABLE
+  let demoPausable: `0x${string}`
+  try {
+    demoPausable = getAddress((demoPausableEnv ?? base.demoPausable) as `0x${string}`)
+  } catch (error) {
+    console.warn(`Invalid demo pausable override: ${demoPausableEnv}`, error)
+    demoPausable = getAddress(base.demoPausable)
+  }
+
   const demoMode = resolveDemoMode()
 
   cachedConfig = {
