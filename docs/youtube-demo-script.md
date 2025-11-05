@@ -16,6 +16,7 @@
 1. **On-screen:** Tap the Connect button in the header, pick a wallet, and sign the RainbowKit SIWE prompt.
    - **Voice-over 3:** “Authentication uses RainbowKit’s custom SIWE adapter. The modal handles wallet connect, nonce fetch, message signing, and iron-session cookies.”
 2. **On-screen:** Automatically land on the onboarding card; enter the workspace name and submit.
+   - Input: Workspace name → `Somnia Index Vaults`
    - **Voice-over 4:** “Each tenant maps to your Somnia address. Let’s name this workspace `Somnia Index Vaults` so every operator knows what they’re protecting.”
 
 ## Segment 3 – Dashboard Overview
@@ -27,7 +28,15 @@
 
 ## Segment 4 – Register a Monitor
 
-1. **On-screen:** Navigate to `/monitors/new`, paste contract, guardian, router, and accept the ETH/USD defaults. Submit the form.
+1. **On-screen:** Navigate to `/monitors/new`, fill every field exactly, and submit.
+   - Input: Guarded contract → `0x761D0dbB45654513AdF1BF6b5D217C0f8B3c5737` (SOMIPaymentGuarded)
+   - Input: Guardian hub → `0x9a667b845034dDf18B7a5a9b50e2fe8CD4e6e2C1`
+   - Input: SafeOracleRouter → `0xF5FCDBe9d4247D76c7fa5d2E06dBA1e77887F518`
+   - Input: Oracle pair → Select `ETH/USD`
+   - Input: Protofire aggregator → `0xd9132c1d762D432672493F640a63B758891B449e` (prefilled)
+   - Input: DIA adapter → `0x786c7893F8c26b80d42088749562eDb50Ba9601E` (prefilled)
+   - Input: Max deviation (bps) → `100`
+   - Input: Stale after (s) → `180`
    - **Voice-over 7:** “Registering a monitor wires the guardable contract, GuardianHub, and SafeOracleRouter with a chosen oracle key. Defaults include Protofire and DIA addresses on Somnia Shannon.”
 2. **On-screen:** After redirect, open `/monitors` to show the registry table with the new entry.
    - **Voice-over 8:** “The registry lists every monitor with status, contract, guardian, and when it was added. From here you can jump into incident detail.”
@@ -41,11 +50,19 @@
 
 ## Segment 6 – Settings & Automation Prep
 
-1. **On-screen:** Open `/settings`; in Automation enter `policy-runner-prod`, click “Generate API key”, copy the plaintext value, and show it listed with hash + revoke button.
+1. **On-screen:** Open `/settings`; in Automation fill the label and generate a key.
+   - Input: Label → `policy-runner-prod`
+   - Action: Click “Generate API key”, copy the plaintext value, then show it listed (hashed) with a Revoke option.
    - **Voice-over 11:** “Settings issues scoped automation credentials—labels map to audit trails, plaintext shows once, and revocation keeps Convex hashes clean.”
-2. **On-screen:** In Incident webhooks, add a Slack webhook URL, optional secret, show the saved card, and remove it.
+2. **On-screen:** In Incident webhooks, add a Slack webhook with an optional secret, show the saved card, then remove it.
+   - Input: Kind → `Slack`
+   - Input: Label → `Ops Slack`
+   - Input: Secret (optional) → `sentinelx-demo-secret`
+   - Input: Destination URL → `https://hooks.slack.example/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX`
    - **Voice-over 12:** “Wire Slack, Discord, or HTTP webhooks. Secrets let downstream services validate each incident payload.”
-3. **On-screen:** In Guardian operators, add a wallet + role, reveal the roster table, and remove an entry.
+3. **On-screen:** In Guardian operators, add a wallet + role, reveal the roster table, then remove the entry.
+   - Input: Guardian address → `0x1111111111111111111111111111111111111111`
+   - Input: Role / notes → `Tier 1 operator`
    - **Voice-over 13:** “Track GuardianHub signers with notes so you always know who can pause or unpause contracts.”
 4. **On-screen:** Return to `/dashboard` and highlight the workspace card linking to docs.
    - **Voice-over 14:** “Everything routes back to the playbook—deployment checklists, cron setup, and REST payloads for integrating SentinelX into ops pipelines.”
