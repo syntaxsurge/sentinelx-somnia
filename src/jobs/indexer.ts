@@ -45,12 +45,67 @@ type MonitorRecord = {
   staleAfterSeconds: number
 }
 
-export async function runSentinelIndexer(options: { convex?: any } = {}) {
+type IndexerResult = {
+  processed: number
+  anomalies: number
+  skipped?: 'convex_unreachable'
+  message?: string
+}
+
+function isConvexConnectionError(error: unknown) {
+  const probes = [error, (error as any)?.cause]
+
+  for (const probe of probes) {
+    if (!probe || typeof probe !== 'object') {
+      continue
+    }
+
+    const code = (probe as any).code
+    if (code === 'ECONNREFUSED') {
+      return true
+    }
+
+    const message = (probe as any).message
+    if (typeof message === 'string') {
+      const normalized = message.toLowerCase()
+      if (normalized.includes('econnrefused') || normalized.includes('fetch failed')) {
+        return true
+      }
+    }
+  }
+
+  if (error instanceof Error) {
+    const normalized = error.message.toLowerCase()
+    return normalized.includes('econnrefused') || normalized.includes('fetch failed')
+  }
+
+  return false
+}
+
+export async function runSentinelIndexer(options: { convex?: any } = {}): Promise<IndexerResult> {
   const convex = options.convex ?? getConvexClient()
 
-  const monitors = (await convex.query('monitors:list' as any, {
-    tenantId: undefined
-  })) as MonitorRecord[]
+  let monitors: MonitorRecord[]
+  try {
+    monitors = (await convex.query('monitors:list' as any, {
+      tenantId: undefined
+    })) as MonitorRecord[]
+  } catch (error) {
+    const isDevelopment = process.env.NODE_ENV !== 'production'
+    if (isDevelopment && isConvexConnectionError(error)) {
+      console.warn(
+        'Convex deployment not reachable during indexer run; returning skipped result.'
+      )
+      return {
+        processed: 0,
+        anomalies: 0,
+        skipped: 'convex_unreachable',
+        message:
+          'Convex dev server is not reachable. Run pnpm convex:dev or set CONVEX_DEPLOYMENT_URL.'
+      }
+    }
+    throw error
+  }
 
   if (!monitors || monitors.length === 0) {
     return { processed: 0, anomalies: 0 }

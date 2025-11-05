@@ -4,10 +4,26 @@ const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
 fetch(`${base}/api/indexer/run`, { method: 'POST' })
   .then(async response => {
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`)
+    let payload: any = null
+    try {
+      payload = await response.json()
+    } catch {
+      payload = null
     }
-    const payload = await response.json()
+    if (!response.ok) {
+      const detail =
+        (payload && typeof payload.message === 'string') ||
+        typeof payload?.error === 'string'
+          ? payload.message ?? payload.error
+          : null
+      throw new Error(detail ?? `Request failed with status ${response.status}`)
+    }
+
+    if (payload?.skipped) {
+      console.log(payload.message ?? 'Policy engine run skipped.')
+      return
+    }
+
     console.log('Policy engine run complete:', payload)
   })
   .catch(error => {

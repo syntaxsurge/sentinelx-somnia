@@ -18,12 +18,29 @@ export function RunPolicyButton() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         })
+
+        let payload: any = null
+        try {
+          payload = await response.json()
+        } catch {
+          payload = null
+        }
         if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`)
+          const detail =
+            (payload && typeof payload.message === 'string') ||
+            typeof payload?.error === 'string'
+              ? payload.message ?? payload.error
+              : null
+          throw new Error(
+            detail ?? `Request failed with status ${response.status}`
+          )
         }
 
-        const payload = await response.json()
-        setMessage(`Processed ${payload.processed ?? 0} monitor(s).`)
+        const display =
+          payload?.message ??
+          `Processed ${payload?.processed ?? 0} monitor(s).`
+
+        setMessage(display)
       } catch (error) {
         setMessage((error as Error).message)
       }
