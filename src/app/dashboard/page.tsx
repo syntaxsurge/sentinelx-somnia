@@ -177,14 +177,14 @@ export default function DashboardPage() {
   return (
     <div className='space-y-8'>
       {demoMode ? (
-        <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/40 bg-primary/10 px-4 py-3 text-sm text-primary-foreground'>
+        <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/30 bg-muted px-4 py-3 text-sm text-foreground'>
           <div>
-            <p className='font-medium text-primary-foreground'>Demo mode enabled</p>
-            <p className='text-xs text-primary-foreground/80'>
+            <p className='font-medium text-foreground'>Demo mode enabled</p>
+            <p className='text-xs text-muted-foreground'>
               Trigger deterministic incidents and walk judges through the end-to-end flow.
             </p>
           </div>
-          <Button asChild size='sm' variant='outline'>
+          <Button asChild size='sm' variant='secondary'>
             <Link href='/docs#quickstart'>Demo quickstart</Link>
           </Button>
         </div>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
         <div className='flex flex-wrap items-center gap-3'>
           {demoMode ? (
             <Button
-              variant='outline'
+              variant='secondary'
               onClick={handleSimulateIncident}
               disabled={simulating}
             >
