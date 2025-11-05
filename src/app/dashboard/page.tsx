@@ -332,15 +332,15 @@ export default function DashboardPage() {
                   key={intent._id}
                   className='rounded-lg border border-border/60 p-4 bg-card hover:bg-muted/30 transition-colors'
                 >
-                  <div className='flex items-start justify-between gap-2 mb-2'>
-                    <span className='font-semibold text-foreground text-sm'>
+                  <div className='flex items-start justify-between gap-2 mb-2 min-w-0'>
+                    <span className='font-semibold text-foreground text-sm break-words'>
                       {intent.plan?.name ?? 'Proposed action'}
                     </span>
                     <Badge variant='secondary' className='text-xs'>
                       Proposed
                     </Badge>
                   </div>
-                  <p className='text-xs text-muted-foreground leading-relaxed mb-3'>
+                  <p className='text-xs text-muted-foreground leading-relaxed mb-3 break-words'>
                     {intent.rationale}
                   </p>
                   <Button asChild size='sm' className='w-full' variant='default'>
