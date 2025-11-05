@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 
 import { useMutation, useQuery } from 'convex/react'
-import { useAccount, usePublicClient, useSendTransaction } from 'wagmi'
 
 import { ActionsSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
@@ -50,9 +49,6 @@ function ActionStateBadge({ state }: { state: string }) {
 
 export default function ActionsPage() {
   const { user, loading: sessionLoading } = useSession()
-  const { address } = useAccount()
-  const publicClient = usePublicClient()
-  const { sendTransactionAsync } = useSendTransaction()
   const { toast } = useToast()
   const [pending, setPending] = useState<Record<string, boolean>>({})
   const intents = useQuery(api.actionIntents.listByState, {
@@ -93,15 +89,6 @@ export default function ActionsPage() {
   }
 
   const handleExecute = async (intent: any) => {
-    if (!address) {
-      toast({
-        title: 'Wallet required',
-        description: 'Connect your wallet to execute guardian transactions.',
-        variant: 'destructive'
-      })
-      return
-    }
-
     const target =
       (intent.plan?.target as string | undefined) ??
       (intent.plan?.arguments?.target as string | undefined)
@@ -125,28 +112,22 @@ export default function ActionsPage() {
 
     setPending(prev => ({ ...prev, [intent._id]: true }))
     try {
-      const hash = await sendTransactionAsync({
-        to: target as `0x${string}`,
-        data: calldata as `0x${string}`,
-        account: address
+      const response = await fetch('/api/actions/execute', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ intentId: intent._id })
       })
 
-      if (publicClient) {
-        const receipt = await publicClient.waitForTransactionReceipt({ hash })
-        if (receipt.status !== 'success') {
-          throw new Error('Guardian transaction reverted')
-        }
+      const payload = await response.json().catch(() => null)
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'Failed to execute guardian transaction')
       }
 
-      await setState({
-        intentId: intent._id as any,
-        state: 'executed',
-        actor: user?.address ?? 'operator',
-        txHash: hash
-      })
       toast({
         title: 'Action executed',
-        description: 'GuardianHub call was broadcast and confirmed on-chain.'
+        description: payload?.txHash
+          ? `GuardianHub transaction confirmed: ${payload.txHash.slice(0, 10)}…`
+          : 'GuardianHub call was broadcast and confirmed on-chain.'
       })
     } catch (error) {
       const message =

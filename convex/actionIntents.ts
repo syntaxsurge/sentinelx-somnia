@@ -31,6 +31,13 @@ export const listByState = query({
   }
 })
 
+export const get = query({
+  args: { intentId: v.id('actionIntents') },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.intentId)
+  }
+})
+
 export const create = mutation({
   args: {
     incidentId: v.id('incidents'),
