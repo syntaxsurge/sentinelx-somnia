@@ -22,8 +22,8 @@ const safeOracleAbi = parseAbi([
 ])
 
 const guardianAbi = parseAbi([
-  'function pause(address target)',
-  'function unpause(address target)'
+  'function pauseTarget(address target)',
+  'function unpauseTarget(address target)'
 ])
 
 const publicClient = createPublicClient({
@@ -315,7 +315,7 @@ export async function runSentinelIndexer(
         if (augmented.name === 'propose_pause_market') {
           const calldata = encodeFunctionData({
             abi: guardianAbi,
-            functionName: 'pause',
+            functionName: 'pauseTarget',
             args: [monitor.contractAddress as `0x${string}`]
           })
           planPayload = {
@@ -325,7 +325,7 @@ export async function runSentinelIndexer(
           } as any
           rationale = `${
             augmented.arguments.rationale ?? 'Pause guarded contract.'
-          } Execute pause(${monitor.contractAddress}) on GuardianHub ${guardianAddress}.`
+          } Execute pauseTarget(${monitor.contractAddress}) on GuardianHub ${guardianAddress}.`
         }
 
         await convex.mutation('actionIntents:create' as any, {

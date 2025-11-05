@@ -1,6 +1,13 @@
 import { getIronSession } from 'iron-session'
 import { NextResponse } from 'next/server'
-import { createPublicClient, createWalletClient, http } from 'viem'
+import {
+  createPublicClient,
+  createWalletClient,
+  decodeFunctionData,
+  getFunctionSelector,
+  http,
+  parseAbi
+} from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
 import { api } from '@/convex/_generated/api'
@@ -13,6 +20,18 @@ import {
   type AuthSession
 } from '@/lib/session'
 import { loadChainConfig } from '@/lib/config'
+
+const guardianAbi = parseAbi([
+  'function pauseTarget(address target)',
+  'function unpauseTarget(address target)',
+  'function registerTarget(address target)',
+  'function registered(address target) view returns (bool)'
+])
+
+const guardianSelectors = new Set([
+  getFunctionSelector('pauseTarget(address)'),
+  getFunctionSelector('unpauseTarget(address)')
+])
 
 export async function POST(request: Request) {
   const sessionResponse = new NextResponse()
@@ -112,13 +131,36 @@ export async function POST(request: Request) {
       transport: http(rpcUrl)
     })
 
-    const selector = calldata.slice(0, 10).toLowerCase()
+    const selector = calldata.slice(0, 10).toLowerCase() as `0x${string}`
     const normalizedTarget = (target as string).toLowerCase()
 
     let resolvedTarget = target as `0x${string}`
-    const guardianSelectors = new Set(['0x76a67a51', '0x4609c87a'])
     if (guardianSelectors.has(selector)) {
       resolvedTarget = chainConfig.guardianHub
+      const { args } = decodeFunctionData({
+        abi: guardianAbi,
+        data: calldata as `0x${string}`
+      })
+      const guardable = args?.[0] as `0x${string}` | undefined
+
+      if (guardable) {
+        const isRegistered = await publicClient.readContract({
+          address: chainConfig.guardianHub,
+          abi: guardianAbi,
+          functionName: 'registered',
+          args: [guardable]
+        })
+
+        if (!isRegistered) {
+          const registerHash = await walletClient.writeContract({
+            address: chainConfig.guardianHub,
+            abi: guardianAbi,
+            functionName: 'registerTarget',
+            args: [guardable]
+          })
+          await publicClient.waitForTransactionReceipt({ hash: registerHash })
+        }
+      }
     } else if (normalizedTarget === guardianHub || normalizedTarget === agentInbox) {
       resolvedTarget = normalizedTarget === guardianHub ? chainConfig.guardianHub : chainConfig.agentInbox
     }
