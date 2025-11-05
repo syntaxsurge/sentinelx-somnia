@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 
+import 'dotenv/config'
 import { ConvexHttpClient } from 'convex/browser'
 
 import { internal } from '../convex/_generated/api'
