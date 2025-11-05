@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
+import { DocsSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CopyButton } from '@/components/ui/copy-button'
@@ -198,6 +200,16 @@ const guardianSnippet = `abstract contract GuardablePausable {
 }`
 
 export default function DocsPage() {
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
+
+  if (!hydrated) {
+    return <DocsSkeleton />
+  }
+
   return (
     <div className='mx-auto grid w-full max-w-6xl gap-10 px-6 py-8 lg:grid-cols-[240px_1fr]'>
       <aside className='hidden lg:block'>

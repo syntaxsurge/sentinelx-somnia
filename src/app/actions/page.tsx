@@ -14,6 +14,7 @@ import {
 
 import { useMutation, useQuery } from 'convex/react'
 
+import { ActionsSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -49,18 +50,26 @@ function ActionStateBadge({ state }: { state: string }) {
 }
 
 export default function ActionsPage() {
-  const { user } = useSession()
+  const { user, loading: sessionLoading } = useSession()
   const { toast } = useToast()
   const [txMap, setTxMap] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState<Record<string, boolean>>({})
+  const [pending, setPending] = useState<Record<string, boolean>>({})
   const intents = useQuery(api.actionIntents.listByState, {
     state: undefined,
     limit: 100
   })
   const setState = useMutation(api.actionIntents.setState)
 
+  const initialLoading = sessionLoading || intents === undefined
+
+  if (initialLoading) {
+    return <ActionsSkeleton />
+  }
+
+  const intentList = intents ?? []
+
   const handleApprove = async (intentId: string) => {
-    setLoading(prev => ({ ...prev, [intentId]: true }))
+    setPending(prev => ({ ...prev, [intentId]: true }))
     try {
       await setState({
         intentId: intentId as any,
@@ -78,7 +87,7 @@ export default function ActionsPage() {
         variant: 'destructive'
       })
     } finally {
-      setLoading(prev => ({ ...prev, [intentId]: false }))
+      setPending(prev => ({ ...prev, [intentId]: false }))
     }
   }
 
@@ -103,7 +112,7 @@ export default function ActionsPage() {
       return
     }
 
-    setLoading(prev => ({ ...prev, [intentId]: true }))
+    setPending(prev => ({ ...prev, [intentId]: true }))
     try {
       await setState({
         intentId: intentId as any,
@@ -122,11 +131,11 @@ export default function ActionsPage() {
         variant: 'destructive'
       })
     } finally {
-      setLoading(prev => ({ ...prev, [intentId]: false }))
+      setPending(prev => ({ ...prev, [intentId]: false }))
     }
   }
 
-  if (!intents?.length) {
+  if (!intentList.length) {
     return (
       <div className='space-y-6'>
         <header className='space-y-2'>
@@ -160,7 +169,7 @@ export default function ActionsPage() {
               Action Queue
             </h1>
             <Badge variant='secondary' className='text-sm'>
-              {intents.length}
+              {intentList.length}
             </Badge>
           </div>
           <p className='text-sm text-muted-foreground max-w-2xl'>
@@ -171,7 +180,7 @@ export default function ActionsPage() {
       </header>
 
       <div className='grid gap-4'>
-        {intents.map(intent => (
+        {intentList.map(intent => (
           <Card key={intent._id} className='border-border/60 hover:border-primary/50 transition-all'>
             <CardHeader className='space-y-3'>
               <div className='flex flex-wrap items-start justify-between gap-4'>
@@ -234,9 +243,9 @@ export default function ActionsPage() {
                     variant='secondary'
                     className='gap-2'
                     onClick={() => handleApprove(intent._id as string)}
-                    disabled={intent.state !== 'proposed' || loading[intent._id]}
+                    disabled={intent.state !== 'proposed' || pending[intent._id]}
                   >
-                    {loading[intent._id] ? (
+                    {pending[intent._id] ? (
                       <>
                         <Loader2 className='h-4 w-4 animate-spin' />
                         Approving...
@@ -271,9 +280,9 @@ export default function ActionsPage() {
                         size='sm'
                         className='gap-2'
                         onClick={() => handleExecute(intent._id as string)}
-                        disabled={intent.state !== 'approved' || loading[intent._id]}
+                        disabled={intent.state !== 'approved' || pending[intent._id]}
                       >
-                        {loading[intent._id] ? (
+                        {pending[intent._id] ? (
                           <>
                             <Loader2 className='h-4 w-4 animate-spin' />
                             Executing...

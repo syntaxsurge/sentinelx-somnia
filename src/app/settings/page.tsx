@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form'
 import useSWR from 'swr'
 import { z } from 'zod'
 
+import { SettingsSkeleton } from '@/components/skeletons/page-skeletons'
 import { api } from '@/convex/_generated/api'
 import { useSession } from '@/hooks/useSession'
 import { Button } from '@/components/ui/button'
@@ -311,14 +312,15 @@ export default function SettingsPage() {
     toast({ title: 'Guardian removed' })
   }
 
-  if (loading) {
-    return (
-      <Card className='mx-auto max-w-md'>
-        <CardContent className='py-12 text-center text-sm text-muted-foreground'>
-          Loading settings…
-        </CardContent>
-      </Card>
-    )
+  const tenantRequested = Boolean(user?.address)
+  const tenantLoading = tenantRequested && tenant === undefined
+  const resourcesLoading =
+    Boolean(tenantId) &&
+    (apiKeys === undefined || webhooks === undefined || guardians === undefined)
+  const busy = loading || tenantLoading || resourcesLoading
+
+  if (busy) {
+    return <SettingsSkeleton />
   }
 
   if (!user?.address || !tenantId) {

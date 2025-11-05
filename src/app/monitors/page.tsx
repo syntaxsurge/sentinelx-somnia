@@ -1,18 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import {
-  Plus,
-  ArrowLeft,
-  Loader2,
-  Wallet,
-  Building2,
-  Shield,
-  Info
-} from 'lucide-react'
+import { Plus, ArrowLeft, Wallet, Building2, Shield, Info } from 'lucide-react'
 
 import { useQuery } from 'convex/react'
 
+import { MonitorsSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,7 +15,6 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { MonitorsTable } from '@/components/dashboard/MonitorsTable'
 import { api } from '@/convex/_generated/api'
 import { useSession } from '@/hooks/useSession'
@@ -38,32 +30,13 @@ export default function MonitorsPage() {
     tenant?._id ? { tenantId: tenant._id } : 'skip'
   )
 
-  if (loading) {
-    return (
-      <div className='space-y-6'>
-        <div className='flex flex-col gap-4 md:flex-row md:items-start md:justify-between'>
-          <div className='space-y-2 flex-1'>
-            <Skeleton className='h-10 w-64' />
-            <Skeleton className='h-4 w-96' />
-          </div>
-          <div className='flex items-center gap-2'>
-            <Skeleton className='h-10 w-32' />
-            <Skeleton className='h-10 w-40' />
-          </div>
-        </div>
-        <Card className='border-border/60'>
-          <CardContent className='py-16 flex flex-col items-center'>
-            <Loader2 className='h-12 w-12 text-primary animate-spin mb-4' />
-            <p className='text-sm font-medium text-foreground'>
-              Loading monitors
-            </p>
-            <p className='text-xs text-muted-foreground mt-1'>
-              Fetching your monitoring configuration...
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  const tenantRequested = Boolean(user?.address)
+  const tenantLoading = tenantRequested && tenant === undefined
+  const monitorsLoading = Boolean(tenant?._id) && monitors === undefined
+  const busy = loading || tenantLoading || monitorsLoading
+
+  if (busy) {
+    return <MonitorsSkeleton />
   }
 
   if (!user?.address) {

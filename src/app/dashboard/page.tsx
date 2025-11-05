@@ -10,6 +10,7 @@ import { IncidentTimeline } from '@/components/dashboard/IncidentTimeline'
 import { KpiCards } from '@/components/dashboard/KpiCards'
 import { MonitorsTable } from '@/components/dashboard/MonitorsTable'
 import { RunPolicyButton } from '@/components/run-policy-button'
+import { DashboardSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -81,12 +82,24 @@ export default function DashboardPage() {
     tenant?._id ? { state: 'proposed', limit: 5 } : 'skip'
   )
 
-  if (loading) {
-    return (
-      <EmptyState title='Loading workspace'>
-        <p>Fetching tenant, monitors, and active incidents.</p>
-      </EmptyState>
-    )
+  const tenantRequested = Boolean(user?.address)
+  const tenantLoading = tenantRequested && tenant === undefined
+  const monitorsLoading = Boolean(tenant?._id) && monitors === undefined
+  const timelineLoading = Boolean(tenant?._id) && timeline === undefined
+  const openIncidentsLoading =
+    Boolean(tenant?._id) && openIncidents === undefined
+  const proposedActionsLoading =
+    Boolean(tenant?._id) && proposedActions === undefined
+  const busy =
+    loading ||
+    tenantLoading ||
+    monitorsLoading ||
+    timelineLoading ||
+    openIncidentsLoading ||
+    proposedActionsLoading
+
+  if (busy) {
+    return <DashboardSkeleton />
   }
 
   if (!user?.address) {

@@ -5,12 +5,12 @@ import {
   AlertCircle,
   CheckCircle2,
   ExternalLink,
-  Loader2,
   ShieldAlert
 } from 'lucide-react'
 
 import { useQuery } from 'convex/react'
 
+import { IncidentsSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,7 +20,6 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -69,23 +68,14 @@ export default function IncidentsPage() {
     tenant?._id ? { tenantId: tenant._id, limit: 200 } : 'skip'
   )
 
-  if (loading) {
-    return (
-      <div className='space-y-6'>
-        <div className='space-y-2'>
-          <Skeleton className='h-10 w-48' />
-          <Skeleton className='h-4 w-96' />
-        </div>
-        <Card className='border-border/60'>
-          <CardContent className='py-16 flex flex-col items-center'>
-            <Loader2 className='h-12 w-12 text-primary animate-spin mb-4' />
-            <p className='text-sm font-medium text-foreground'>
-              Loading incidents
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  const tenantRequested = Boolean(user?.address)
+  const tenantLoading = tenantRequested && tenant === undefined
+  const monitorsLoading = Boolean(tenant?._id) && monitors === undefined
+  const incidentsLoading = Boolean(tenant?._id) && incidents === undefined
+  const busy = loading || tenantLoading || monitorsLoading || incidentsLoading
+
+  if (busy) {
+    return <IncidentsSkeleton />
   }
 
   if (!tenant) {
