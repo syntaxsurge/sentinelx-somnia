@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+import { getAddress } from 'viem'
+
 type FeedConfig = {
   protofire: `0x${string}`
   dia: `0x${string}`
@@ -36,6 +38,19 @@ function selectAddress(
   fallbacks: Array<`0x${string}` | undefined>,
   aliases: string[] = []
 ): `0x${string}` {
+  const normalize = (value: string | undefined): `0x${string}` | null => {
+    if (!value) {
+      return null
+    }
+
+    try {
+      return getAddress(value as `0x${string}`)
+    } catch (error) {
+      console.warn(`Invalid address for ${envKey}: ${value}`, error)
+      return null
+    }
+  }
+
   const searchKeys = [
     envKey,
     `NEXT_PUBLIC_${envKey}`,
@@ -44,15 +59,16 @@ function selectAddress(
   ]
   const envValue = searchKeys
     .map(key => process.env[key])
-    .find(value => value && value.length > 0) as `0x${string}` | undefined
+    .find(value => value && value.length > 0)
   const candidates = [
-    envValue ? (envValue as `0x${string}`) : undefined,
+    envValue,
     ...fallbacks
   ]
 
   for (const candidate of candidates) {
-    if (candidate && candidate.startsWith('0x') && candidate.length === 42) {
-      return candidate
+    const normalized = normalize(candidate)
+    if (normalized) {
+      return normalized
     }
   }
 
