@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 import { useQuery } from 'convex/react'
+import useSWR from 'swr'
 
 import { IncidentTimeline } from '@/components/dashboard/IncidentTimeline'
 import { KpiCards } from '@/components/dashboard/KpiCards'
@@ -21,6 +22,15 @@ import {
 import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/convex/_generated/api'
 import { useSession } from '@/hooks/useSession'
+import type { ChainConfig } from '@/lib/config'
+
+const configFetcher = async (url: string): Promise<ChainConfig> => {
+  const response = await fetch(url, { cache: 'no-store' })
+  if (!response.ok) {
+    throw new Error('Unable to load chain configuration')
+  }
+  return response.json()
+}
 
 function EmptyState({
   title,
@@ -48,7 +58,8 @@ export default function DashboardPage() {
   const { toast } = useToast()
   const { user, loading } = useSession()
   const [simulating, setSimulating] = useState(false)
-  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+  const { data: chainConfig } = useSWR('/api/config/chain', configFetcher)
+  const demoMode = chainConfig?.demoMode ?? false
   const tenant = useQuery(
     api.tenants.getByOwner,
     user?.address ? { owner: user.address } : 'skip'

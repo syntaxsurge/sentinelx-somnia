@@ -19,6 +19,7 @@ export type ChainConfig = {
     maxDeviationBps: number
     staleAfterSeconds: number
   }
+  demoMode: boolean
 }
 
 let cachedConfig: ChainConfig | null = null
@@ -72,6 +73,9 @@ export async function loadChainConfig(): Promise<ChainConfig> {
   ])
   const demoOracle = selectAddress('DEMO_ORACLE', [base.demoOracle])
   const demoPausable = selectAddress('DEMO_PAUSABLE', [base.demoPausable])
+  const demoMode =
+    process.env.DEMO_MODE === 'true' ||
+    process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
   cachedConfig = {
     ...base,
@@ -79,7 +83,8 @@ export async function loadChainConfig(): Promise<ChainConfig> {
     agentInbox,
     oracleRouter,
     demoOracle,
-    demoPausable
+    demoPausable,
+    demoMode
   }
 
   return cachedConfig
