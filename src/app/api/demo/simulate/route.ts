@@ -62,7 +62,8 @@ export async function POST(request: Request) {
 
   let executedOnChain = false
 
-  const privateKey = process.env.OPERATOR_PRIVATE_KEY
+  const privateKey =
+    process.env.EXECUTOR_PRIVATE_KEY ?? process.env.OPERATOR_PRIVATE_KEY
   const rpcUrl =
     process.env.NEXT_PUBLIC_SOMNIA_RPC_URL ?? process.env.SOMNIA_RPC_URL
 

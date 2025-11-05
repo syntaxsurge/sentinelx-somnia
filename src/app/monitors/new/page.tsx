@@ -38,6 +38,19 @@ import { api } from '@/convex/_generated/api'
 import { useSession } from '@/hooks/useSession'
 import type { ChainConfig } from '@/lib/config'
 
+function ReadonlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className='space-y-1'>
+      <p className='text-xs uppercase tracking-wide text-muted-foreground'>{label}</p>
+      <Input
+        value={value}
+        readOnly
+        className='font-mono text-xs bg-muted/40 text-foreground'
+      />
+    </div>
+  )
+}
+
 const fetcher = async (url: string): Promise<ChainConfig> => {
   const response = await fetch(url, { cache: 'no-store' })
   if (!response.ok) {
@@ -298,35 +311,21 @@ export default function NewMonitorPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className='space-y-4 text-sm text-muted-foreground'>
-          <div>
-            <p className='text-xs uppercase tracking-wide'>Guardian Hub</p>
-            <p className='font-mono text-xs text-foreground'>{config.guardianHub}</p>
+          <ReadonlyField label='Guardian Hub' value={config.guardianHub} />
+          <ReadonlyField label='AgentInbox' value={config.agentInbox} />
+          <ReadonlyField label='SafeOracleRouter' value={config.oracleRouter} />
+          <div className='grid gap-4 md:grid-cols-2'>
+            <ReadonlyField
+              label={`Protofire (${currentOracle})`}
+              value={currentFeed?.protofire ?? '—'}
+            />
+            <ReadonlyField
+              label={`DIA (${currentOracle})`}
+              value={currentFeed?.dia ?? '—'}
+            />
           </div>
-          <div>
-            <p className='text-xs uppercase tracking-wide'>AgentInbox</p>
-            <p className='font-mono text-xs text-foreground'>{config.agentInbox}</p>
-          </div>
-          <div>
-            <p className='text-xs uppercase tracking-wide'>SafeOracleRouter</p>
-            <p className='font-mono text-xs text-foreground'>{config.oracleRouter}</p>
-          </div>
-          <div>
-            <p className='text-xs uppercase tracking-wide'>Feed addresses ({currentOracle})</p>
-            <p className='font-mono text-xs text-foreground'>
-              Protofire: {currentFeed?.protofire ?? '—'}
-            </p>
-            <p className='font-mono text-xs text-foreground'>
-              DIA: {currentFeed?.dia ?? '—'}
-            </p>
-          </div>
-          <div>
-            <p className='text-xs uppercase tracking-wide'>Demo oracle</p>
-            <p className='font-mono text-xs text-foreground'>{config.demoOracle}</p>
-          </div>
-          <div>
-            <p className='text-xs uppercase tracking-wide'>Demo pausable contract</p>
-            <p className='font-mono text-xs text-foreground'>{config.demoPausable}</p>
-          </div>
+          <ReadonlyField label='Demo oracle' value={config.demoOracle} />
+          <ReadonlyField label='Demo pausable contract' value={config.demoPausable} />
         </CardContent>
       </Card>
     </div>

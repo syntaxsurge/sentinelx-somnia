@@ -36,7 +36,7 @@ For demo mode, provision a second key that only owns the demo contracts:
 DEMO_OPERATOR_PRIVATE_KEY=0xdef... # optional helper for tests/scripts
 ```
 
-Inside the Next.js workspace set `OPERATOR_PRIVATE_KEY` (demo operator) and,
+Inside the Next.js workspace set `EXECUTOR_PRIVATE_KEY` (demo operator) and,
 if desired, override addresses with the `NEXT_PUBLIC_*` env vars.
 
 ## Installation & Commands
@@ -87,7 +87,7 @@ pnpm exec hardhat verify --network somniatestnet <DEPLOYED_ADDRESS> <constructor
 1. Deploy demo assets (`deploy-demo.ts`) with a wallet dedicated to the demo.
 2. Copy the addresses into `config/chain.somniatest.json`.
 3. Set `NEXT_PUBLIC_DEMO_MODE=true` and
-   `OPERATOR_PRIVATE_KEY=<demo operator>` in the Next.js environment.
+   `EXECUTOR_PRIVATE_KEY=<demo operator>` in the Next.js environment.
 4. Keep the demo operator key funded with a small amount of gas to allow
    `/api/demo/simulate` to spike the oracle price on demand.
 
