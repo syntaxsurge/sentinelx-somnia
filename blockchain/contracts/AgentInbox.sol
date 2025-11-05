@@ -29,14 +29,30 @@ contract AgentInbox {
         emit AllowlistUpdated(target, allowed);
     }
 
-    function propose(bytes32 id, address target, bytes calldata data, string calldata rationale) external onlyOperator {
+    function propose(
+        bytes32 id,
+        address target,
+        bytes calldata data,
+        string calldata rationale
+    ) external onlyOperator {
         emit Proposed(id, target, data, rationale);
     }
 
-    function execute(bytes32 id, address target, bytes calldata data) external onlyOperator {
+    function execute(
+        bytes32 id,
+        address target,
+        bytes calldata data
+    ) external onlyOperator {
         require(allowlist[target], "AgentInbox: target not allowed");
+        bytes memory result = _executeCall(target, data);
+        emit Executed(id, target, result);
+    }
+
+    function _executeCall(address target, bytes calldata data) private returns (bytes memory) {
+        require(target != address(0), "AgentInbox: target required");
+        // solhint-disable-next-line avoid-low-level-calls
         (bool ok, bytes memory result) = target.call(data);
         require(ok, "AgentInbox: call failed");
-        emit Executed(id, target, result);
+        return result;
     }
 }

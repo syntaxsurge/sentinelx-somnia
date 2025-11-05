@@ -23,12 +23,6 @@ abstract contract GuardablePausable {
     _;
   }
 
-  function _initializeGuardian(address initialGuardian) internal {
-    require(guardian == address(0), "guardian already set");
-    guardian = initialGuardian;
-    emit GuardianUpdated(address(0), initialGuardian);
-  }
-
   function updateGuardian(address newGuardian) external onlyGuardian {
     require(newGuardian != address(0), "guardian required");
     emit GuardianUpdated(guardian, newGuardian);
@@ -47,5 +41,11 @@ abstract contract GuardablePausable {
 
   function paused() public view returns (bool) {
     return _paused;
+  }
+
+  function _initializeGuardian(address initialGuardian) internal {
+    require(guardian == address(0), "guardian already set");
+    guardian = initialGuardian;
+    emit GuardianUpdated(address(0), initialGuardian);
   }
 }

@@ -16,15 +16,15 @@ contract SOMIPaymentGuarded is GuardablePausable {
 
   error OnlyOwner();
 
+  modifier onlyOwner() {
+    if (msg.sender != owner) revert OnlyOwner();
+    _;
+  }
+
   constructor(address guardianHub, uint256 feeWei) {
     owner = msg.sender;
     accessFee = feeWei;
     _initializeGuardian(guardianHub);
-  }
-
-  modifier onlyOwner() {
-    if (msg.sender != owner) revert OnlyOwner();
-    _;
   }
 
   function payToAccess() external payable whenNotPaused {

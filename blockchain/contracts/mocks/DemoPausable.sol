@@ -55,7 +55,7 @@ contract DemoPausable {
     emit Unpaused(msg.sender);
   }
 
-  function doWork() external whenNotPaused returns (uint256) {
+  function doWork() external view whenNotPaused returns (uint256) {
     return block.number;
   }
 }

@@ -29,21 +29,27 @@ contract SafeOracleRouter {
   address public owner;
   mapping(bytes32 => FeedConfig) private _feeds;
 
-  event FeedConfigured(bytes32 indexed key, address protofire, address dia, uint256 maxDeviationBps, uint256 staleAfter);
+  event FeedConfigured(
+    bytes32 indexed key,
+    address protofire,
+    address dia,
+    uint256 maxDeviationBps,
+    uint256 staleAfter
+  );
   event FeedRemoved(bytes32 indexed key);
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
   error NotOwner();
   error InvalidFeed();
 
-  constructor(address initialOwner) {
-    owner = initialOwner == address(0) ? msg.sender : initialOwner;
-    emit OwnershipTransferred(address(0), owner);
-  }
-
   modifier onlyOwner() {
     if (msg.sender != owner) revert NotOwner();
     _;
+  }
+
+  constructor(address initialOwner) {
+    owner = initialOwner == address(0) ? msg.sender : initialOwner;
+    emit OwnershipTransferred(address(0), owner);
   }
 
   function transferOwnership(address newOwner) external onlyOwner {

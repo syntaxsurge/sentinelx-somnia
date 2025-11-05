@@ -25,11 +25,6 @@ contract GuardianHub {
   error NotOperator();
   error TargetNotRegistered();
 
-  constructor(address initialOwner) {
-    owner = initialOwner == address(0) ? msg.sender : initialOwner;
-    emit OwnershipTransferred(address(0), owner);
-  }
-
   modifier onlyOwner() {
     if (msg.sender != owner) revert NotOwner();
     _;
@@ -38,6 +33,11 @@ contract GuardianHub {
   modifier onlyOperator() {
     if (!(operators[msg.sender] || msg.sender == owner)) revert NotOperator();
     _;
+  }
+
+  constructor(address initialOwner) {
+    owner = initialOwner == address(0) ? msg.sender : initialOwner;
+    emit OwnershipTransferred(address(0), owner);
   }
 
   function transferOwnership(address newOwner) external onlyOwner {
