@@ -17,15 +17,11 @@ function resolveConvexUrl(): string {
   }
 
   if (raw.startsWith('dev:')) {
-    const local =
-      process.env.CONVEX_LOCAL_URL ??
-      process.env.NEXT_PUBLIC_CONVEX_URL ??
-      'http://127.0.0.1:8000'
-    return local
+    return process.env.NEXT_PUBLIC_CONVEX_URL ?? 'http://127.0.0.1:8000'
   }
 
   throw new Error(
-    `Unsupported Convex deployment value "${raw}". Provide an https:// URL or set CONVEX_LOCAL_URL for dev deployments.`
+    `Unsupported Convex deployment value "${raw}". Provide an https:// URL or set NEXT_PUBLIC_CONVEX_URL for dev deployments.`
   )
 }
 

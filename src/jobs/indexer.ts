@@ -101,7 +101,7 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
         anomalies: 0,
         skipped: 'convex_unreachable',
         message:
-          'Convex dev server is not reachable. Run pnpm convex:dev or set CONVEX_LOCAL_URL/NEXT_PUBLIC_CONVEX_URL.'
+          'Convex dev server is not reachable. Run pnpm convex:dev or set NEXT_PUBLIC_CONVEX_URL.'
       }
     }
     throw error

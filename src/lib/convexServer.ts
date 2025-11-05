@@ -6,8 +6,7 @@ function resolveConvexUrl(): string {
   const sources = [
     process.env.CONVEX_DEPLOYMENT_URL,
     process.env.CONVEX_DEPLOYMENT,
-    process.env.NEXT_PUBLIC_CONVEX_URL,
-    process.env.CONVEX_LOCAL_URL
+    process.env.NEXT_PUBLIC_CONVEX_URL
   ]
 
   const url = sources.find(Boolean)
@@ -22,15 +21,11 @@ function resolveConvexUrl(): string {
   }
 
   if (url.startsWith('dev:')) {
-    return (
-      process.env.CONVEX_LOCAL_URL ??
-      process.env.NEXT_PUBLIC_CONVEX_URL ??
-      'http://127.0.0.1:8000'
-    )
+    return process.env.NEXT_PUBLIC_CONVEX_URL ?? 'http://127.0.0.1:8000'
   }
 
   throw new Error(
-    `Unsupported Convex deployment value "${url}". Provide an https:// URL or set CONVEX_LOCAL_URL for dev deployments.`
+    `Unsupported Convex deployment value "${url}". Provide an https:// URL or set NEXT_PUBLIC_CONVEX_URL for dev deployments.`
   )
 }
 
