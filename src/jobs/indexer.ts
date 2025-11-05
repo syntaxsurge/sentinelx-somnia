@@ -9,6 +9,7 @@ import {
 
 import { generateActionPlan, generateIncidentSummary } from '@/lib/ai/openai'
 import { somniaShannon } from '@/lib/chain'
+import { loadChainConfig } from '@/lib/config'
 import { getConvexClient } from '@/lib/convexClient'
 
 const rpcUrl =
@@ -30,11 +31,17 @@ const publicClient = createPublicClient({
   transport: http(rpcUrl)
 })
 
+type MonitorParams = {
+  demoSpikeAt?: number
+  demoSpikeExpiresAt?: number
+  [key: string]: unknown
+}
+
 type MonitorRecord = {
   _id: string
   name: string
   type: string
-  params?: Record<string, unknown>
+  params?: MonitorParams
   contractAddress: string
   guardianAddress: string
   routerAddress?: string
@@ -111,6 +118,14 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
     return { processed: 0, anomalies: 0 }
   }
 
+  let demoMode = false
+  try {
+    const chainConfig = await loadChainConfig()
+    demoMode = chainConfig.demoMode
+  } catch (error) {
+    console.warn('Unable to load chain config during policy run; continuing without demo hints.', error)
+  }
+
   const routerFallback = process.env.SENTINELX_ROUTER_ADDRESS
   let processed = 0
   let anomalies = 0
@@ -137,42 +152,38 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
       continue
     }
 
-    try {
-      const key = keccak256(stringToBytes(monitor.oracleKey))
-      const result = await publicClient.readContract({
-        address: routerAddress as `0x${string}`,
-        abi: safeOracleAbi,
-        functionName: 'latest',
-        args: [key]
-      })
+    const params = monitor.params ?? {}
+    const spikeAt = typeof params.demoSpikeAt === 'number' ? params.demoSpikeAt : undefined
+    const spikeExpiresAt =
+      typeof params.demoSpikeExpiresAt === 'number'
+        ? params.demoSpikeExpiresAt
+        : spikeAt
+          ? spikeAt + 5 * 60_000
+          : undefined
+    const spikeActive = Boolean(
+      demoMode && spikeAt && evaluatedAt <= (spikeExpiresAt ?? evaluatedAt)
+    )
 
-      const [
-        price,
-        safe,
-        bothFresh,
-        protofireAnswer,
-        diaAnswer,
-        protofireUpdatedAt,
-        diaUpdatedAt
-      ] = result
+    const telemetryBase = {
+      monitorId: monitor._id,
+      ts: evaluatedAt,
+      windowSeconds: monitor.staleAfterSeconds
+    }
 
-      const datapoint = {
-        price: price.toString(),
-        safe,
-        bothFresh,
-        protofireAnswer: protofireAnswer.toString(),
-        diaAnswer: diaAnswer.toString(),
-        protofireUpdatedAt: Number(protofireUpdatedAt),
-        diaUpdatedAt: Number(diaUpdatedAt),
-        evaluatedAt
-      }
-
+    const recordEvaluation = async (payload: {
+      datapoint: Record<string, unknown>
+      safe: boolean
+      bothFresh: boolean
+      source?: string
+    }) => {
+      const source = payload.source ?? 'safeOracle'
       await convex.mutation('telemetry:record' as any, {
-        monitorId: monitor._id,
-        ts: evaluatedAt,
-        source: 'safeOracle',
-        windowSeconds: monitor.staleAfterSeconds,
-        datapoint
+        ...telemetryBase,
+        source,
+        datapoint: {
+          ...payload.datapoint,
+          evaluatedAt
+        }
       })
 
       await convex.mutation('monitors:updateEvaluation' as any, {
@@ -180,12 +191,12 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
         evaluatedAt
       })
 
-      if (safe && bothFresh) {
+      if (payload.safe && payload.bothFresh) {
         await convex.mutation('monitors:setStatus' as any, {
           monitorId: monitor._id,
           status: 'active'
         })
-        continue
+        return
       }
 
       anomalies += 1
@@ -216,8 +227,8 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
         latestTelemetry: [
           {
             ts: evaluatedAt,
-            source: 'safeOracle',
-            datapoint,
+            source,
+            datapoint: payload.datapoint,
             meta: {
               maxDeviationBps: monitor.maxDeviationBps,
               staleAfterSeconds: monitor.staleAfterSeconds
@@ -226,19 +237,19 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
         ],
         recentIncidents,
         anomaly: {
-          safe,
-          bothFresh
+          safe: payload.safe,
+          bothFresh: payload.bothFresh
         }
       })
 
       const incidentId = (await convex.mutation('incidents:record' as any, {
         monitorId: monitor._id,
-        safe,
-        bothFresh,
-        action: safe ? 'noop' : 'pause-recommended',
+        safe: payload.safe,
+        bothFresh: payload.bothFresh,
+        action: payload.safe ? 'noop' : 'pause-recommended',
         summary: summary.summary,
         details: {
-          ...datapoint,
+          ...payload.datapoint,
           rootCause: summary.root_cause,
           mitigations: summary.mitigations
         },
@@ -290,7 +301,9 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
             target: monitor.guardianAddress,
             calldata
           } as any
-          rationale = `${augmented.arguments.rationale ?? 'Pause guarded contract.'} Execute pause(${monitor.contractAddress}) on GuardianHub ${monitor.guardianAddress}.`
+          rationale = `${
+            augmented.arguments.rationale ?? 'Pause guarded contract.'
+          } Execute pause(${monitor.contractAddress}) on GuardianHub ${monitor.guardianAddress}.`
         }
 
         await convex.mutation('actionIntents:create' as any, {
@@ -300,7 +313,87 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
           rationale
         })
       }
+    }
+
+    if (spikeActive) {
+      const protofire = 3_000_00000000n
+      const dia = 2_910_00000000n
+      await recordEvaluation({
+        source: 'safeOracle-demo',
+        datapoint: {
+          price: protofire.toString(),
+          safe: false,
+          bothFresh: false,
+          protofireAnswer: protofire.toString(),
+          diaAnswer: dia.toString(),
+          protofireUpdatedAt: Math.floor(evaluatedAt / 1000),
+          diaUpdatedAt: Math.floor((evaluatedAt - 90_000) / 1000)
+        },
+        safe: false,
+        bothFresh: false
+      })
+
+      await convex.mutation('monitors:clearDemoSpike' as any, {
+        monitorId: monitor._id
+      })
+
+      continue
+    }
+
+    try {
+      const key = keccak256(stringToBytes(monitor.oracleKey))
+      const result = await publicClient.readContract({
+        address: routerAddress as `0x${string}`,
+        abi: safeOracleAbi,
+        functionName: 'latest',
+        args: [key]
+      })
+
+      const [
+        price,
+        safe,
+        bothFresh,
+        protofireAnswer,
+        diaAnswer,
+        protofireUpdatedAt,
+        diaUpdatedAt
+      ] = result
+
+      const datapoint = {
+        price: price.toString(),
+        safe,
+        bothFresh,
+        protofireAnswer: protofireAnswer.toString(),
+        diaAnswer: diaAnswer.toString(),
+        protofireUpdatedAt: Number(protofireUpdatedAt),
+        diaUpdatedAt: Number(diaUpdatedAt)
+      }
+
+      await recordEvaluation({
+        datapoint,
+        safe,
+        bothFresh,
+        source: 'safeOracle'
+      })
     } catch (error) {
+      if (demoMode) {
+        await recordEvaluation({
+          source: 'safeOracle-demo',
+          datapoint: {
+            price: '295000000000',
+            safe: true,
+            bothFresh: true,
+            protofireAnswer: '295000000000',
+            diaAnswer: '295000000000',
+            protofireUpdatedAt: Math.floor(evaluatedAt / 1000),
+            diaUpdatedAt: Math.floor(evaluatedAt / 1000)
+          },
+          safe: true,
+          bothFresh: true
+        })
+        continue
+      }
+
       await convex.mutation('telemetry:record' as any, {
         monitorId: monitor._id,
         ts: Date.now(),
@@ -309,6 +402,10 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
           error: 'evaluation_failed',
           message: (error as Error).message
         }
+      })
+      await convex.mutation('monitors:updateEvaluation' as any, {
+        monitorId: monitor._id,
+        evaluatedAt
       })
     }
   }

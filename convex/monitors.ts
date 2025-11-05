@@ -195,3 +195,61 @@ export const updateEvaluation = mutation({
     })
   }
 })
+
+export const markDemoSpike = mutation({
+  args: {
+    tenantId: v.union(v.id('tenants'), v.string()),
+    durationMs: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const tenantId = ctx.db.normalizeId('tenants', args.tenantId)
+    if (!tenantId) {
+      throw new Error('Tenant not found')
+    }
+
+    const monitors = await ctx.db
+      .query('monitors')
+      .withIndex('by_tenant', q => q.eq('tenantId', tenantId))
+      .collect()
+
+    const now = Date.now()
+    const expiresIn = Math.max(30_000, Math.min(args.durationMs ?? 5 * 60_000, 60 * 60_000))
+    const expiresAt = now + expiresIn
+
+    await Promise.all(
+      monitors.map(async monitor => {
+        const params = {
+          ...(monitor.params ?? {}),
+          demoSpikeAt: now,
+          demoSpikeExpiresAt: expiresAt
+        }
+        await ctx.db.patch(monitor._id, { params })
+      })
+    )
+
+    return { monitors: monitors.map(m => m._id), expiresAt }
+  }
+})
+
+export const clearDemoSpike = mutation({
+  args: {
+    monitorId: v.union(v.id('monitors'), v.string())
+  },
+  handler: async (ctx, args) => {
+    const monitorId = ctx.db.normalizeId('monitors', args.monitorId)
+    if (!monitorId) {
+      throw new Error('Monitor not found')
+    }
+
+    const monitor = await ctx.db.get(monitorId)
+    if (!monitor) {
+      throw new Error('Monitor not found')
+    }
+
+    const params = { ...(monitor.params ?? {}) }
+    delete (params as Record<string, unknown>).demoSpikeAt
+    delete (params as Record<string, unknown>).demoSpikeExpiresAt
+
+    await ctx.db.patch(monitorId, { params })
+  }
+})

@@ -291,6 +291,9 @@ export default function DocsPage() {
               Enable demo mode with <code className='rounded bg-muted px-1 font-mono text-xs'>NEXT_PUBLIC_DEMO_MODE=true</code> (or set <code className='rounded bg-muted px-1 font-mono text-xs'>SENTINELX_DEMO_MODE</code> / <code className='rounded bg-muted px-1 font-mono text-xs'>DEMO_MODE</code> to <code className='rounded bg-muted px-1 font-mono text-xs'>true</code>, <code className='rounded bg-muted px-1 font-mono text-xs'>1</code>, <code className='rounded bg-muted px-1 font-mono text-xs'>yes</code>, or <code className='rounded bg-muted px-1 font-mono text-xs'>on</code>) and a funded <code className='rounded bg-muted px-1 font-mono text-xs'>OPERATOR_PRIVATE_KEY</code> that can update the DemoOracle price.
             </p>
             <p>
+              When on-chain credentials are missing, the simulate button flags a Convex-backed spike instead. The policy runner still updates telemetry, raises an incident, and queues AI-generated mitigations for your tenant.
+            </p>
+            <p>
               Canonical contract addresses are served from <code className='rounded bg-muted px-1 font-mono text-xs'>/api/config/chain</code>:
             </p>
             <CodePanel value={chainConfigCurl} />
@@ -408,6 +411,9 @@ export default function DocsPage() {
           <p className='text-sm text-muted-foreground'>
             AI endpoints operate strictly with API keys. <code className='rounded bg-muted px-1 font-mono text-xs'>/api/ai/summarize</code> normalises telemetry into actionable briefings, and
             <code className='mx-1 rounded bg-muted px-1 font-mono text-xs'>/api/ai/plan</code> generates structured mitigation plans that the policy runner can execute through GuardianHub.
+          </p>
+          <p className='text-xs text-muted-foreground'>
+            During demo mode, deterministic summaries and pause recommendations are generated if <code className='rounded bg-muted px-1 font-mono text-xs'>OPENAI_API_KEY</code> is not present so the incident loop still showcases the AI layer.
           </p>
           <Tabs defaultValue='summarize' className='mt-2'>
             <TabsList className='w-fit'>

@@ -3,8 +3,8 @@
 Authoritative walkthrough of the SentinelX prototype for Somnia Shannon. Hit the high notes - infra stability, AI co-pilot, and on-chain guardrails - within five minutes.
 
 ## Assumptions
-- Demo mode is enabled (`NEXT_PUBLIC_DEMO_MODE=true`) with a funded `OPERATOR_PRIVATE_KEY`.
-- `config/chain.somniatest.json` (or env overrides) points at the deployed GuardianHub, AgentInbox, DemoOracle, and DemoPausable contracts.
+- Demo mode is enabled (`NEXT_PUBLIC_DEMO_MODE=true`). If an `OPERATOR_PRIVATE_KEY` or Somnia RPC is missing, the simulate button still injects a Convex-backed spike.
+- `config/chain.somniatest.json` (or env overrides) points at the GuardianHub, AgentInbox, DemoOracle, and DemoPausable contracts used by the UI.
 - You are already signed in with RainbowKit + SIWE before recording.
 - The Convex deployment is seeded with at least one tenant tied to your wallet.
 
@@ -32,13 +32,13 @@ Authoritative walkthrough of the SentinelX prototype for Somnia Shannon. Hit the
 ## 3) Simulate incident (`/dashboard`) - Deterministic trigger (35s)
 - On-screen: **Simulate incident** button (top right).
 - Action: Click it. Toast confirms. Within seconds, Recent incidents & Daily brief show a new high-severity incident.
-- **Callout**: "Demo mode spikes the DemoOracle via `/api/demo/simulate`, so we never wait on real price swings."
+- **Callout**: "Demo mode spikes the DemoOracle (or flags a Convex fallback) and re-runs the policy, so we never wait on real price swings."
 
 ## 4) Review incident (`/incidents`) - AI plane (60s)
 - On-screen: Open the newest incident.
 - Elements to highlight: AI Summary (severity, root cause, mitigations), telemetry snapshot, Action intents panel.
 - Action: Click **Generate new plan**. A structured intent appears (Pause DemoPausable + Notify guardians) with rationale + calldata preview.
-- **Callout**: "OpenAI Responses synthesizes an action plan grounded in monitor context and guardian capabilities."
+- **Callout**: "SentinelX AI produces the summary and plan—using OpenAI Responses when the API key is set, or deterministic guardrails when running the offline demo."
 
 ## 5) Approve & execute (`/actions`) - Control plane (70s)
 - On-screen: Proposed intent inside Action queue.
