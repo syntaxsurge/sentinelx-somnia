@@ -1,74 +1,97 @@
 # SentinelX Hardhat Workspace
 
-This workspace contains the SentinelX smart contracts.
+Smart contracts and deployment scripts that back the SentinelX Somnia deployment.
 
 ## Contracts
 
-- **SafeOracleRouter.sol** – Combines Protofire Chainlink feeds with DIA
-  adapters to calculate guarded prices and freshness flags.
-- **GuardianHub.sol** – Manages authorised SentinelX operators and routes
-  pause/unpause commands to registered guardable contracts.
-- **GuardablePausable.sol** – Lightweight mixin that exposes `pause` and
-  `unpause` methods gated by a guardian address.
-- **SOMIPaymentGuarded.sol** – Example paywall that requires a SOMI payment
-  while respecting GuardianHub actions.
+- **GuardianHub.sol** – Authorises operators and relays guardian-approved calls
+  to allowlisted contracts.
+- **AgentInbox.sol** – Allowlist-enforced router that executes calldata once an
+  operator approves a plan.
+- **SafeOracleRouter.sol** – Blends Protofire Chainlink and DIA feeds to produce
+  guarded price + freshness signals for monitors.
+- **GuardablePausable.sol** – Lightweight mixin that exposes `pause` / `unpause`
+  guarded by a SentinelX guardian.
+- **DemoOracle.sol** – Demo-only feed that lets the demo operator spike prices
+  for deterministic incident generation.
+- **DemoPausable.sol** – Guarded contract used in the demo flow to prove pauses.
+- **SOMIPaymentGuarded.sol** – Example paywall contract that consumes the
+  GuardianHub guardrails.
 
-## Network configuration
+Generated artifacts are consumed by the Next.js frontend (ABI sync) and by the
+policy runner.
 
-`hardhat.config.ts` targets the Somnia Shannon Testnet (chain id `50312`) by
-default. Set the following environment variables in `blockchain/.env`:
+## Environment
+
+`hardhat.config.ts` targets Somnia Shannon Testnet (`50312`). Create
+`blockchain/.env` with:
 
 ```env
-PRIVATE_KEY=0xyour_private_key        # never commit this
+PRIVATE_KEY=0xabc...               # funded deployer (never commit)
 SOMNIA_RPC_URL=https://dream-rpc.somnia.network
 ```
 
-## Usage
+For demo mode, provision a second key that only owns the demo contracts:
 
-```bash
-pnpm install        # inside the blockchain folder
-pnpm compile        # generate artifacts
+```env
+DEMO_OPERATOR_PRIVATE_KEY=0xdef... # optional helper for tests/scripts
 ```
 
-Artifacts produced in this workspace are synced into the Next.js frontend via
-`pnpm contracts:sync-abis` from the repository root.
+Inside the Next.js workspace set `OPERATOR_PRIVATE_KEY` (demo operator) and, if
+desired, override addresses with `SENTINELX_*` or `NEXT_PUBLIC_*` env vars.
 
-## Deployment flow
+## Installation & Commands
 
-1. **Install dependencies (once):**
+```bash
+pnpm install          # install Hardhat toolchain
+pnpm compile          # compile contracts
+pnpm test             # run unit tests
+pnpm lint:check-solidity
+```
 
-   ```bash
-   pnpm install
-   ```
+After any compilation, sync artifacts back to the frontend from the repo root:
 
-2. **Compile and run tests (optional but recommended):**
+```bash
+pnpm contracts:sync-abis
+```
 
-   ```bash
-   pnpm compile
-   pnpm test                      # runs Hardhat tests
-   ```
+## Deployment Playbook
 
-3. **Deploy with Hardhat Ignition to Somnia Shannon Testnet:**
+### Core infrastructure (GuardianHub, AgentInbox, SafeOracleRouter, SOMI guard)
 
-   ```bash
-   pnpm exec hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somniatestnet
-   ```
+```bash
+pnpm exec hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somniatestnet
+```
 
-   Ignition will print the deployed addresses for:
-   - `GuardianHub`
-   - `SafeOracleRouter`
-   - `SOMIPaymentGuarded`
+Ignition prints the addresses you must copy into `config/chain.somniatest.json`
+or the corresponding env variables (`SENTINELX_GUARDIAN_HUB`, etc.).
 
-4. **Verify contracts (optional):**
+### Demo assets (DemoOracle + DemoPausable)
 
-   ```bash
-   pnpm exec hardhat verify --network somniatestnet <DEPLOYED_ADDRESS> <constructor args>
-   ```
+```bash
+pnpm exec hardhat run scripts/deploy-demo.ts --network somniatestnet
+```
 
-5. **Sync ABIs back to the Next.js app:**
+By default the script sets an initial 2000.00 price (8 decimals) and configures
+`DemoPausable` by calling `setGuardianHub` when `GUARDIAN_HUB_ADDRESS` is set in
+`blockchain/.env`. Copy both addresses into the shared config file so the UI and
+Convex reference them automatically.
 
-   From the repository root:
+### Verifications (optional)
 
-   ```bash
-   pnpm contracts:sync-abis
-   ```
+```bash
+pnpm exec hardhat verify --network somniatestnet <DEPLOYED_ADDRESS> <constructor args>
+```
+
+### Demo Mode Checklist
+
+1. Deploy demo assets (`deploy-demo.ts`) with a wallet dedicated to the demo.
+2. Copy the addresses into `config/chain.somniatest.json`.
+3. Set `DEMO_MODE=true`, `NEXT_PUBLIC_DEMO_MODE=true`, and
+   `OPERATOR_PRIVATE_KEY=<demo operator>` in the Next.js environment.
+4. Keep the demo operator key funded with a small amount of gas to allow
+   `/api/demo/simulate` to spike the oracle price on demand.
+
+Following these steps keeps the blockchain workspace and the frontend in sync
+with the latest SentinelX guardrails and demo flow. Remember to rerun
+`pnpm contracts:sync-abis` whenever new contracts or ABIs are generated.
