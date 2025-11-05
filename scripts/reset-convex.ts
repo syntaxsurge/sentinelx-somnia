@@ -1,9 +1,8 @@
 #!/usr/bin/env tsx
 
-import 'dotenv/config'
 import { ConvexHttpClient } from 'convex/browser'
 
-import { internal } from '../convex/_generated/api'
+import { api } from '../convex/_generated/api'
 
 function resolveConvexUrl(): string {
   const candidates = [
@@ -38,10 +37,10 @@ async function main() {
   const client = new ConvexHttpClient(url)
 
   console.log(`Resetting Convex deployment at ${url}…`)
-  const result = await client.mutation(
-    internal.admin.truncateAll as any,
-    {}
-  ) as Record<string, number>
+  const secret = process.env.CONVEX_RESET_TOKEN
+  const result = (await client.action(api.admin.truncateAll, {
+    secret
+  })) as Record<string, number>
 
   console.log('Truncated tables:')
   for (const [table, count] of Object.entries(result)) {
