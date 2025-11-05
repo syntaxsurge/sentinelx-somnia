@@ -15,6 +15,7 @@
     "convex:dev": "node ./scripts/convex-dev.cjs",
     "convex:deploy": "npx convex deploy -y",
     "convex:redeploy": "pnpm convex:deploy && pnpm convex:dev",
+    "convex:reset": "tsx scripts/reset-convex.ts",
     "contracts:sync-abis": "tsx scripts/sync-abis.ts",
     "test:contracts": "pnpm --filter sentinelx-hardhat test",
     "policy:run": "tsx scripts/run-policy.ts",

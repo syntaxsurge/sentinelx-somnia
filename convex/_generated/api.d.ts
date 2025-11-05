@@ -9,6 +9,7 @@
  */
 
 import type * as actionIntents from "../actionIntents.js";
+import type * as admin from "../admin.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as config from "../config.js";
 import type * as docChunks from "../docChunks.js";
@@ -36,6 +37,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   actionIntents: typeof actionIntents;
+  admin: typeof admin;
   apiKeys: typeof apiKeys;
   config: typeof config;
   docChunks: typeof docChunks;
