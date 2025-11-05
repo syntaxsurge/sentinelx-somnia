@@ -364,6 +364,9 @@ export default function DocsPage() {
           <p className='text-xs text-muted-foreground'>
             <strong>Deviation guidance:</strong> volatile assets → 100 bps (1%) and 180 s freshness. Stable pairs → 50 bps and 120 s.
           </p>
+          <p className='text-xs text-muted-foreground'>
+            Monitor detail pages surface configuration, incident history, and a destructive delete control that purges incidents, telemetry, and queued action intents for the tenant.
+          </p>
         </section>
 
         <section id='incidents' className='space-y-4'>

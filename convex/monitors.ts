@@ -129,6 +129,60 @@ export const setStatus = mutation({
   }
 })
 
+export const remove = mutation({
+  args: {
+    monitorId: v.union(v.id('monitors'), v.string()),
+    tenantId: v.union(v.id('tenants'), v.string())
+  },
+  handler: async (ctx, args) => {
+    const tenantId = ctx.db.normalizeId('tenants', args.tenantId)
+    if (!tenantId) {
+      throw new Error('Tenant not found')
+    }
+
+    const monitorId = ctx.db.normalizeId('monitors', args.monitorId)
+    if (!monitorId) {
+      throw new Error('Monitor not found')
+    }
+
+    const monitor = await ctx.db.get(monitorId)
+    if (!monitor || monitor.tenantId !== tenantId) {
+      throw new Error('Monitor not found')
+    }
+
+    const incidents = await ctx.db
+      .query('incidents')
+      .withIndex('by_monitor', q => q.eq('monitorId', monitorId))
+      .collect()
+
+    await Promise.all(
+      incidents.map(async incident => {
+        const intents = await ctx.db
+          .query('actionIntents')
+          .withIndex('by_incident', q => q.eq('incidentId', incident._id))
+          .collect()
+
+        await Promise.all(intents.map(intent => ctx.db.delete(intent._id)))
+        await ctx.db.delete(incident._id)
+      })
+    )
+
+    const telemetryRows = await ctx.db
+      .query('telemetry')
+      .withIndex('by_monitor_ts', q => q.eq('monitorId', monitorId))
+      .collect()
+
+    await Promise.all(telemetryRows.map(row => ctx.db.delete(row._id)))
+
+    await ctx.db.delete(monitorId)
+
+    return {
+      deletedIncidents: incidents.length,
+      deletedTelemetry: telemetryRows.length
+    }
+  }
+})
+
 export const updateEvaluation = mutation({
   args: {
     monitorId: v.id('monitors'),

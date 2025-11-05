@@ -26,11 +26,13 @@ if (typeof window === 'undefined') {
 
 const queryClient = new QueryClient()
 
-const walletConnectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID
+const walletConnectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID?.trim()
+const enableWalletConnect =
+  typeof walletConnectId === 'string' && walletConnectId.length > 0
 
 // If a proper WalletConnect Cloud projectId is configured, use RainbowKit defaults (includes WC).
 // Otherwise, avoid initializing WalletConnect entirely to prevent relay WS failures from blocking auth.
-const wagmiConfig = walletConnectId && walletConnectId.length > 0
+const wagmiConfig = enableWalletConnect
   ? getDefaultConfig({
       appName: 'SentinelX',
       projectId: walletConnectId,

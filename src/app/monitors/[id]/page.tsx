@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
 
-import { useQuery } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 
 import { IncidentTimeline } from '@/components/dashboard/IncidentTimeline'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +17,9 @@ import {
   CardTitle
 } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
+import { type Id } from '@/convex/_generated/dataModel'
+import { useToast } from '@/components/ui/use-toast'
+import { useSession } from '@/hooks/useSession'
 
 const statusVariant: Record<string, 'default' | 'secondary' | 'destructive'> = {
   active: 'secondary',
@@ -25,14 +29,23 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive'> = {
 
 export default function MonitorDetailPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
+  const { toast } = useToast()
+  const { user } = useSession()
+  const [deleting, setDeleting] = useState(false)
+  const tenant = useQuery(
+    api.tenants.getByOwner,
+    user?.address ? { owner: user.address } : 'skip'
+  )
   const monitor = useQuery(
     api.monitors.get,
-    params?.id ? { monitorId: params.id as any } : 'skip'
+    params?.id ? { monitorId: params.id as Id<'monitors'> } : 'skip'
   )
   const incidents = useQuery(
     api.incidents.list,
-    params?.id ? { monitorId: params.id } : 'skip'
+    params?.id ? { monitorId: params.id as Id<'monitors'> } : 'skip'
   )
+  const removeMonitor = useMutation(api.monitors.remove)
 
   if (!monitor) {
     return (
@@ -45,6 +58,46 @@ export default function MonitorDetailPage() {
   }
 
   const incidentList = incidents ?? []
+
+  const handleDelete = async () => {
+    if (!tenant?._id) {
+      toast({
+        title: 'Workspace missing',
+        description: 'Connect a tenant before deleting monitors.',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    const confirmed = window.confirm(
+      'Delete this monitor? All incidents, telemetry, and action intents will be removed.'
+    )
+    if (!confirmed) return
+
+    setDeleting(true)
+    try {
+      await removeMonitor({
+        monitorId: monitor._id as Id<'monitors'>,
+        tenantId: tenant._id as Id<'tenants'>
+      })
+      toast({
+        title: 'Monitor deleted',
+        description: 'All associated incidents and telemetry were removed.'
+      })
+      router.push('/monitors')
+    } catch (error) {
+      toast({
+        title: 'Delete failed',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Unable to delete monitor.',
+        variant: 'destructive'
+      })
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <div className='space-y-8'>
@@ -65,6 +118,13 @@ export default function MonitorDetailPage() {
           <Badge variant={statusVariant[monitor.status ?? ''] ?? 'default'}>
             {monitor.status ?? 'unknown'}
           </Badge>
+          <Button
+            variant='destructive'
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? 'Deleting…' : 'Delete monitor'}
+          </Button>
           <Button asChild variant='secondary'>
             <Link href='/monitors'>All monitors</Link>
           </Button>

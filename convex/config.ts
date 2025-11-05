@@ -14,9 +14,9 @@ type CanonicalConfig = {
 
 const FALLBACK: CanonicalConfig = {
   guardianHub: '0x9a667b845034dDf18B7a5a9b50e2fe8CD4e6e2C1',
-  agentInbox: '0x5c8B6a7981F41F0e11F3A2E93450A7702DEcAAb2',
+  agentInbox: '0x5c8B6a7981f41F0e11f3A2e93450a7702dEcAaB2',
   oracleRouter: '0xF5FCDBe9d4247D76c7fa5d2E06dBA1e77887F518',
-  demoOracle: '0x52D22f255b58d5936f24A92228a09E9C0c4B7c34',
+  demoOracle: '0x52D22F255B58D5936f24A92228a09E9c0C4B7c34',
   demoPausable: '0x761D0dbB45654513AdF1BF6b5D217C0f8B3c5737',
   feeds: {
     'ETH/USD': {
