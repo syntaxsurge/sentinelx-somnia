@@ -15,7 +15,7 @@ export async function GET() {
       {
         error: 'convex_unreachable',
         message:
-          'Convex deployment not reachable. Set CONVEX_DEPLOYMENT(_URL) or run pnpm convex:dev before invoking the indexer.',
+          'Convex deployment not reachable. Run pnpm convex:dev or set CONVEX_LOCAL_URL/NEXT_PUBLIC_CONVEX_URL before invoking the indexer.',
         detail: error instanceof Error ? error.message : String(error)
       },
       { status: 503 }
@@ -35,7 +35,7 @@ export async function POST() {
       {
         error: 'convex_unreachable',
         message:
-          'Convex deployment not reachable. Set CONVEX_DEPLOYMENT(_URL) or run pnpm convex:dev before invoking the indexer.',
+          'Convex deployment not reachable. Run pnpm convex:dev or set CONVEX_LOCAL_URL/NEXT_PUBLIC_CONVEX_URL before invoking the indexer.',
         detail: error instanceof Error ? error.message : String(error)
       },
       { status: 503 }

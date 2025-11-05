@@ -22,7 +22,11 @@ function resolveConvexUrl(): string {
   }
 
   if (url.startsWith('dev:')) {
-    return process.env.CONVEX_LOCAL_URL ?? 'http://127.0.0.1:8000'
+    return (
+      process.env.CONVEX_LOCAL_URL ??
+      process.env.NEXT_PUBLIC_CONVEX_URL ??
+      'http://127.0.0.1:8000'
+    )
   }
 
   throw new Error(
