@@ -14,7 +14,12 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'SentinelX',
   description:
-    'SentinelX monitors Somnia oracles in real-time, hardens prices, and safeguards smart contracts with autonomous circuit breakers.'
+    'SentinelX monitors Somnia oracles in real-time, hardens prices, and safeguards smart contracts with autonomous circuit breakers.',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico'
+  }
 }
 
 export default function RootLayout({

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -45,7 +46,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </SheetTrigger>
                 <SheetContent side='left' className='w-80'>
                   <SheetHeader className='mb-6 text-left'>
-                    <SheetTitle>SentinelX</SheetTitle>
+                    <SheetTitle className='flex items-center gap-2 text-base font-semibold'>
+                      <Image
+                        src='/images/sentinelx-logo.png'
+                        alt='SentinelX logo'
+                        width={32}
+                        height={32}
+                        className='h-8 w-8'
+                      />
+                      SentinelX
+                    </SheetTitle>
                   </SheetHeader>
                   <nav className='flex flex-col gap-1 text-sm'>
                     {mobileNav.map(item => {
@@ -66,15 +76,37 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </nav>
                 </SheetContent>
               </Sheet>
-              <Link href='/dashboard' className='text-sm font-semibold'>
-                SentinelX
+              <Link
+                href='/dashboard'
+                className='flex items-center gap-2 text-sm font-semibold'
+              >
+                <Image
+                  src='/images/sentinelx-logo.png'
+                  alt='SentinelX logo'
+                  width={28}
+                  height={28}
+                  className='h-7 w-7'
+                  priority
+                />
+                <span>SentinelX</span>
               </Link>
             </div>
 
-            <div className='hidden items-center gap-2 lg:flex'>
-              <span className='text-base font-semibold tracking-tight'>
-                SentinelX
-              </span>
+            <div className='hidden items-center gap-3 lg:flex'>
+              <Link
+                href='/dashboard'
+                className='flex items-center gap-2 text-base font-semibold tracking-tight'
+              >
+                <Image
+                  src='/images/sentinelx-logo.png'
+                  alt='SentinelX logo'
+                  width={36}
+                  height={36}
+                  className='h-9 w-9'
+                  priority
+                />
+                <span>SentinelX</span>
+              </Link>
               <span className='rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400'>
                 Somnia AI Ops
               </span>
