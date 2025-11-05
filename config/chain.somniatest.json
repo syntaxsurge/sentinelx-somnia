@@ -1,0 +1,27 @@
+{
+  "chainId": 50312,
+  "name": "Somnia Shannon Testnet",
+  "guardianHub": "0x9a667b845034dDf18B7a5a9b50e2fe8CD4e6e2C1",
+  "agentInbox": "0x5c8B6a7981F41F0e11F3A2E93450A7702DEcAAb2",
+  "oracleRouter": "0xF5FCDBe9d4247D76c7fa5d2E06dBA1e77887F518",
+  "demoOracle": "0x52D22f255b58d5936f24A92228a09E9C0c4B7c34",
+  "demoPausable": "0x761D0dbB45654513AdF1BF6b5D217C0f8B3c5737",
+  "feeds": {
+    "ETH/USD": {
+      "protofire": "0xd9132c1d762D432672493F640a63B758891B449e",
+      "dia": "0x786c7893F8c26b80d42088749562eDb50Ba9601E"
+    },
+    "BTC/USD": {
+      "protofire": "0x8CeE6c58b8CbD8afdEaF14e6fCA0876765e161fE",
+      "dia": "0x4803db1ca3A1DA49c3DB991e1c390321c20e1f21"
+    },
+    "USDC/USD": {
+      "protofire": "0xa2515C9480e62B510065917136B08F3f7ad743B4",
+      "dia": "0x235266D5ca6f19F134421C49834C108b32C2124e"
+    }
+  },
+  "defaults": {
+    "maxDeviationBps": 100,
+    "staleAfterSeconds": 120
+  }
+}

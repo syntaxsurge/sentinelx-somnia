@@ -1,0 +1,60 @@
+import * as React from 'react'
+
+import { cn } from '@/lib/utils'
+
+type SwitchProps = Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'onChange' | 'value'
+> & {
+  checked?: boolean
+  onCheckedChange?: (checked: boolean) => void
+}
+
+export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
+  (
+    {
+      checked = false,
+      disabled,
+      onCheckedChange,
+      className,
+      onClick,
+      ...props
+    },
+    ref
+  ) => {
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (disabled) {
+        event.preventDefault()
+        return
+      }
+      onCheckedChange?.(!checked)
+      onClick?.(event)
+    }
+
+    return (
+      <button
+        type='button'
+        role='switch'
+        aria-checked={checked}
+        ref={ref}
+        disabled={disabled}
+        onClick={handleClick}
+        className={cn(
+          'relative inline-flex h-6 w-11 items-center rounded-full border border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+          checked ? 'bg-primary' : 'bg-muted',
+          className
+        )}
+        {...props}
+      >
+        <span
+          className={cn(
+            'block h-5 w-5 rounded-full bg-background shadow transition-transform',
+            checked ? 'translate-x-5' : 'translate-x-1'
+          )}
+        />
+      </button>
+    )
+  }
+)
+
+Switch.displayName = 'Switch'

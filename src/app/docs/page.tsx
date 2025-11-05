@@ -17,6 +17,7 @@ const BASE_URL = 'https://sentinelx-somnia.vercel.app'
 
 const sections: Array<{ id: string; label: string }> = [
   { id: 'overview', label: 'Overview' },
+  { id: 'quickstart', label: 'Quickstart' },
   { id: 'auth', label: 'Authentication' },
   { id: 'keys', label: 'API Keys' },
   { id: 'monitors', label: 'Monitors' },
@@ -60,6 +61,8 @@ const apiKeyTs = `const response = await fetch('${BASE_URL}/api/api-keys', {
 })
 const { apiKey } = await response.json()`
 
+const chainConfigCurl = `curl ${BASE_URL}/api/config/chain`
+
 const monitorCurl = `curl -X POST ${BASE_URL}/api/monitors \\
   -H "authorization: Bearer sx_example_policy_runner_key" \\
   -H "content-type: application/json" \\
@@ -67,14 +70,15 @@ const monitorCurl = `curl -X POST ${BASE_URL}/api/monitors \\
     "tenantId": "t_1234567890",
     "name": "Somnia ETH/USD validator",
     "type": "price",
-    "contractAddress": "0xContract",
-    "guardianAddress": "0xGuardian",
-    "routerAddress": "0xRouter",
+    "contractAddress": "0x761D0dbB45654513AdF1BF6b5D217C0f8B3c5737",
+    "guardianAddress": "0x9a667b845034dDf18B7a5a9b50e2fe8CD4e6e2C1",
+    "routerAddress": "0xF5FCDBe9d4247D76c7fa5d2E06dBA1e77887F518",
+    "agentInbox": "0x5c8B6a7981F41F0e11F3A2E93450A7702DEcAAb2",
     "oracleKey": "ETH/USD",
     "protofireFeed": "0xd9132c1d762D432672493F640a63B758891B449e",
     "diaFeed": "0x786c7893F8c26b80d42088749562eDb50Ba9601E",
     "maxDeviationBps": 100,
-    "staleAfterSeconds": 180
+    "staleAfterSeconds": 120
   }'`
 
 const monitorTs = `await fetch('${BASE_URL}/api/monitors', {
@@ -87,16 +91,19 @@ const monitorTs = `await fetch('${BASE_URL}/api/monitors', {
     tenantId: 't_1234567890',
     name: 'Somnia ETH/USD validator',
     type: 'price',
-    contractAddress: '0xContract',
-    guardianAddress: '0xGuardian',
-    routerAddress: '0xRouter',
+    contractAddress: '0x761D0dbB45654513AdF1BF6b5D217C0f8B3c5737',
+    guardianAddress: '0x9a667b845034dDf18B7a5a9b50e2fe8CD4e6e2C1',
+    routerAddress: '0xF5FCDBe9d4247D76c7fa5d2E06dBA1e77887F518',
+    agentInbox: '0x5c8B6a7981F41F0e11F3A2E93450A7702DEcAAb2',
     oracleKey: 'ETH/USD',
     protofireFeed: '0xd9132c1d762D432672493F640a63B758891B449e',
     diaFeed: '0x786c7893F8c26b80d42088749562eDb50Ba9601E',
     maxDeviationBps: 100,
-    staleAfterSeconds: 180
+    staleAfterSeconds: 120
   })
 })`
+
+const simulateCurl = `curl -X POST ${BASE_URL}/api/demo/simulate`
 
 const incidentCurl = `curl "${BASE_URL}/api/incidents?limit=50" \\
   -H "authorization: Bearer sx_example_policy_runner_key"`
@@ -154,6 +161,7 @@ const planCurl = `curl -X POST ${BASE_URL}/api/ai/plan \\
     "context": {
       "router": "0xRouter",
       "guardian": "0xGuardian",
+      "agentInbox": "0x5c8B6a7981F41F0e11F3A2E93450A7702DEcAAb2",
       "monitor": {
         "id": "m_1234567890",
         "oracleKey": "ETH/USD",
@@ -247,6 +255,39 @@ export default function DocsPage() {
           </ul>
         </section>
 
+        <section id='quickstart' className='space-y-4'>
+          <h2 className='text-2xl font-semibold tracking-tight'>Demo quickstart</h2>
+          <p className='text-sm text-muted-foreground'>
+            Reproduce the full SentinelX loop in minutes. Demo mode binds pre-deployed GuardianHub, AgentInbox, DemoOracle, and DemoPausable contracts, keeping the registration form read-only while still letting advanced users override addresses with an admin toggle.
+          </p>
+          <ol className='list-decimal space-y-2 pl-6 text-sm text-muted-foreground'>
+            <li>Open the dashboard, connect your Somnia wallet, and approve the SIWE prompt.</li>
+            <li>Visit <em>Settings → API Keys</em>, create a key (for example <code className='rounded bg-muted px-1 font-mono text-xs'>policy-runner-demo</code>), and copy the plaintext secret.</li>
+            <li>Go to <em>Monitors → New</em>. GuardianHub, AgentInbox, SafeOracleRouter, and oracle feeds are locked from config—fill only the monitor name, max deviation bps, and freshness seconds, then submit.</li>
+            <li>Back on the dashboard, click <strong>Simulate incident</strong>. This calls <code className='rounded bg-muted px-1 font-mono text-xs'>POST /api/demo/simulate</code> and spikes the demo oracle so the policy runner opens an incident.</li>
+            <li>Navigate to <em>Incidents</em>, open the newest entry, and generate a plan. The AI co-pilot will recommend pausing the demo contract and notifying guardians.</li>
+            <li>Approve &amp; execute the action from <em>Actions</em>. AgentInbox relays the pause transaction and records the hash. Attempting <code className='rounded bg-muted px-1 font-mono text-xs'>doWork()</code> on DemoPausable now reverts because the contract is paused.</li>
+            <li>Schedule <code className='rounded bg-muted px-1 font-mono text-xs'>POST /api/indexer/run</code> (or run <code className='rounded bg-muted px-1 font-mono text-xs'>pnpm policy:run</code>) to keep telemetry and AI summaries fresh. Reference the cron snippet below.</li>
+          </ol>
+          <div className='space-y-2 text-xs text-muted-foreground'>
+            <p className='font-medium text-foreground'>Demo mode configuration</p>
+            <p>
+              Enable demo mode with <code className='rounded bg-muted px-1 font-mono text-xs'>DEMO_MODE=true</code>, <code className='rounded bg-muted px-1 font-mono text-xs'>NEXT_PUBLIC_DEMO_MODE=true</code>, and a funded <code className='rounded bg-muted px-1 font-mono text-xs'>OPERATOR_PRIVATE_KEY</code> that can update the DemoOracle price.
+            </p>
+            <p>
+              Canonical contract addresses are served from <code className='rounded bg-muted px-1 font-mono text-xs'>/api/config/chain</code>:
+            </p>
+            <CodePanel value={chainConfigCurl} />
+            <p>
+              Trigger deterministic incidents from CI or operator tooling:
+            </p>
+            <CodePanel value={simulateCurl} />
+            <p>
+              Set <code className='rounded bg-muted px-1 font-mono text-xs'>SENTINELX_ALLOW_CONTRACT_OVERRIDE=true</code> (and the Next.js public flag) only when partners need to bring their own contracts. Convex enforces the same toggle server-side.
+            </p>
+          </div>
+        </section>
+
         <section id='auth' className='space-y-4'>
           <h2 className='text-2xl font-semibold tracking-tight'>Authentication</h2>
           <p className='text-sm text-muted-foreground'>
@@ -290,7 +331,7 @@ export default function DocsPage() {
         <section id='monitors' className='space-y-4'>
           <h2 className='text-2xl font-semibold tracking-tight'>Register monitors</h2>
           <p className='text-sm text-muted-foreground'>
-            Monitors pin Somnia price feeds, guardian hubs, and SafeOracleRouter parameters. The API key scope enforces that the <code className='rounded bg-muted px-1 font-mono text-xs'>tenantId</code> in the request matches the credential&apos;s tenant.
+            Monitors pin GuardianHub, AgentInbox, SafeOracleRouter, and dual-oracle feeds. By default the API ignores custom addresses and persists the canonical values from <code className='rounded bg-muted px-1 font-mono text-xs'>/api/config/chain</code>. Set <code className='rounded bg-muted px-1 font-mono text-xs'>SENTINELX_ALLOW_CONTRACT_OVERRIDE=true</code> (and enable the dashboard toggle) if a partner needs to override them; Convex validates the same toggle on mutation.
           </p>
           <Tabs defaultValue='curl' className='mt-2'>
             <TabsList className='w-fit'>

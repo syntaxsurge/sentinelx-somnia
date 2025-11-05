@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 
 import { useQuery } from 'convex/react'
 
@@ -17,6 +18,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
+import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/convex/_generated/api'
 import { useSession } from '@/hooks/useSession'
 
@@ -43,7 +45,10 @@ function EmptyState({
 }
 
 export default function DashboardPage() {
+  const { toast } = useToast()
   const { user, loading } = useSession()
+  const [simulating, setSimulating] = useState(false)
+  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
   const tenant = useQuery(
     api.tenants.getByOwner,
     user?.address ? { owner: user.address } : 'skip'
@@ -134,8 +139,45 @@ export default function DashboardPage() {
     }
   ]
 
+  const handleSimulateIncident = async () => {
+    setSimulating(true)
+    try {
+      const response = await fetch('/api/demo/simulate', { method: 'POST' })
+      if (!response.ok) {
+        const message = await response.json().catch(() => null)
+        throw new Error(message?.error ?? 'Simulation failed')
+      }
+      toast({
+        title: 'Incident simulated',
+        description: 'Oracle price spiked. Refresh the dashboard in a few seconds.'
+      })
+    } catch (err) {
+      toast({
+        title: 'Simulation failed',
+        description:
+          err instanceof Error ? err.message : 'Check demo mode configuration.',
+        variant: 'destructive'
+      })
+    } finally {
+      setSimulating(false)
+    }
+  }
+
   return (
     <div className='space-y-8'>
+      {demoMode ? (
+        <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/40 bg-primary/10 px-4 py-3 text-sm text-primary-foreground'>
+          <div>
+            <p className='font-medium text-primary-foreground'>Demo mode enabled</p>
+            <p className='text-xs text-primary-foreground/80'>
+              Trigger deterministic incidents and walk judges through the end-to-end flow.
+            </p>
+          </div>
+          <Button asChild size='sm' variant='outline'>
+            <Link href='/docs#quickstart'>Demo quickstart</Link>
+          </Button>
+        </div>
+      ) : null}
       <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
         <div>
           <h1 className='text-3xl font-semibold tracking-tight'>
@@ -147,6 +189,15 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className='flex flex-wrap items-center gap-3'>
+          {demoMode ? (
+            <Button
+              variant='outline'
+              onClick={handleSimulateIncident}
+              disabled={simulating}
+            >
+              {simulating ? 'Simulating...' : 'Simulate incident'}
+            </Button>
+          ) : null}
           <RunPolicyButton />
           <Button asChild variant='secondary'>
             <Link href='/monitors/new'>New monitor</Link>
