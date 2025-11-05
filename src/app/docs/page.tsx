@@ -263,6 +263,17 @@ export default function DocsPage() {
             The App Router hosts the SentinelX AppShell, Convex stores tenancy, monitors, incidents, API keys, webhooks, and guardian operators,
             while the blockchain workspace ships GuardianHub and AgentInbox contracts for managed execution. REST APIs provide integration points for external agents and automation.
           </p>
+          <p className='text-sm text-muted-foreground'>
+            SentinelX assumes on-chain feeds update on deviation thresholds and heartbeat timers. For Somnia, we pair Chainlink (via Protofire) with DIA feeds—refer to the{' '}
+            <Link href='https://docs.chain.link/data-feeds' target='_blank' rel='noopener noreferrer' className='underline text-primary'>
+              Chainlink data-feed docs
+            </Link>{' '}
+            and{' '}
+            <Link href='https://docs.somnia.network/developer/building-dapps/oracles/dia-price-feeds' target='_blank' rel='noopener noreferrer' className='underline text-primary'>
+              DIA Somnia guidance
+            </Link>{' '}
+            for the recommended thresholds (0.5–1.0% deviation, 120–180 second freshness).
+          </p>
           <ul className='text-sm text-muted-foreground'>
             <li>Convex deployment persists telemetry, incidents, action intents, doc embeddings, and hashed API keys.</li>
             <li>RainbowKit + SIWE establish operator sessions for the dashboard and for issuing credentials.</li>

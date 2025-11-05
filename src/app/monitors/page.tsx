@@ -146,10 +146,10 @@ export default function MonitorsPage() {
             <div className='flex gap-3'>
               <Info className='h-4 w-4 text-primary flex-shrink-0 mt-0.5' />
               <p>
-                Use Protofire Chainlink feeds in tandem with DIA adapters. Set
-                max deviation to <strong className='text-foreground'>100 bps (1%)</strong> and stale after{' '}
-                <strong className='text-foreground'>180 seconds</strong> for volatile assets. Stablecoin pairs can
-                tighten to 50 bps and 120 seconds.
+                Somnia exposes Chainlink (via Protofire) and DIA price feeds. Configure monitors with{' '}
+                <strong className='text-foreground'>0.5–1.0% deviation</strong> and{' '}
+                <strong className='text-foreground'>120–180 second freshness</strong> based on asset volatility; these
+                match the published thresholds for Somnia feeds.
               </p>
             </div>
             <div className='flex gap-3'>
@@ -158,6 +158,30 @@ export default function MonitorsPage() {
                 GuardianHub should be deployed once per organization.
                 SafeOracleRouter can support multiple oracle keys—register each
                 in the New Monitor form to enforce per-pair policy windows.
+              </p>
+            </div>
+            <div className='flex gap-3'>
+              <Info className='h-4 w-4 text-primary flex-shrink-0 mt-0.5' />
+              <p>
+                Need the exact numbers? See{' '}
+                <Link
+                  href='https://docs.somnia.network/developer/building-dapps/oracles/dia-price-feeds'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary underline'
+                >
+                  DIA price feeds on Somnia
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href='https://docs.chain.link/data-feeds'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary underline'
+                >
+                  Chainlink data feed guidance
+                </Link>
+                .
               </p>
             </div>
           </div>

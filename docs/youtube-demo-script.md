@@ -1,65 +1,76 @@
-# SentinelX Demo Video Script (5 minutes)
+# SentinelX Demo Video Script — 4 Minutes
 
-Authoritative walkthrough of the SentinelX prototype for Somnia Shannon. Hit the high notes - infra stability, AI co-pilot, and on-chain guardrails - within five minutes.
+End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the problem (backed by research), then show how SentinelX solves it across the data, AI, and control planes.
 
-## Assumptions
-- Demo mode is enabled (`NEXT_PUBLIC_DEMO_MODE=true`). If an `OPERATOR_PRIVATE_KEY` or Somnia RPC is missing, the simulate button still injects a Convex-backed spike.
-- `config/chain.somniatest.json` (or env overrides) points at the GuardianHub, AgentInbox, DemoOracle, and DemoPausable contracts used by the UI.
-- You are already signed in with RainbowKit + SIWE before recording.
-- The Convex deployment is seeded with at least one tenant tied to your wallet.
+## 0) Cold open — Problem & Research (0:00 – 0:20)
+
+1. **Visual**: Homepage hero + problem cards. Overlay key stats.
+2. **Voiceover**
+   - “On-chain price feeds don’t stream continuously—they refresh when deviation thresholds or heartbeat timers fire. Chainlink documents this explicitly for data feeds.”  
+   - “On Somnia, DIA recommends 0.5% deviation, 120-second freshness, and a 24-hour heartbeat. Combining feeds without guardrails creates drift and stale reads.”  
+   - “Add MEV and historic oracle manipulation incidents and you get a reliability gap. SentinelX closes it with AI-assisted guardrails for Somnia.”
+3. **On-screen citations**
+   - `docs.chain.link/data-feeds`
+   - `docs.somnia.network/.../dia-price-feeds`
+   - `docs.flashbots.net/flashbots-auction/overview`
+
+## 1) SentinelX architecture snapshot (0:20 – 0:35)
+
+- **Visual**: Homepage “Solution” row or architecture diagram.
+- **Voiceover**: “SentinelX runs a multi-source data plane, AI triage plane, and human-in-the-loop control plane. Let’s see it working on Somnia Shannon with production addresses.”
+
+## 2) Dashboard — Data plane (0:35 – 1:05)
+
+1. Navigate to `/dashboard`.
+2. Highlight KPI cards, Monitors table, Daily brief, Action queue.
+3. Click **Run policy evaluation**.
+   - Show toast + updated Daily brief (new incident with severity badge).
+4. **Voiceover**: “The policy runner hits `/api/indexer/run`, evaluates SafeOracleRouter across feeds, and logs telemetry + incidents into Convex.”
+
+## 3) Register a monitor — Configuration (1:05 – 1:35)
+
+1. Go to `/monitors/new`.
+2. Use **Seed demo values**, tweak if desired (name, contract, deviation BPS, heartbeat seconds).
+3. Submit and show the new row on `/monitors` with “Last evaluation” timestamp.
+4. **Voiceover**: “Guarded contract + GuardianHub + SafeOracleRouter are canonical. You only set your policy window and chain configuration is read-only.”
+
+## 4) Simulate incident — Trigger (1:35 – 1:55)
+
+1. Back to `/dashboard`, click **Simulate incident**.
+2. Display toast with evaluation summary (processed/anomalies).
+3. Refresh Daily brief and Action queue; incident + action intent appear.
+4. **Voiceover**: “Demo mode spikes the DemoOracle or flags a Convex fallback, then re-runs the policy so you can demo without waiting on market swings.”
+
+## 5) Review incident — AI plane (1:55 – 2:30)
+
+1. Open `/incidents`, click the latest incident.
+2. Highlight AI Summary (severity, root cause, mitigations), telemetry snapshot, advisory tags.
+3. Click **Generate new plan** if needed to show deterministic fallback or OpenAI output.
+4. **Voiceover**: “LLM summaries translate telemetry into human-readable incidents. Action intents include GuardianHub calldata for pausing or parameter updates.”
+
+## 6) Approve & execute — Control plane (2:30 – 3:10)
+
+1. Navigate to `/actions`.
+2. Approve the proposed action.
+3. Click **Execute**; confirm the wallet transaction. Show toast when SentinelX records the tx hash automatically.
+4. **Voiceover**: “Operators stay in control. Execute calls via wallet, AgentInbox relays only allowlisted calldata, and SentinelX records the hash for auditability.”
+
+## 7) Docs & automation — Production readiness (3:10 – 3:40)
+
+1. Visit `/docs`.
+2. Highlight **Demo quickstart**, cron snippet for `POST /api/indexer/run`, API key management, and webhook samples.
+3. Open the Docs Copilot section and run a quick question (“How do I schedule the indexer on Vercel?”) to show grounded answers.
+4. **Voiceover**: “SentinelX ships ready-to-use docs—cron jobs, webhooks, REST endpoints, and an embedded copilot for ops teams.”
+
+## 8) Close — Call to action (3:40 – 4:00)
+
+- **Voiceover**: “With SentinelX your Somnia agents run in a production-grade loop: multi-source telemetry, AI triage, and guardian-approved execution. Open the dashboard or follow the docs to drop it into your own dApp.”
+- **Visual**: Return to homepage hero with CTAs.
 
 ---
 
-## 0) Title card (5s)
-- **VO**: "SentinelX safeguards Somnia with shared monitors, AI runbooks, and on-chain guardian approvals. Let me show you the end-to-end loop."
+## Citations
 
-## 1) Dashboard (`/dashboard`) - Data plane (35s)
-- On-screen: KPI cards, Monitors table, Daily brief, Action queue.
-- Action: Click **Run policy evaluation**. Toast confirms; Daily brief refreshes.
-- **Callout**: "The policy runner hits `/api/indexer/run`, polls SafeOracleRouter, and stores telemetry + incidents in Convex."
-
-## 2) Register monitor (`/monitors/new`) - Config defaults (55s)
-- On-screen: "Create Monitor" form showing editable policy fields and a second card labelled "SentinelX infrastructure" with read-only GuardianHub, AgentInbox, SafeOracleRouter, and feed addresses.
-- Action: Click **Seed demo values** to autofill the sample monitor (name, contract, thresholds) then fine-tune if needed.
-- Inputs to check:
-  - Monitor name → `Somnia ETH/USD router guard`
-  - Guarded contract → `0x761D0dbB45654513AdF1BF6b5D217C0f8B3c5737`
-  - Max deviation (bps) → `100`
-  - Stale after (seconds) → `120`
-- Action: Submit, then show the new row on `/monitors`.
-- **Callout**: "Core addresses stay read-only from `/api/config/chain`, so customers only plug in their guarded contract and policy thresholds."
-
-## 3) Simulate incident (`/dashboard`) - Deterministic trigger (35s)
-- On-screen: **Simulate incident** button (top right).
-- Action: Click it. Toast confirms. Within seconds, Recent incidents & Daily brief show a new high-severity incident.
-- **Callout**: "Demo mode spikes the DemoOracle (or flags a Convex fallback) and re-runs the policy, so we never wait on real price swings."
-
-## 4) Review incident (`/incidents`) - AI plane (60s)
-- On-screen: Open the newest incident.
-- Elements to highlight: AI Summary (severity, root cause, mitigations), telemetry snapshot, Action intents panel.
-- Action: Click **Generate new plan**. A structured intent appears (Pause DemoPausable + Notify guardians) with rationale + calldata preview.
-- **Callout**: "SentinelX AI produces the summary and plan—using OpenAI Responses when the API key is set, or deterministic guardrails when running the offline demo."
-
-## 5) Approve & execute (`/actions`) - Control plane (70s)
-- On-screen: Proposed intent inside Action queue.
-- Preferred path:
-  - Click **Approve**, then hit **Execute**. Wallet confirms the GuardianHub transaction.
-  - Toast shows the status while the UI auto-closes the loop and records the on-chain hash.
-- Optional: Show `DemoPausable.paused()` or failed `doWork()` call to confirm the pause.
-- **Callout**: "AgentInbox relays only allowlisted calls. Execution hashes are recorded for auditability."
-
-## 6) Docs (`/docs`) - Quickstart + cron (35s)
-- On-screen: Highlight the **Demo quickstart** section and `/api/indexer/run` cron snippet.
-- Action: Copy the cron example (schedule `*/1 * * * *`) and briefly show the Docs Copilot prompt.
-- **Callout**: "Docs bundle Quickstart, REST references, and an embedded Copilot. Cron keeps telemetry and AI plans fresh."
-
-## 7) Settings (`/settings`) - Ops controls (25s)
-- On-screen: API Keys, Webhooks, Guardian operators.
-- Actions:
-  - Create an API key (`policy-runner-demo`) and point out plaintext vs hashed storage.
-  - Add a webhook (`Slack`, secret optional).
-  - Add a guardian operator address (tiered role).
-- **Callout**: "All automation hooks - credentials, alerts, guardian roster - live in one place."
-
-## 8) Wrap (10s)
-- **VO**: "We deployed a monitor, triggered an incident, used AI for triage, and executed a guarded pause on-chain - all in minutes. Hit the live Vercel URL to try it yourself or follow the docs to integrate your own contracts."
+1. Chainlink Data Feeds — deviation thresholds & heartbeat model: https://docs.chain.link/data-feeds  
+2. DIA Price Feeds on Somnia — recommended deviation and refresh cadence: https://docs.somnia.network/developer/building-dapps/oracles/dia-price-feeds  
+3. Flashbots — MEV research and mitigation strategies: https://docs.flashbots.net/flashbots-auction/overview  

@@ -135,7 +135,7 @@ export default function MonitorDetailPage() {
         <CardHeader>
           <CardTitle>Configuration</CardTitle>
           <CardDescription>
-            Dual-oracle wiring and GuardianHub enforcement for this contract.
+            Multi-source wiring and GuardianHub enforcement for this contract.
           </CardDescription>
         </CardHeader>
         <CardContent className='grid gap-4 text-sm text-muted-foreground md:grid-cols-2'>

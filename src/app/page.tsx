@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import {
-  ShieldCheck,
-  Radar,
-  RefreshCw,
+  Activity,
   ArrowRight,
-  Code2,
-  Wallet,
-  Network
+  BookOpen,
+  BrainCircuit,
+  CheckCircle2,
+  ShieldCheck,
+  Workflow
 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -21,131 +21,154 @@ import {
   CardTitle
 } from '@/components/ui/card'
 
-const highlights = [
+const problems = [
   {
-    title: 'Safe price surface',
+    title: 'Feeds update on deviation + heartbeat',
     description:
-      'SafeOracleRouter compares Protofire Chainlink and DIA feeds, exposing guarded answers, status flags, and raw oracle metadata for audits.',
-    icon: ShieldCheck,
-    gradient: 'from-emerald-500/10 to-teal-500/10'
+      'Oracle prices refresh only when deviation thresholds or heartbeat timers fire. Drift and staleness are the default state, not an edge case.',
+    link: {
+      label: 'Chainlink data feeds',
+      href: 'https://docs.chain.link/data-feeds'
+    }
   },
   {
-    title: 'Guardian enforcement',
+    title: 'Multi-source configs drift over time',
     description:
-      'GuardianHub pauses and unpauses critical contracts atomically, ensuring Somnia applications fail safe under deviation or stale data.',
-    icon: Radar,
-    gradient: 'from-blue-500/10 to-cyan-500/10'
+      'DIA on Somnia recommends 0.5% deviation and 120s freshness, while other feeds default to 1% / 180s. Mismatched values cause inaccurate reads.',
+    link: {
+      label: 'DIA price feeds on Somnia',
+      href: 'https://docs.somnia.network/developer/building-dapps/oracles/dia-price-feeds'
+    }
   },
   {
-    title: 'Convex observability',
+    title: 'MEV + operational mistakes cascade',
     description:
-      'Tenants, monitors, and incidents persist in Convex with SIWE auth, powering dashboards, policy automation, and webhook fan-out.',
-    icon: RefreshCw,
-    gradient: 'from-violet-500/10 to-purple-500/10'
+      'Flash-loan manipulation and paused keeper jobs still break DeFi protocols. Mitigation needs SRE-grade telemetry, AI triage, and human control.',
+    link: {
+      label: 'Flashbots research',
+      href: 'https://docs.flashbots.net/flashbots-auction/overview'
+    }
   }
 ]
 
-const architecture = [
+const solution = [
   {
-    title: 'Next.js App Router',
+    title: 'Data plane',
     description:
-      'Marketing shell, dashboard, and REST endpoints run on Next.js 15 with Tailwind + shadcn/ui for accessible, responsive interfaces.',
-    icon: Code2
+      'Policy runner evaluates SafeOracleRouter for every monitor, comparing multi-source feeds, logging telemetry, and opening incidents in Convex.',
+    icon: Activity
   },
   {
-    title: 'RainbowKit + SIWE',
+    title: 'AI plane',
     description:
-      'WalletConnect v2 with custom RainbowKit authentication adapter keeps sessions in iron-session and syncs to Convex.',
-    icon: Wallet
+      'LLM summaries translate telemetry into severity, root cause, mitigations, and proposed GuardianHub calldata—even when OpenAI is unavailable.',
+    icon: BrainCircuit
   },
   {
-    title: 'Somnia Shannon Testnet',
+    title: 'Control plane',
     description:
-      'Monitors guard Somnia contracts via SafeOracleRouter, with policy runs calling latest(bytes32) and logging incidents.',
-    icon: Network
+      'Operators approve and execute action intents from the dashboard; wallet signatures relay allowlisted calls via AgentInbox with audit-ready tx hashes.',
+    icon: ShieldCheck
+  }
+]
+
+const featureCards = [
+  {
+    title: 'Multi-source oracle guardrails',
+    description:
+      'Configure deviation and heartbeat per asset, evaluate Chainlink, DIA, or custom feeds, and catch drift before it hits users.',
+    icon: CheckCircle2
+  },
+  {
+    title: 'AI triage & action intents',
+    description:
+      'Incident summaries, mitigations, and GuardianHub calldata are generated in seconds, giving operators time to investigate instead of react.',
+    icon: BrainCircuit
+  },
+  {
+    title: 'Production-ready integration',
+    description:
+      'RainbowKit SIWE auth, Convex persistence, cron-ready policy runner, and docs with API/webhook examples make SentinelX deployable on day one.',
+    icon: Workflow
   }
 ]
 
 export default function Home() {
   return (
-    <section className='space-y-20 py-12 sm:py-20'>
-      <div className='mx-auto flex max-w-5xl flex-col items-center gap-8 text-center px-4'>
+    <main className='min-h-screen bg-gradient-to-b from-white via-slate-50 to-white'>
+      <section className='mx-auto flex max-w-6xl flex-col gap-10 px-4 pb-16 pt-20 sm:pb-24 sm:pt-28'>
         <Badge
-          variant='secondary'
-          className='px-4 py-2 text-xs font-semibold uppercase tracking-wider'
+          variant='outline'
+          className='w-fit border-[#189baf]/40 bg-[#189baf]/10 text-[#0f6b79] uppercase tracking-wide'
         >
-          <span className='inline-block h-2 w-2 rounded-full bg-primary mr-2 animate-pulse' />
-          Somnia Guardian Stack
+          Somnia · Infra + AI Agents
         </Badge>
-        <div className='space-y-4'>
-          <h1 className='text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent'>
-            Dual-oracle circuit breaker
+        <div className='space-y-6'>
+          <h1 className='text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl'>
+            AI-guarded oracle reliability for{' '}
+            <span className='text-[#189baf]'>Somnia</span>
           </h1>
-          <h2 className='text-3xl font-bold tracking-tight sm:text-4xl text-primary'>
-            for Somnia dApps
-          </h2>
-        </div>
-        <p className='text-lg sm:text-xl text-muted-foreground max-w-3xl leading-relaxed'>
-          SentinelX compares Protofire Chainlink and DIA feeds, logs every
-          incident, and empowers guardians to pause smart contracts before bad
-          data causes loss.
-        </p>
-        <div className='flex flex-wrap items-center justify-center gap-4 pt-4'>
-          <Button asChild size='lg' className='gap-2 text-base px-8'>
-            <Link href='/dashboard'>
-              Open dashboard
-              <ArrowRight className='h-4 w-4' />
-            </Link>
-          </Button>
-          <Button asChild size='lg' variant='outline' className='text-base px-8'>
-            <Link href='/docs'>Read documentation</Link>
-          </Button>
-        </div>
-      </div>
-
-      <div className='grid gap-6 md:grid-cols-3 max-w-6xl mx-auto px-4'>
-        {highlights.map(item => (
-          <Card
-            key={item.title}
-            className='group relative overflow-hidden border-border/60 transition-all hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1'
-          >
-            <div
-              className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-100 transition-opacity`}
-            />
-            <CardHeader className='space-y-4 relative z-10'>
-              <div className='inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors'>
-                <item.icon className='h-7 w-7' />
-              </div>
-              <div className='space-y-2'>
-                <CardTitle className='text-xl'>{item.title}</CardTitle>
-                <CardDescription className='leading-relaxed text-base'>
-                  {item.description}
-                </CardDescription>
-              </div>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
-
-      <div className='mx-auto max-w-6xl space-y-8 px-4'>
-        <div className='text-center space-y-2'>
-          <h2 className='text-3xl font-bold tracking-tight text-foreground'>
-            Built with modern stack
-          </h2>
-          <p className='text-muted-foreground text-lg'>
-            Enterprise-grade architecture for blockchain monitoring
+          <p className='max-w-3xl text-lg leading-relaxed text-slate-600 sm:text-xl'>
+            SentinelX watches multi-source price feeds, flags drift or staleness, triages incidents
+            with AI, and lets guardians execute safe fixes before MEV or operator mistakes cascade
+            into user losses.
           </p>
+          <div className='flex flex-wrap gap-4'>
+            <Button
+              asChild
+              size='lg'
+              className='gap-2 bg-[#189baf] px-7 text-base hover:bg-[#15859b]'
+            >
+              <Link href='/dashboard'>
+                Open dashboard
+                <ArrowRight className='h-4 w-4' />
+              </Link>
+            </Button>
+            <Button asChild size='lg' variant='outline' className='gap-2 px-7 text-base'>
+              <Link href='/docs'>
+                Read SentinelX docs
+                <BookOpen className='h-4 w-4' />
+              </Link>
+            </Button>
+          </div>
         </div>
+      </section>
+
+      <section className='bg-white/80'>
+        <div className='mx-auto grid max-w-6xl gap-6 px-4 py-12 md:grid-cols-3'>
+          {problems.map(problem => (
+            <Card key={problem.title} className='border-border/60'>
+              <CardHeader>
+                <CardTitle className='text-lg'>{problem.title}</CardTitle>
+              </CardHeader>
+              <CardContent className='space-y-4 text-sm leading-relaxed text-slate-600'>
+                <p>{problem.description}</p>
+                <Link
+                  href={problem.link.href}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-2 text-[#189baf] hover:underline'
+                >
+                  {problem.link.label}
+                  <ArrowRight className='h-3.5 w-3.5' />
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className='mx-auto max-w-6xl px-4 py-16'>
         <div className='grid gap-6 md:grid-cols-3'>
-          {architecture.map(item => (
-            <Card key={item.title} className='border-border/60 hover:border-primary/50 transition-all group'>
+          {solution.map(item => (
+            <Card key={item.title} className='border border-[#189baf]/30 bg-[#189baf]/5'>
               <CardHeader className='space-y-4'>
-                <div className='inline-flex h-12 w-12 items-center justify-center rounded-xl bg-muted border border-border/60 text-muted-foreground group-hover:border-primary/50 group-hover:text-primary transition-colors'>
+                <div className='inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm text-[#189baf]'>
                   <item.icon className='h-6 w-6' />
                 </div>
                 <div className='space-y-2'>
-                  <CardTitle className='text-lg'>{item.title}</CardTitle>
-                  <CardDescription className='leading-relaxed'>
+                  <CardTitle className='text-xl text-[#0f6b79]'>{item.title}</CardTitle>
+                  <CardDescription className='text-sm leading-relaxed text-[#0f4b57]'>
                     {item.description}
                   </CardDescription>
                 </div>
@@ -153,7 +176,52 @@ export default function Home() {
             </Card>
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className='mx-auto max-w-6xl px-4 pb-24'>
+        <div className='mb-10 space-y-3 text-center'>
+          <h2 className='text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl'>
+            Built for production teams
+          </h2>
+          <p className='mx-auto max-w-3xl text-base text-slate-600 sm:text-lg'>
+            Everything you need to ship reliable price-driven agents and dApps on Somnia—from cron
+            friendly indexers and action queues to docs that spell out REST hooks, webhooks, and
+            policy runners.
+          </p>
+        </div>
+        <div className='grid gap-6 md:grid-cols-3'>
+          {featureCards.map(feature => (
+            <Card key={feature.title} className='border-border/60 hover:border-[#189baf]/40'>
+              <CardHeader className='space-y-4'>
+                <div className='inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#189baf]/10 text-[#189baf]'>
+                  <feature.icon className='h-6 w-6' />
+                </div>
+                <div className='space-y-2'>
+                  <CardTitle className='text-lg'>{feature.title}</CardTitle>
+                  <CardDescription className='text-sm leading-relaxed text-slate-600'>
+                    {feature.description}
+                  </CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+        <div className='mt-10 flex flex-col gap-3 text-sm text-slate-500 md:flex-row md:items-center'>
+          <Workflow className='h-4 w-4 text-[#189baf]' />
+          <p>
+            Backed by deviation/heartbeat research (Chainlink, DIA) and MEV mitigation work from{' '}
+            <Link
+              href='https://docs.flashbots.net/flashbots-auction/overview'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-[#189baf] underline'
+            >
+              Flashbots
+            </Link>
+            . SentinelX applies those patterns to Somnia with AI + human-in-the-loop guardrails.
+          </p>
+        </div>
+      </section>
+    </main>
   )
 }

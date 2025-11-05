@@ -53,7 +53,7 @@ export function MonitorsTable({ monitors }: { monitors: Monitor[] }) {
         <CardHeader>
           <CardTitle className='text-lg'>Monitors</CardTitle>
           <CardDescription>
-            Dual-oracle status and guardian binding for every protected
+            Multi-source status and guardian binding for every protected
             contract.
           </CardDescription>
         </CardHeader>
@@ -77,7 +77,7 @@ export function MonitorsTable({ monitors }: { monitors: Monitor[] }) {
           <div>
             <CardTitle className='text-lg'>Monitors</CardTitle>
             <CardDescription>
-              Dual-oracle status and guardian binding for every protected
+              Multi-source status and guardian binding for every protected
               contract.
             </CardDescription>
           </div>
