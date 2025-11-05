@@ -415,6 +415,9 @@ export default function DocsPage() {
           <p className='text-xs text-muted-foreground'>
             During demo mode, deterministic summaries and pause recommendations are generated if <code className='rounded bg-muted px-1 font-mono text-xs'>OPENAI_API_KEY</code> is not present so the incident loop still showcases the AI layer.
           </p>
+          <p className='text-xs text-muted-foreground'>
+            The policy runner lives in <code className='rounded bg-muted px-1 font-mono text-xs'>src/jobs/indexer.ts</code>, where SentinelX calls OpenAI (or deterministic fallbacks) to craft incident briefs and guardian plans before persisting them via Convex.
+          </p>
           <Tabs defaultValue='summarize' className='mt-2'>
             <TabsList className='w-fit'>
               <TabsTrigger value='summarize'>Summarize</TabsTrigger>

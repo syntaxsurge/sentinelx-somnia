@@ -42,6 +42,7 @@ type MonitorRecord = {
   name: string
   type: string
   params?: MonitorParams
+  tenantId: string
   contractAddress: string
   guardianAddress: string
   routerAddress?: string
@@ -89,7 +90,14 @@ function isConvexConnectionError(error: unknown) {
   return false
 }
 
-export async function runSentinelIndexer(options: { convex?: any } = {}): Promise<IndexerResult> {
+type IndexerOptions = {
+  convex?: any
+  demoTenantId?: string
+}
+
+export async function runSentinelIndexer(
+  options: IndexerOptions = {}
+): Promise<IndexerResult> {
   const convex = options.convex ?? getConvexClient()
 
   let monitors: MonitorRecord[]
@@ -160,8 +168,11 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
         : spikeAt
           ? spikeAt + 5 * 60_000
           : undefined
+    const forcedDemo = options.demoTenantId
+      ? monitor.tenantId === options.demoTenantId
+      : false
     const spikeActive = Boolean(
-      demoMode && spikeAt && evaluatedAt <= (spikeExpiresAt ?? evaluatedAt)
+      (demoMode && spikeAt && evaluatedAt <= (spikeExpiresAt ?? evaluatedAt)) || forcedDemo
     )
 
     const telemetryBase = {
@@ -333,9 +344,11 @@ export async function runSentinelIndexer(options: { convex?: any } = {}): Promis
         bothFresh: false
       })
 
-      await convex.mutation('monitors:clearDemoSpike' as any, {
-        monitorId: monitor._id
-      })
+      if (spikeAt) {
+        await convex.mutation('monitors:clearDemoSpike' as any, {
+          monitorId: monitor._id
+        })
+      }
 
       continue
     }

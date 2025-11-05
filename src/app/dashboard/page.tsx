@@ -167,13 +167,21 @@ export default function DashboardPage() {
     setSimulating(true)
     try {
       const response = await fetch('/api/demo/simulate', { method: 'POST' })
+      const payload = await response.json().catch(() => null)
       if (!response.ok) {
-        const message = await response.json().catch(() => null)
-        throw new Error(message?.error ?? 'Simulation failed')
+        throw new Error(payload?.error ?? 'Simulation failed')
       }
+
+      const processed = payload?.policyResult?.processed ?? 0
+      const anomalies = payload?.policyResult?.anomalies ?? 0
+      const mode = payload?.mode ?? 'fallback'
+
       toast({
-        title: 'Incident simulated',
-        description: 'Oracle price spiked. Refresh the dashboard in a few seconds.'
+        title: anomalies > 0 ? 'Incident simulated' : 'Simulation queued',
+        description:
+          anomalies > 0
+            ? `Policy runner (${mode}) evaluated ${processed} monitor${processed === 1 ? '' : 's'} and opened ${anomalies} incident${anomalies === 1 ? '' : 's'}.`
+            : `Policy runner (${mode}) evaluated ${processed} monitor${processed === 1 ? '' : 's'} without detecting anomalies. Verify Convex data or rerun policy.`
       })
     } catch (err) {
       toast({

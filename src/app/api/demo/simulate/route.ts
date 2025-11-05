@@ -97,7 +97,9 @@ export async function POST(request: Request) {
     })
   }
 
-  const policyResult = await runPolicyOnce()
+  const policyResult = await runPolicyOnce({
+    demoTenantId: tenant._id
+  })
 
   const response = NextResponse.json({
     ok: true,
