@@ -16,6 +16,12 @@ import { WagmiProvider } from 'wagmi'
 import { useAuthStatus } from '@/hooks/useSession'
 import { somniaShannon } from '@/lib/chain'
 
+if (typeof window === 'undefined') {
+  import('fake-indexeddb/auto').catch(() => {
+    // no-op; wagmi storage falls back when IndexedDB is unavailable
+  })
+}
+
 const queryClient = new QueryClient()
 
 const walletConnectId =
