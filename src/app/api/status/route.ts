@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { getConvexClient } from '@/lib/convexClient'
+import { loadChainConfig } from '@/lib/config'
 
 type HealthStatus = {
   ok: boolean
@@ -21,7 +22,13 @@ async function checkConvex(): Promise<boolean> {
 }
 
 export async function GET() {
-  const routerConfigured = Boolean(process.env.SENTINELX_ROUTER_ADDRESS)
+  let routerConfigured = false
+  try {
+    const config = await loadChainConfig()
+    routerConfigured = Boolean(config.oracleRouter)
+  } catch {
+    routerConfigured = Boolean(process.env.NEXT_PUBLIC_SAFE_ORACLE_ROUTER)
+  }
   const convexConnected = await checkConvex()
 
   const payload: HealthStatus = {
@@ -30,7 +37,7 @@ export async function GET() {
     routerConfigured,
     convexConnected,
     details: !routerConfigured
-      ? 'SENTINELX_ROUTER_ADDRESS is not set'
+      ? 'NEXT_PUBLIC_SAFE_ORACLE_ROUTER is not set'
       : convexConnected
         ? undefined
         : 'Convex endpoint unreachable or misconfigured'

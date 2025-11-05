@@ -63,14 +63,17 @@ CONVEX_DEPLOYMENT=https://your-deployment.convex.cloud
 NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 OPENAI_API_KEY=sk-...
 SESSION_SECRET=32+character_random_secret
-SENTINELX_ROUTER_ADDRESS=0xrouterAddress
-AGENT_INBOX_ADDRESS=0xinboxAddress
+
+# SentinelX contract addresses
+NEXT_PUBLIC_SAFE_ORACLE_ROUTER=0xrouterAddress
+NEXT_PUBLIC_GUARDIAN_HUB=0xguardianHub
+NEXT_PUBLIC_AGENT_INBOX=0xinboxAddress
+NEXT_PUBLIC_DEMO_ORACLE=0xdemoOracle
+NEXT_PUBLIC_DEMO_PAUSABLE=0xdemoPausable
 ```
 
-`SENTINELX_ROUTER_ADDRESS` is used when monitors omit an explicit router.
-`AGENT_INBOX_ADDRESS` points UI affordances at the deployed AgentInbox. Provide
-`CONVEX_DEPLOYMENT` or `NEXT_PUBLIC_CONVEX_URL` so both server routes and
-client components can resolve the Convex instance.
+Provide `CONVEX_DEPLOYMENT` or `NEXT_PUBLIC_CONVEX_URL` so both server routes
+and client components can resolve the Convex instance.
 
 If `NEXT_PUBLIC_WALLETCONNECT_ID` is omitted locally the app falls back to a
 demo project id and logs a warning—replace it with your WalletConnect Cloud id

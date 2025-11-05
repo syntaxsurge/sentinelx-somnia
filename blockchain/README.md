@@ -36,8 +36,8 @@ For demo mode, provision a second key that only owns the demo contracts:
 DEMO_OPERATOR_PRIVATE_KEY=0xdef... # optional helper for tests/scripts
 ```
 
-Inside the Next.js workspace set `OPERATOR_PRIVATE_KEY` (demo operator) and, if
-desired, override addresses with `SENTINELX_*` or `NEXT_PUBLIC_*` env vars.
+Inside the Next.js workspace set `OPERATOR_PRIVATE_KEY` (demo operator) and,
+if desired, override addresses with the `NEXT_PUBLIC_*` env vars.
 
 ## Installation & Commands
 
@@ -63,7 +63,7 @@ pnpm exec hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somn
 ```
 
 Ignition prints the addresses you must copy into `config/chain.somniatest.json`
-or the corresponding env variables (`SENTINELX_GUARDIAN_HUB`, etc.).
+or the corresponding `NEXT_PUBLIC_*` env variables.
 
 ### Demo assets (DemoOracle + DemoPausable)
 

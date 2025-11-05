@@ -126,15 +126,22 @@ export async function runSentinelIndexer(
     return { processed: 0, anomalies: 0 }
   }
 
+  const envRouter = process.env.NEXT_PUBLIC_SAFE_ORACLE_ROUTER
+  let routerFallback =
+    typeof envRouter === 'string' && envRouter.trim().length > 0
+      ? envRouter.trim()
+      : undefined
   let demoMode = false
   try {
     const chainConfig = await loadChainConfig()
     demoMode = chainConfig.demoMode
+    if (!routerFallback) {
+      routerFallback = chainConfig.oracleRouter
+    }
   } catch (error) {
     console.warn('Unable to load chain config during policy run; continuing without demo hints.', error)
   }
 
-  const routerFallback = process.env.SENTINELX_ROUTER_ADDRESS
   let processed = 0
   let anomalies = 0
 

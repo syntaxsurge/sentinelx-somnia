@@ -56,7 +56,6 @@ function pickAddress(key: string, fallback: string): string {
   const candidates = [
     process.env[key],
     process.env[`NEXT_PUBLIC_${key}`],
-    process.env[`SENTINELX_${key}`],
     fallback
   ]
 

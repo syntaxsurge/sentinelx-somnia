@@ -99,12 +99,7 @@ function selectAddress(
     }
   }
 
-  const searchKeys = [
-    envKey,
-    `NEXT_PUBLIC_${envKey}`,
-    `SENTINELX_${envKey}`,
-    ...aliases
-  ]
+  const searchKeys = [envKey, `NEXT_PUBLIC_${envKey}`, ...aliases]
   const envValue = searchKeys
     .map(key => process.env[key])
     .find(value => value && value.length > 0)
@@ -132,9 +127,7 @@ export async function loadChainConfig(): Promise<ChainConfig> {
 
   const guardianHub = selectAddress('GUARDIAN_HUB', [base.guardianHub])
   const agentInbox = selectAddress('AGENT_INBOX', [base.agentInbox])
-  const oracleRouter = selectAddress('SAFE_ORACLE_ROUTER', [base.oracleRouter], [
-    'SENTINELX_ROUTER_ADDRESS'
-  ])
+  const oracleRouter = selectAddress('SAFE_ORACLE_ROUTER', [base.oracleRouter])
   const demoOracle = selectAddress('DEMO_ORACLE', [base.demoOracle])
   const demoPausable = selectAddress('DEMO_PAUSABLE', [base.demoPausable])
   const demoMode = resolveDemoMode()
