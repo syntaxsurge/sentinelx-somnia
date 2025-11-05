@@ -12,7 +12,9 @@ import {
   isAddressEqual,
   parseAbi
 } from 'viem'
+import type { PublicClient, WalletClient } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
+import type { PrivateKeyAccount } from 'viem/accounts'
 
 import { api } from '@/convex/_generated/api'
 import { type Id } from '@/convex/_generated/dataModel'
@@ -34,6 +36,12 @@ const guardianAbi = parseAbi([
 
 const agentInboxAbi = parseAbi([
   'function execute(address target, bytes data)'
+])
+
+const demoGuardableAbi = parseAbi([
+  'function guardianHub() view returns (address)',
+  'function owner() view returns (address)',
+  'function setGuardianHub(address newGuardianHub)'
 ])
 
 type GuardianFunction = 'pauseTarget' | 'unpauseTarget'
@@ -132,6 +140,16 @@ export async function POST(request: Request) {
       chain: somniaShannon,
       transport: http(rpcUrl)
     })
+
+    if (executionTarget.guardable) {
+      await ensureGuardableConfiguration({
+        guardable: executionTarget.guardable,
+        guardianHub: chainConfig.guardianHub,
+        account,
+        publicClient,
+        walletClient
+      })
+    }
 
     if (
       executionTarget.guardable &&
@@ -532,4 +550,71 @@ function extractErrorMessage(error: unknown): string {
   }
 
   return 'Failed to execute guardian transaction'
+}
+
+type EnsureGuardableConfigParams = {
+  guardable: `0x${string}`
+  guardianHub: `0x${string}`
+  account: PrivateKeyAccount
+  publicClient: PublicClient
+  walletClient: WalletClient
+}
+
+async function ensureGuardableConfiguration({
+  guardable,
+  guardianHub,
+  account,
+  publicClient,
+  walletClient
+}: EnsureGuardableConfigParams) {
+  try {
+    const currentGuardianHub = await publicClient.readContract({
+      address: guardable,
+      abi: demoGuardableAbi,
+      functionName: 'guardianHub'
+    })
+
+    if (isAddressEqual(currentGuardianHub, guardianHub)) {
+      return
+    }
+
+    const owner = await publicClient.readContract({
+      address: guardable,
+      abi: demoGuardableAbi,
+      functionName: 'owner'
+    })
+
+    if (!isAddressEqual(owner, account.address)) {
+      throw new ActionPlanError(
+        `Guarded contract ${guardable} is owned by ${owner} and is not wired to GuardianHub ${guardianHub}. Update it on-chain or re-run demo deployment.`
+      )
+    }
+
+    const { request } = await publicClient.simulateContract({
+      address: guardable,
+      abi: demoGuardableAbi,
+      functionName: 'setGuardianHub',
+      args: [guardianHub],
+      account
+    })
+
+    const hash = await walletClient.writeContract(request)
+    await publicClient.waitForTransactionReceipt({ hash })
+  } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : ''
+    if (
+      message.includes('function selector was not recognized') ||
+      message.includes('function was not found') ||
+      message.includes('execution reverted and the function selector') ||
+      message.includes('function signature was not found') ||
+      message.includes('is not a function')
+    ) {
+      return
+    }
+
+    if (error instanceof ActionPlanError) {
+      throw error
+    }
+    // If the guardable contract does not expose the demo guardable API, skip silently.
+  }
 }
