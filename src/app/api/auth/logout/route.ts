@@ -1,13 +1,17 @@
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 import { getIronSession } from 'iron-session'
 
-import { sessionOptions, type AuthSession } from '@/lib/session'
+import { applySessionCookies, sessionOptions, type AuthSession } from '@/lib/session'
 
-export async function POST() {
-  const cookieStore = await cookies()
-  const session = await getIronSession<AuthSession>(cookieStore, sessionOptions)
+export async function POST(request: Request) {
+  const sessionResponse = new NextResponse()
+  const session = await getIronSession<AuthSession>(
+    request,
+    sessionResponse,
+    sessionOptions
+  )
   await session.destroy()
-  return NextResponse.json({ ok: true })
+  const response = NextResponse.json({ ok: true })
+  return applySessionCookies(sessionResponse, response)
 }

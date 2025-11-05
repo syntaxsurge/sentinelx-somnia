@@ -51,10 +51,50 @@ vi.mock('convex/browser', () => {
 })
 
 let cookieStore: MemoryCookieStore
+let cookieJar: Map<string, string>
 
 vi.mock('next/headers', () => ({
   cookies: () => cookieStore
 }))
+
+const syncCookieJarFromResponse = (response: Response) => {
+  const setCookies =
+    ((response.headers as any).getSetCookie?.() as string[] | undefined) ??
+    (response.headers.get('set-cookie')
+      ? [response.headers.get('set-cookie') as string]
+      : [])
+
+  for (const cookieString of setCookies) {
+    const [pair] = cookieString.split(';')
+    const [name, ...valueParts] = pair.split('=')
+    if (!name) continue
+    const value = valueParts.join('=')
+    if (value) {
+      cookieJar.set(name, value)
+      cookieStore.set(name, value)
+    } else {
+      cookieJar.delete(name)
+      cookieStore.delete(name)
+    }
+  }
+}
+
+const buildRequestWithCookies = (input: string, init: RequestInit = {}) => {
+  const headers = new Headers(init.headers)
+  if (cookieJar.size) {
+    headers.set(
+      'cookie',
+      Array.from(cookieJar.entries())
+        .map(([name, value]) => `${name}=${value}`)
+        .join('; ')
+    )
+  }
+
+  return new Request(input, {
+    ...init,
+    headers
+  })
+}
 
 const testPrivateKey =
   '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -64,14 +104,18 @@ describe('/api/auth flow', () => {
 
   beforeEach(() => {
     cookieStore = new MemoryCookieStore()
+    cookieJar = new Map()
     mutationSpy.mockReset()
     process.env.SESSION_SECRET = '0123456789abcdef0123456789abcdef'
     process.env.NEXT_PUBLIC_BASE_URL = 'http://localhost:3000'
   })
 
   it('completes SIWE sign-in, session lookup, and logout', async () => {
-    const nonceResponse = await getNonce()
+    const nonceResponse = await getNonce(
+      buildRequestWithCookies('http://localhost/api/auth/nonce')
+    )
     expect(nonceResponse.status).toBe(200)
+    syncCookieJarFromResponse(nonceResponse)
     const nonce = await nonceResponse.text()
     expect(nonce.length).toBeGreaterThan(0)
 
@@ -90,7 +134,7 @@ describe('/api/auth flow', () => {
     })
 
     const verifyResponse = await postVerify(
-      new Request('http://localhost/api/auth/verify', {
+      buildRequestWithCookies('http://localhost/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, signature })
@@ -98,6 +142,7 @@ describe('/api/auth flow', () => {
     )
 
     expect(verifyResponse.status).toBe(200)
+    syncCookieJarFromResponse(verifyResponse)
     expect(mutationSpy).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ address: account.address })
@@ -108,8 +153,13 @@ describe('/api/auth flow', () => {
     expect(mePayload.isLoggedIn).toBe(true)
     expect(mePayload.address).toBe(account.address)
 
-    const logoutResponse = await postLogout()
+    const logoutResponse = await postLogout(
+      buildRequestWithCookies('http://localhost/api/auth/logout', {
+        method: 'POST'
+      })
+    )
     expect(logoutResponse.status).toBe(200)
+    syncCookieJarFromResponse(logoutResponse)
 
     const meAfterLogout = await getSession()
     const meAfterPayload = await meAfterLogout.json()

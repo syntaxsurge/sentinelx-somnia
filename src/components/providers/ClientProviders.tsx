@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import {
   RainbowKitAuthenticationProvider,
@@ -11,46 +11,72 @@ import {
 import '@rainbow-me/rainbowkit/styles.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SiweMessage } from 'siwe'
-import { WagmiProvider } from 'wagmi'
+import { WagmiProvider, createConfig, http } from 'wagmi'
+import { injected, coinbaseWallet } from 'wagmi/connectors'
 
 import { useAuthStatus } from '@/hooks/useSession'
 import { somniaShannon } from '@/lib/chain'
 
 if (typeof window === 'undefined') {
   import('fake-indexeddb/auto').catch(() => {
-    // no-op; wagmi storage falls back when IndexedDB is unavailable
+    // IndexedDB polyfill unavailable; wagmi will fall back to in-memory storage.
   })
 }
 
 const queryClient = new QueryClient()
 
-const walletConnectId =
-  process.env.NEXT_PUBLIC_WALLETCONNECT_ID &&
-  process.env.NEXT_PUBLIC_WALLETCONNECT_ID.length > 0
-    ? process.env.NEXT_PUBLIC_WALLETCONNECT_ID
-    : 'sentinelx-demo'
+const walletConnectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID
 
-if (!process.env.NEXT_PUBLIC_WALLETCONNECT_ID) {
-  console.warn(
-    'NEXT_PUBLIC_WALLETCONNECT_ID is not set. Using a demo projectId; obtain a WalletConnect Cloud ID for production.'
-  )
-}
-
-const wagmiConfig = getDefaultConfig({
-  appName: 'SentinelX',
-  projectId: walletConnectId,
-  chains: [somniaShannon],
-  ssr: true
-})
+// If a proper WalletConnect Cloud projectId is configured, use RainbowKit defaults (includes WC).
+// Otherwise, avoid initializing WalletConnect entirely to prevent relay WS failures from blocking auth.
+const wagmiConfig = walletConnectId && walletConnectId.length > 0
+  ? getDefaultConfig({
+      appName: 'SentinelX',
+      projectId: walletConnectId,
+      chains: [somniaShannon],
+      ssr: true
+    })
+  : createConfig({
+      chains: [somniaShannon],
+      ssr: true,
+      transports: { [somniaShannon.id]: http() },
+      connectors: [
+        injected(),
+        coinbaseWallet({ appName: 'SentinelX' })
+      ]
+    })
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   const status = useAuthStatus()
+
+  useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      const reason = event.reason
+      const message =
+        typeof reason === 'string'
+          ? reason
+          : reason?.message ?? reason?.toString?.() ?? ''
+
+      if (message.includes('relay.walletconnect.com')) {
+        console.warn(
+          'WalletConnect relay is unreachable. WalletConnect connections will be disabled until the relay is available.'
+        )
+        event.preventDefault()
+      }
+    }
+
+    window.addEventListener('unhandledrejection', handler)
+    return () => window.removeEventListener('unhandledrejection', handler)
+  }, [])
 
   const authAdapter = useMemo(
     () =>
       createAuthenticationAdapter({
         getNonce: async () => {
-          const res = await fetch('/api/auth/nonce', { cache: 'no-store' })
+          const res = await fetch('/api/auth/nonce', {
+            cache: 'no-store',
+            credentials: 'include'
+          })
           return await res.text()
         },
         createMessage: ({ nonce, address, chainId }) =>
@@ -71,12 +97,13 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
           const res = await fetch('/api/auth/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ message, signature })
           })
           return res.ok
         },
         signOut: async () => {
-          await fetch('/api/auth/logout', { method: 'POST' })
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
         }
       }),
     []
@@ -86,9 +113,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitAuthenticationProvider adapter={authAdapter} status={status}>
-          <RainbowKitProvider modalSize='compact'>
-            {children}
-          </RainbowKitProvider>
+          <RainbowKitProvider modalSize='compact'>{children}</RainbowKitProvider>
         </RainbowKitAuthenticationProvider>
       </QueryClientProvider>
     </WagmiProvider>

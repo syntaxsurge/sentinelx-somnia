@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto'
 
 import { type SessionOptions } from 'iron-session'
+import { type NextResponse } from 'next/server'
 
 const rawSecret = process.env.SESSION_SECRET
 
@@ -42,6 +43,24 @@ export type AuthSession = {
   address?: `0x${string}`
   chainId?: number
   isLoggedIn?: boolean
+}
+
+export const applySessionCookies = (source: NextResponse, target: NextResponse) => {
+  const sourceHeaders = source.headers as Headers & {
+    getSetCookie?: () => string[]
+  }
+
+  const setCookieValues =
+    sourceHeaders.getSetCookie?.() ??
+    (sourceHeaders.get('set-cookie')
+      ? [sourceHeaders.get('set-cookie') as string]
+      : [])
+
+  for (const value of setCookieValues) {
+    target.headers.append('set-cookie', value)
+  }
+
+  return target
 }
 
 declare global {

@@ -1,20 +1,29 @@
 import { randomBytes } from 'crypto'
 
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 import { getIronSession } from 'iron-session'
 
-import { sessionOptions, type AuthSession } from '@/lib/session'
+import { applySessionCookies, sessionOptions, type AuthSession } from '@/lib/session'
 
-export async function GET() {
-  const cookieStore = await cookies()
-  const session = await getIronSession<AuthSession>(cookieStore, sessionOptions)
-  const nonce = randomBytes(16).toString('hex')
+export async function GET(request: Request) {
+  const sessionResponse = new NextResponse()
+  const session = await getIronSession<AuthSession>(
+    request,
+    sessionResponse,
+    sessionOptions
+  )
+  // Reuse existing nonce to avoid mismatch if getNonce is called multiple times
+  const nonce =
+    session.nonce && session.nonce.length >= 8
+      ? session.nonce
+      : randomBytes(16).toString('hex')
   session.nonce = nonce
   await session.save()
-  return new NextResponse(nonce, {
+  const response = new NextResponse(nonce, {
     status: 200,
     headers: { 'Content-Type': 'text/plain; charset=utf-8' }
   })
+
+  return applySessionCookies(sessionResponse, response)
 }
