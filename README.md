@@ -7,40 +7,31 @@ automation, and a Convex-backed observability layer for Somnia applications.
 ## Feature overview
 
 - **Safe price surfaces** – `SafeOracleRouter` merges Protofire + DIA price
-  sources on Somnia Shannon Testnet and exposes freshness + deviation flags.
-- **Guardian automation** – `GuardianHub` coordinates SentinelX operators and
-  enforces `GuardablePausable` contracts, including the demo SOMI paywall.
-- **Dashboard & API** – `/dashboard` provides tenant/monitor creation, live
-  monitor tables, incident stream, API key issuance, and a manual policy
-  trigger. REST endpoints (`/api/tenants`, `/api/monitors`, `/api/incidents`,
-  `/api/api-keys`, `/api/status`, `/api/jobs/run-policy`) drive automation and integrations.
-- **Credential management** – Manage scoped automation credentials directly in
-  Settings (issue + revoke) or via REST. Plaintext keys display once; Convex
-  stores SHA-256 hashes only.
-- **Incident webhooks & guardians** – Configure Slack/Discord/HTTP targets and
-  maintain a GuardianHub operator roster with notes for pause/unpause coverage.
-- **Playbook** – `/docs` consolidates deployment commands, environment variable
-  expectations, and REST payload examples for quick onboarding.
-- **Policy runner** – `src/jobs/policyRunner.ts` reads `SafeOracleRouter` on
-  Somnia Testnet, logs enriched incidents, and updates monitor status. The job
-  is accessible via the dashboard button or `pnpm policy:run` CLI helper.
-- **Observability** – Convex stores tenants, monitors, incidents, and API keys
-  with normalized IDs for seamless integration across the stack.
-- **Wallet auth & UI** – RainbowKit/Wagmi handle wallet connect, SIWE issues
-  iron-session cookies, and shadcn/ui provides consistent dashboards, forms,
-  and toasts.
+  sources on Somnia Shannon Testnet and exposes freshness/deviation flags for
+  SentinelX monitors.
+- **AI incident triage** – The indexer (`/api/indexer/run` or `pnpm policy:run`)
+  analyzes every monitor pass, calls OpenAI for summaries + mitigations, and
+  opens incidents with severity, root cause, and advisory tags.
+- **Action queue & AgentInbox** – Action intents store AI playbooks including
+  GuardianHub calldata (e.g. `pause(address target)`). Operators approve and
+  record execution hashes before AgentInbox relays on-chain.
+- **Telemetry & observability** – Convex tracks telemetry rows, incident
+  timelines, approvals, and status transitions so the dashboard daily brief,
+  monitors table, and incident console stay fresh.
+- **Docs copilot** – `/docs` includes an embedded AI copilot backed by Convex
+  vector search over local markdown (`pnpm docs:ingest`).
+- **Credential & auth surface** – RainbowKit/Wagmi + SIWE handle wallet auth,
+  and Settings manages API keys, webhooks, and Guardian operators with hashed
+  storage and single-view plaintext.
 
 ## Milestone log
 
-- **Day 1** – Core contracts, Convex schema, Hardhat + Next.js reset to
-  SentinelX branding.
-- **Day 2** – Ignition module, unit tests, Convex mutations/queries, REST API
-  scaffolding.
-- **Day 3** – Initial dashboard, incident stream, manual policy runner trigger.
-- **Day 4** – Tenant/monitor creation flows, on-chain policy runner integration,
-  enriched incident logging.
-- **Day 5** – Production hardening, API key management, Somnia Testnet-only
-  configuration, and final documentation/playbook updates.
+- **Phase 1** – SafeOracleRouter + GuardianHub integration, Convex tenancy, and
+  RainbowKit/SIWE authentication.
+- **Phase 2** – AI-powered incident pipeline (summaries, mitigations, action
+  intents) with telemetry storage and AgentInbox contract.
+- **Phase 3** – Sidebar dashboard redesign, incidents/actions consoles, Docs
+  Copilot, and vectorized documentation ingestion.
 
 ## Quick start
 
@@ -48,6 +39,7 @@ automation, and a Convex-backed observability layer for Somnia applications.
 pnpm install
 pnpm dev               # launches Next.js
 pnpm test:e2e          # run Vitest end-to-end checks (auth + policy runner)
+pnpm docs:ingest       # optional - embed docs for the AI copilot
 
 # In another terminal (optional for contract interaction)
 cd blockchain
@@ -66,17 +58,19 @@ Copy `.env.example` to `.env.local` and set the following values:
 NEXT_PUBLIC_APP_NAME=SentinelX
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network
-NEXT_PUBLIC_PROTOFIRE_ETH_USD=0xd9132c1d762D432672493F640a63B758891B449e
-NEXT_PUBLIC_DIA_WETH_USD=0x786c7893F8c26b80d42088749562eDb50Ba9601E
 NEXT_PUBLIC_WALLETCONNECT_ID=your_walletconnect_project_id
+CONVEX_DEPLOYMENT=https://your-deployment.convex.cloud
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+OPENAI_API_KEY=sk-...
 SESSION_SECRET=32+character_random_secret
+SENTINELX_ROUTER_ADDRESS=0xrouterAddress
+AGENT_INBOX_ADDRESS=0xinboxAddress
 ```
 
-Optional settings (for agent integrations) can be added as needed. Set
-`SENTINELX_ROUTER_ADDRESS` to the deployed `SafeOracleRouter` address on Somnia
-Shannon Testnet so the policy runner can evaluate monitors, and configure
-`CONVEX_DEPLOYMENT` / `NEXT_PUBLIC_CONVEX_URL` before hitting the management
-REST routes from scripts.
+`SENTINELX_ROUTER_ADDRESS` is used when monitors omit an explicit router.
+`AGENT_INBOX_ADDRESS` points UI affordances at the deployed AgentInbox. Provide
+`CONVEX_DEPLOYMENT` or `NEXT_PUBLIC_CONVEX_URL` so both server routes and
+client components can resolve the Convex instance.
 
 If `NEXT_PUBLIC_WALLETCONNECT_ID` is omitted locally the app falls back to a
 demo project id and logs a warning—replace it with your WalletConnect Cloud id
@@ -91,13 +85,16 @@ before production.
 
 ## Repository layout
 
-- `src/app` – Next.js App Router with RainbowKit/SIWE auth, shadcn UI, and REST
--  integration (dashboard, monitors, settings, docs, API routes).
-- `convex` – Schema plus mutations/queries for tenants, monitors, incidents, and
-  API keys.
-- `blockchain` – Hardhat workspace with contracts, tests, and Ignition modules.
-- `scripts` – helper scripts shared across the project (artifacts sync, Convex
-  dev convenience, policy runner CLI).
+- `src/app` – Next.js App Router (AppShell, dashboard, monitors, incidents,
+  actions, settings, docs, API routes).
+- `convex` – Schema and functions for tenants, monitors, telemetry, incidents,
+  action intents, doc embeddings, API keys, webhooks, guardians, and users.
+- `src/jobs` – Shared indexer logic consumed by the CLI (`policy:run`) and
+  serverless endpoint (`/api/indexer/run`).
+- `blockchain` – Hardhat workspace with SentinelX contracts (SafeOracleRouter,
+  GuardianHub, AgentInbox) and tests.
+- `scripts` – Utilities for ABI sync, Convex dev tasks, policy runner CLI, and
+  documentation ingestion (`pnpm docs:ingest`).
 
 ## Security checklist
 
@@ -112,9 +109,9 @@ before production.
 
 Upcoming milestones include:
 
-- Automated guardian enforcement from the policy runner (pause/unpause) with
-  configurable overrides.
-- Webhook adapters (Slack/Discord/HTTP) for incident notifications and key
-  rotation reminders.
-- VRF jitter scheduling plus multi-asset SafeOracle registry management.
-- Integration tests covering REST endpoints and Convex mutations at scale.
+- Broader monitor types (latency, log volume) feeding the same AI pipeline.
+- Native execution from AgentInbox with generated calldata for additional
+  GuardianHub methods.
+- Slack/Discord webhook templates that consume incident + action intent data.
+- Visualization overlays (sparklines, histograms) powered by the telemetry
+  table.

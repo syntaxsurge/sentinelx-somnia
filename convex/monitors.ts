@@ -22,6 +22,9 @@ export const list = query({
 export const create = mutation({
   args: {
     tenantId: v.union(v.id('tenants'), v.string()),
+    name: v.string(),
+    type: v.string(),
+    params: v.optional(v.any()),
     contractAddress: v.string(),
     guardianAddress: v.string(),
     routerAddress: v.string(),
@@ -42,7 +45,8 @@ export const create = mutation({
       ...rest,
       tenantId,
       status: 'active',
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      updatedAt: Date.now()
     })
   }
 })
@@ -70,7 +74,10 @@ export const updateStatus = internalMutation({
     status: v.string()
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.monitorId, { status: args.status })
+    await ctx.db.patch(args.monitorId, {
+      status: args.status,
+      updatedAt: Date.now()
+    })
   }
 })
 
@@ -84,6 +91,22 @@ export const setStatus = mutation({
     if (!monitorId) {
       throw new Error('Monitor not found')
     }
-    await ctx.db.patch(monitorId, { status: args.status })
+    await ctx.db.patch(monitorId, {
+      status: args.status,
+      updatedAt: Date.now()
+    })
+  }
+})
+
+export const updateEvaluation = mutation({
+  args: {
+    monitorId: v.id('monitors'),
+    evaluatedAt: v.number()
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.monitorId, {
+      lastEvaluatedAt: args.evaluatedAt,
+      updatedAt: Date.now()
+    })
   }
 })

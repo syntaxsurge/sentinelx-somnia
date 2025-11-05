@@ -8,10 +8,13 @@
  * @module
  */
 
+import type * as actionIntents from "../actionIntents.js";
 import type * as apiKeys from "../apiKeys.js";
+import type * as docChunks from "../docChunks.js";
 import type * as guardianOperators from "../guardianOperators.js";
 import type * as incidents from "../incidents.js";
 import type * as monitors from "../monitors.js";
+import type * as telemetry from "../telemetry.js";
 import type * as tenants from "../tenants.js";
 import type * as users from "../users.js";
 import type * as webhooks from "../webhooks.js";
@@ -31,10 +34,13 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  actionIntents: typeof actionIntents;
   apiKeys: typeof apiKeys;
+  docChunks: typeof docChunks;
   guardianOperators: typeof guardianOperators;
   incidents: typeof incidents;
   monitors: typeof monitors;
+  telemetry: typeof telemetry;
   tenants: typeof tenants;
   users: typeof users;
   webhooks: typeof webhooks;

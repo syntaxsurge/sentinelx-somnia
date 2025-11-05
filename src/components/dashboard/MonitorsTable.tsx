@@ -11,17 +11,20 @@ import { cn } from '@/lib/utils'
 
 type Monitor = {
   _id: string
+  name: string
+  type: string
   oracleKey: string
-  status?: string | null
+  status: string
   contractAddress: string
   guardianAddress: string
   createdAt: number
+  lastEvaluatedAt?: number | null
 }
 
 const statusColor: Record<string, string> = {
-  safe: 'text-emerald-500',
-  guarded: 'text-amber-500',
-  attention: 'text-red-500'
+  active: 'text-emerald-500',
+  attention: 'text-red-500',
+  paused: 'text-amber-500'
 }
 
 function shortAddress(value: string) {
@@ -52,11 +55,11 @@ export function MonitorsTable({ monitors }: { monitors: Monitor[] }) {
         <table className='min-w-full divide-y divide-border text-sm'>
           <thead className='bg-secondary/50 text-left uppercase tracking-wide text-xs text-muted-foreground'>
             <tr>
-              <th className='px-4 py-3 font-medium'>Pair</th>
+              <th className='px-4 py-3 font-medium'>Monitor</th>
               <th className='px-4 py-3 font-medium'>Status</th>
               <th className='px-4 py-3 font-medium'>Contract</th>
               <th className='px-4 py-3 font-medium'>Guardian</th>
-              <th className='px-4 py-3 font-medium'>Created</th>
+              <th className='px-4 py-3 font-medium'>Last evaluation</th>
             </tr>
           </thead>
           <tbody className='divide-y divide-border'>
@@ -67,18 +70,21 @@ export function MonitorsTable({ monitors }: { monitors: Monitor[] }) {
                     href={`/monitors/${monitor._id}`}
                     className='font-medium text-foreground hover:underline'
                   >
-                    {monitor.oracleKey}
+                    {monitor.name}
                   </Link>
+                  <div className='text-xs text-muted-foreground'>
+                    {monitor.type} · {monitor.oracleKey}
+                  </div>
                 </td>
                 <td className='px-4 py-3'>
                   <span
                     className={cn(
                       'font-medium capitalize',
-                      statusColor[monitor.status ?? ''] ??
+                      statusColor[monitor.status] ??
                         'text-muted-foreground'
                     )}
                   >
-                    {monitor.status ?? 'unknown'}
+                    {monitor.status}
                   </span>
                 </td>
                 <td className='px-4 py-3 font-mono text-xs text-muted-foreground'>
@@ -88,7 +94,9 @@ export function MonitorsTable({ monitors }: { monitors: Monitor[] }) {
                   {shortAddress(monitor.guardianAddress)}
                 </td>
                 <td className='px-4 py-3 text-muted-foreground'>
-                  {new Date(monitor.createdAt).toLocaleDateString()}
+                  {monitor.lastEvaluatedAt
+                    ? new Date(monitor.lastEvaluatedAt).toLocaleString()
+                    : 'Pending'}
                 </td>
               </tr>
             ))}

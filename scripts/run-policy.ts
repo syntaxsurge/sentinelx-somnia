@@ -2,7 +2,7 @@
 
 const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
-fetch(`${base}/api/jobs/run-policy`, { method: 'POST' })
+fetch(`${base}/api/indexer/run`, { method: 'POST' })
   .then(async response => {
     if (!response.ok) {
       throw new Error(`Request failed with status ${response.status}`)

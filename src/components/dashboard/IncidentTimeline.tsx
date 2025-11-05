@@ -11,11 +11,12 @@ import {
 
 type Incident = {
   _id: string
-  summary?: string | null
-  occurredAt: number
-  safe: boolean
-  bothFresh: boolean
+  summary: string
+  openedAt: number
+  severity: string
+  status: string
   txHash?: string | null
+  advisoryTags?: string[]
 }
 
 export function IncidentTimeline({ incidents }: { incidents: Incident[] }) {
@@ -23,7 +24,8 @@ export function IncidentTimeline({ incidents }: { incidents: Incident[] }) {
     return (
       <Card>
         <CardContent className='py-10 text-center text-sm text-muted-foreground'>
-          No incidents logged yet. Run the policy runner to generate a trail.
+          No incidents logged yet. Schedule the SentinelX policy agent or run it
+          on demand to populate telemetry.
         </CardContent>
       </Card>
     )
@@ -35,20 +37,30 @@ export function IncidentTimeline({ incidents }: { incidents: Incident[] }) {
         <Card key={incident._id}>
           <CardHeader className='pb-4'>
             <div className='flex flex-wrap items-center justify-between gap-3'>
-              <CardTitle className='text-base font-semibold'>
-                {incident.summary ?? 'No summary provided'}
+              <CardTitle className='text-base font-semibold capitalize'>
+                {incident.severity} · {incident.summary}
               </CardTitle>
               <div className='flex items-center gap-2'>
-                <Badge variant={incident.safe ? 'secondary' : 'destructive'}>
-                  {incident.safe ? 'Safe' : 'Unsafe'}
+                <Badge
+                  variant={
+                    incident.status === 'open'
+                      ? 'destructive'
+                      : incident.status === 'acknowledged'
+                        ? 'default'
+                        : 'secondary'
+                  }
+                >
+                  {incident.status}
                 </Badge>
-                <Badge variant={incident.bothFresh ? 'default' : 'outline'}>
-                  {incident.bothFresh ? 'Both fresh' : 'Stale feed'}
-                </Badge>
+                {incident.advisoryTags?.slice(0, 2).map(tag => (
+                  <Badge key={tag} variant='outline'>
+                    {tag}
+                  </Badge>
+                ))}
               </div>
             </div>
             <CardDescription>
-              {new Date(incident.occurredAt).toLocaleString()}
+              {new Date(incident.openedAt).toLocaleString()}
             </CardDescription>
           </CardHeader>
           <CardContent className='flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground'>

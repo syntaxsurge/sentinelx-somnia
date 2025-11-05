@@ -30,6 +30,10 @@ import { api } from '@/convex/_generated/api'
 import { useSession } from '@/hooks/useSession'
 
 const schema = z.object({
+  name: z
+    .string()
+    .min(3, 'Provide a descriptive monitor name')
+    .max(80, 'Keep the name concise'),
   contractAddress: z
     .string()
     .startsWith('0x')
@@ -81,6 +85,7 @@ export default function NewMonitorPage() {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
+      name: '',
       contractAddress: '',
       guardianAddress: '',
       routerAddress: '',
@@ -118,7 +123,24 @@ export default function NewMonitorPage() {
   }
 
   const handleSubmit = async (values: z.infer<typeof schema>) => {
-    await createMonitor({ tenantId: tenant._id, ...values })
+    await createMonitor({
+      tenantId: tenant._id,
+      name: values.name,
+      type: 'price',
+      params: {
+        oracleKey: values.oracleKey,
+        maxDeviationBps: values.maxDeviationBps,
+        staleAfterSeconds: values.staleAfterSeconds
+      },
+      contractAddress: values.contractAddress,
+      guardianAddress: values.guardianAddress,
+      routerAddress: values.routerAddress,
+      oracleKey: values.oracleKey,
+      protofireFeed: values.protofireFeed,
+      diaFeed: values.diaFeed,
+      maxDeviationBps: values.maxDeviationBps,
+      staleAfterSeconds: values.staleAfterSeconds
+    })
     toast({
       title: 'Monitor created',
       description: `${values.oracleKey} watcher active.`
@@ -140,6 +162,20 @@ export default function NewMonitorPage() {
           onSubmit={form.handleSubmit(handleSubmit)}
           className='space-y-6 rounded-xl border border-border bg-card p-6'
         >
+          <FormField
+            control={form.control}
+            name='name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Monitor name</FormLabel>
+                <FormControl>
+                  <Input placeholder='Somnia ETH/USD router guard' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name='contractAddress'

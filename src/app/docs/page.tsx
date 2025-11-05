@@ -1,8 +1,16 @@
 'use client'
 
+import { useState } from 'react'
+
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 function Code({ children }: { children: React.ReactNode }) {
   return (
@@ -12,15 +20,64 @@ function Code({ children }: { children: React.ReactNode }) {
   )
 }
 
+function AiDocCopilot() {
+  const [question, setQuestion] = useState('')
+  const [answer, setAnswer] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleAsk = async () => {
+    if (!question.trim()) return
+    setLoading(true)
+    setAnswer(null)
+    const response = await fetch('/api/ai/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    })
+    const payload = await response.json()
+    setAnswer(payload.answer ?? 'No answer available.')
+    setLoading(false)
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Docs Copilot</CardTitle>
+        <CardDescription>
+          Ask SentinelX about deployment, cron cadence, or AI configuration.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className='space-y-4'>
+        <div className='flex flex-col gap-3 sm:flex-row'>
+          <Input
+            placeholder='How do I schedule the indexer on Vercel?'
+            value={question}
+            onChange={event => setQuestion(event.target.value)}
+          />
+          <Button onClick={handleAsk} disabled={loading}>
+            {loading ? 'Thinking…' : 'Ask'}
+          </Button>
+        </div>
+        {loading ? (
+          <p className='text-xs text-muted-foreground'>Fetching context…</p>
+        ) : null}
+        {answer ? (
+          <p className='text-sm leading-relaxed text-muted-foreground'>
+            {answer}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function DocsPage() {
   return (
-    <div className='space-y-10 py-10'>
+    <div className='space-y-10 py-8'>
       <header className='space-y-3'>
-        <h1 className='text-3xl font-semibold'>Integrate SentinelX</h1>
+        <h1 className='text-3xl font-semibold tracking-tight'>SentinelX Playbook</h1>
         <p className='max-w-2xl text-sm text-muted-foreground'>
-          Harden Somnia contracts with dual-oracle validation and GuardianHub
-          enforcement. Follow these steps to deploy the contracts, register
-          monitors, and run the policy agent.
+          Deploy the SentinelX agent mesh: ingest Somnia telemetry, triage anomalies with AI, and route mitigations through GuardianHub.
         </p>
         <div className='flex flex-wrap gap-3'>
           <Button asChild>
@@ -44,148 +101,113 @@ export default function DocsPage() {
         </div>
       </header>
 
-      <Tabs defaultValue='contracts' className='space-y-6'>
-        <TabsList>
-          <TabsTrigger value='contracts'>Contracts</TabsTrigger>
-          <TabsTrigger value='deploy'>Deploy</TabsTrigger>
-          <TabsTrigger value='agent'>Policy agent</TabsTrigger>
-        </TabsList>
+      <AiDocCopilot />
 
-        <TabsContent value='contracts' className='space-y-4'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Guardable mixin</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-2 text-sm text-muted-foreground'>
-              <p>Add the mixin so GuardianHub can pause unsafe entrypoints.</p>
-              <Code>{`contract MyContract is GuardablePausable {
-  constructor(address guardian) {
-    _initializeGuardian(guardian);
-  }
+      <section className='grid gap-6 lg:grid-cols-2'>
+        <Card>
+          <CardHeader>
+            <CardTitle>Data plane · Indexer</CardTitle>
+            <CardDescription>
+              Poll SafeOracleRouter, persist telemetry, and trigger incident summaries.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-4 text-sm text-muted-foreground'>
+            <Code>{`# Vercel cron (every minute)
+{
+  "crons": [
+    { "path": "/api/indexer/run", "schedule": "*/1 * * * *" }
+  ]
+}
 
-  function execute() external whenNotPaused {
-    // critical logic
-  }
+# Local execution
+pnpm policy:run`}</Code>
+            <p>
+              The indexer reads <code>SafeOracleRouter.latest</code>, stores raw telemetry in Convex, and flags monitors that drift or go stale. Anomalies immediately open incidents and call the AI co-pilot pipeline.
+            </p>
+            <p>
+              Configure <code>SENTINELX_ROUTER_ADDRESS</code> if monitors omit router addresses. The cron endpoint returns <code>{'{ processed, anomalies }'}</code> for observability dashboards.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>AI plane · Configuration</CardTitle>
+            <CardDescription>
+              Summaries, mitigations, and action intents powered by OpenAI Responses & Embeddings APIs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-4 text-sm text-muted-foreground'>
+            <Code>{`# .env
+OPENAI_API_KEY=sk-...
+SOMNIA_RPC_URL=https://dream-rpc.somnia.network
+
+# Optional overrides
+SENTINELX_ROUTER_ADDRESS=0xrouter
+AGENT_INBOX_ADDRESS=0xinbox`}</Code>
+            <p>
+              <code>/api/ai/summarize</code> and <code>/api/ai/plan</code> wrap <code>gpt-4.1-mini</code> for deterministic, JSON-typed responses. Incident write-ups include severity, mitigations, and advisory tags.
+            </p>
+            <p>
+              The docs copilot (<code>/api/ai/ask</code>) embeds Markdown into Convex, enabling grounded Q&amp;A for operators.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Control plane · AgentInbox</CardTitle>
+            <CardDescription>
+              Human-in-the-loop approvals before GuardianHub execution.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-4 text-sm text-muted-foreground'>
+            <Code>{`// blockchain/contracts/AgentInbox.sol
+function execute(bytes32 id, address target, bytes calldata data) external onlyOperator {
+  require(allowlist[target], "target not allowed");
+  (bool ok, bytes memory res) = target.call(data);
+  require(ok, "call failed");
+  emit Executed(id, res);
 }`}</Code>
-            </CardContent>
-          </Card>
+            <p>
+              Deploy <code>AgentInbox</code> on Somnia testnet and allowlist GuardianHub. When the AI proposes <code>pause</code>, the action intent bundles target + calldata (<code>GuardianHub.pause()</code>). Approve in the Actions console and record the transaction hash after submission.
+            </p>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>SafeOracleRouter</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-2 text-sm text-muted-foreground'>
-              <p>Register Protofire + DIA feeds and the policy thresholds.</p>
-              <Code>{`bytes32 KEY = keccak256(bytes("ETH/USD"));
-safeOracle.configureFeed(
-  KEY,
-  0xd9132c1d762D432672493F640a63B758891B449e, // Protofire
-  0x786c7893F8c26b80d42088749562eDb50Ba9601E, // DIA adapter
-  100,  // deviation in bps (1%)
-  180   // stale window (seconds)
-);`}</Code>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        <Card>
+          <CardHeader>
+            <CardTitle>Convex schema</CardTitle>
+            <CardDescription>
+              Telemetry, incidents, action intents, and doc embeddings.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-4 text-sm text-muted-foreground'>
+            <Code>{`telemetry: monitorId, ts, source, datapoint
+incidents: severity, status, rootCause, mitigations
+actionIntents: plan { name, target, calldata, rationale }
+docChunks: embeddings for docs copilot`}</Code>
+            <p>
+              Use <code>telemetry:record</code> for any custom ingestion (gas spikes, log volume). Each incident maintains a full playbook and drives the dashboard daily brief.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
 
-        <TabsContent value='deploy' className='space-y-4'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Hardhat Ignition (Somnia testnet)</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-2 text-sm text-muted-foreground'>
-              <Code>{`cd blockchain
+      <section className='space-y-4'>
+        <h2 className='text-2xl font-semibold tracking-tight'>GuardianHub quickstart</h2>
+        <Card>
+          <CardContent className='space-y-4 text-sm text-muted-foreground'>
+            <Code>{`cd blockchain
 pnpm install
 pnpm compile
 pnpm exec hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somniatestnet`}</Code>
-              <p className='text-xs'>
-                Copy the GuardianHub, SafeOracleRouter, and SOMIPaymentGuarded
-                addresses. Paste them into the New Monitor form or environment
-                variables.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Environment variables</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Code>{`# .env.local
-NEXT_PUBLIC_APP_NAME=SentinelX
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_WALLETCONNECT_ID=your_walletconnect_project_id
-NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
-CONVEX_DEPLOYMENT=https://your-deployment.convex.cloud
-SESSION_SECRET=32+character_random_value
-NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network`}</Code>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value='agent' className='space-y-4'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Manual run</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Code>{`pnpm policy:run`}</Code>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Vercel cron (every 2 minutes)</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-2 text-sm text-muted-foreground'>
-              <Code>{`{
-  "crons": [
-    { "path": "/api/jobs/run-policy", "schedule": "*/2 * * * *" }
-  ]
-}`}</Code>
-              <p className='text-xs'>
-                The policy runner reads SafeOracleRouter.latest, updates monitor
-                status, records incidents, and can call GuardianHub when safe is
-                false.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>RainbowKit authentication surface</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-2 text-sm text-muted-foreground'>
-              <Code>{`GET  /api/auth/nonce   # issues SIWE nonce and seeds session
-POST /api/auth/verify  # verifies signature, stores wallet + chain
-GET  /api/auth/me      # returns { isLoggedIn, address, chainId }
-POST /api/auth/logout  # destroys iron-session`}</Code>
-              <p className='text-xs'>
-                Client providers call these endpoints from RainbowKit’s custom
-                authentication adapter. Successful verify upserts the wallet in
-                Convex and keeps the dashboard synchronized for multi-tab
-                sessions.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Automation & settings API</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-2 text-sm text-muted-foreground'>
-              <Code>{`GET  /api/api-keys?tenantId=...            # list hashed keys
-POST /api/api-keys                       # create + return plaintext key once
-DELETE /api/api-keys?apiKeyId=...        # revoke key
-POST /api/webhooks                       # add Slack/Discord/HTTP target
-DELETE /api/webhooks?webhookId=...       # remove target
-POST /api/guardian-operators             # register GuardianHub signer
-DELETE /api/guardian-operators?guardianId=...`}</Code>
-              <p className='text-xs'>
-                The Settings page consumes these routes for issuing automation
-                credentials, managing webhook fan-out, and keeping the guardian
-                roster current.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            <p>
+              Export contract addresses: GuardianHub, SafeOracleRouter, AgentInbox. Feed them into <code>/monitors/new</code> and the SentinelX settings page.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
     </div>
   )
 }

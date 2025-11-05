@@ -18,8 +18,8 @@ import {
 import { api } from '@/convex/_generated/api'
 
 const statusVariant: Record<string, 'default' | 'secondary' | 'destructive'> = {
-  safe: 'secondary',
-  guarded: 'default',
+  active: 'secondary',
+  paused: 'default',
   attention: 'destructive'
 }
 
@@ -54,10 +54,11 @@ export default function MonitorDetailPage() {
             Oracle monitor
           </p>
           <h1 className='text-3xl font-semibold tracking-tight'>
-            {monitor.oracleKey}
+            {monitor.name}
           </h1>
           <p className='text-sm text-muted-foreground'>
-            Monitor ID: <span className='font-mono text-xs'>{monitor._id}</span>
+            Pair {monitor.oracleKey} · Monitor ID{' '}
+            <span className='font-mono text-xs'>{monitor._id}</span>
           </p>
         </div>
         <div className='flex items-center gap-3'>

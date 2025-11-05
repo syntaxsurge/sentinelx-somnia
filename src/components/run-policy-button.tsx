@@ -14,7 +14,7 @@ export function RunPolicyButton() {
     setMessage(null)
     startTransition(async () => {
       try {
-        const response = await fetch('/api/jobs/run-policy', {
+        const response = await fetch('/api/indexer/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         })

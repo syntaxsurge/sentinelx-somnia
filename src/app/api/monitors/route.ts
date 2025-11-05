@@ -18,6 +18,8 @@ export async function POST(request: Request) {
   const payload = await request.json()
 
   const tenantId = payload.tenantId
+  const name = (payload.name ?? '').toString().trim()
+  const type = (payload.type ?? 'price').toString().trim()
   const contractAddress = sanitizeAddress(payload.contractAddress ?? '')
   const guardianAddress = sanitizeAddress(payload.guardianAddress ?? '')
   const routerAddress = sanitizeAddress(payload.routerAddress ?? '')
@@ -29,6 +31,17 @@ export async function POST(request: Request) {
 
   if (!tenantId) {
     return NextResponse.json({ error: 'tenantId is required' }, { status: 400 })
+  }
+
+  if (!name) {
+    return NextResponse.json({ error: 'name is required' }, { status: 400 })
+  }
+
+  if (type !== 'price') {
+    return NextResponse.json(
+      { error: 'only price monitors are currently supported' },
+      { status: 400 }
+    )
   }
 
   const missingAddressField =
@@ -66,6 +79,13 @@ export async function POST(request: Request) {
 
   const monitorId = await client.mutation('monitors:create' as any, {
     tenantId,
+    name,
+    type,
+    params: {
+      oracleKey,
+      maxDeviationBps,
+      staleAfterSeconds
+    },
     contractAddress,
     guardianAddress,
     routerAddress,

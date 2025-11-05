@@ -18,6 +18,7 @@
     "contracts:sync-abis": "tsx scripts/sync-abis.ts",
     "test:contracts": "pnpm --filter sentinelx-hardhat test",
     "policy:run": "tsx scripts/run-policy.ts",
+    "docs:ingest": "tsx scripts/ingest-docs.ts",
     "test:e2e": "vitest run"
   },
   "dependencies": {
@@ -43,6 +44,7 @@
     "date-fns": "^3.6.0",
     "encoding": "^0.1.13",
     "fake-indexeddb": "^6.2.4",
+    "openai": "^4.77.3",
     "iron-session": "^8.0.1",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
