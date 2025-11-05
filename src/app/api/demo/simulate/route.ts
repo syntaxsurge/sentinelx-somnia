@@ -8,7 +8,9 @@ import { loadChainConfig } from '@/lib/config'
 const demoOracleAbi = parseAbi(['function setPrice(int256 p) external'])
 
 export async function POST() {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE !== 'true') {
+  const config = await loadChainConfig()
+
+  if (!config.demoMode) {
     return NextResponse.json({ error: 'Demo mode disabled' }, { status: 403 })
   }
 
@@ -28,8 +30,6 @@ export async function POST() {
       { status: 500 }
     )
   }
-
-  const config = await loadChainConfig()
 
   try {
     const account = privateKeyToAccount(privateKey as `0x${string}`)

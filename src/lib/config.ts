@@ -24,7 +24,42 @@ export type ChainConfig = {
   demoMode: boolean
 }
 
+const DEMO_MODE_ENV_KEYS = [
+  'NEXT_PUBLIC_DEMO_MODE',
+  'SENTINELX_DEMO_MODE',
+  'DEMO_MODE'
+] as const
+
 let cachedConfig: ChainConfig | null = null
+
+function parseBooleanFlag(value: string | undefined): boolean | undefined {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  const normalized = value.trim().toLowerCase()
+
+  if (['true', '1', 'yes', 'on'].includes(normalized)) {
+    return true
+  }
+
+  if (['false', '0', 'no', 'off'].includes(normalized)) {
+    return false
+  }
+
+  return undefined
+}
+
+function resolveDemoMode(): boolean {
+  for (const key of DEMO_MODE_ENV_KEYS) {
+    const parsed = parseBooleanFlag(process.env[key])
+    if (typeof parsed === 'boolean') {
+      return parsed
+    }
+  }
+
+  return false
+}
 
 async function readChainConfigFromDisk(): Promise<ChainConfig> {
   const file = path.join(process.cwd(), 'config/chain.somniatest.json')
@@ -89,7 +124,7 @@ export async function loadChainConfig(): Promise<ChainConfig> {
   ])
   const demoOracle = selectAddress('DEMO_ORACLE', [base.demoOracle])
   const demoPausable = selectAddress('DEMO_PAUSABLE', [base.demoPausable])
-  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+  const demoMode = resolveDemoMode()
 
   cachedConfig = {
     ...base,
