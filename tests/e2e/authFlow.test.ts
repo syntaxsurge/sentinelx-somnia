@@ -96,6 +96,41 @@ const buildRequestWithCookies = (input: string, init: RequestInit = {}) => {
   })
 }
 
+const performSiweVerification = async () => {
+  const nonceResponse = await getNonce(
+    buildRequestWithCookies('http://localhost/api/auth/nonce')
+  )
+  expect(nonceResponse.status).toBe(200)
+  syncCookieJarFromResponse(nonceResponse)
+  const nonce = await nonceResponse.text()
+  expect(nonce.length).toBeGreaterThan(0)
+
+  const message = new SiweMessage({
+    domain: 'localhost:3000',
+    address: account.address,
+    statement: 'Sign in to SentinelX.',
+    uri: 'http://localhost:3000',
+    version: '1',
+    chainId: 50312,
+    nonce
+  })
+
+  const signature = await account.signMessage({
+    message: message.prepareMessage()
+  })
+
+  const verifyResponse = await postVerify(
+    buildRequestWithCookies('http://localhost/api/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, signature })
+    })
+  )
+
+  syncCookieJarFromResponse(verifyResponse)
+  return { verifyResponse }
+}
+
 const testPrivateKey =
   '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const account = privateKeyToAccount(testPrivateKey)
@@ -108,41 +143,14 @@ describe('/api/auth flow', () => {
     mutationSpy.mockReset()
     process.env.SESSION_SECRET = '0123456789abcdef0123456789abcdef'
     process.env.NEXT_PUBLIC_BASE_URL = 'http://localhost:3000'
+    process.env.CONVEX_DEPLOYMENT = 'https://example.convex.cloud'
+    delete process.env.CONVEX_DEPLOYMENT_URL
+    delete process.env.NEXT_PUBLIC_CONVEX_URL
   })
 
   it('completes SIWE sign-in, session lookup, and logout', async () => {
-    const nonceResponse = await getNonce(
-      buildRequestWithCookies('http://localhost/api/auth/nonce')
-    )
-    expect(nonceResponse.status).toBe(200)
-    syncCookieJarFromResponse(nonceResponse)
-    const nonce = await nonceResponse.text()
-    expect(nonce.length).toBeGreaterThan(0)
-
-    const message = new SiweMessage({
-      domain: 'localhost:3000',
-      address: account.address,
-      statement: 'Sign in to SentinelX.',
-      uri: 'http://localhost:3000',
-      version: '1',
-      chainId: 50312,
-      nonce
-    })
-
-    const signature = await account.signMessage({
-      message: message.prepareMessage()
-    })
-
-    const verifyResponse = await postVerify(
-      buildRequestWithCookies('http://localhost/api/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, signature })
-      })
-    )
-
+    const { verifyResponse } = await performSiweVerification()
     expect(verifyResponse.status).toBe(200)
-    syncCookieJarFromResponse(verifyResponse)
     expect(mutationSpy).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ address: account.address })
@@ -164,5 +172,13 @@ describe('/api/auth flow', () => {
     const meAfterLogout = await getSession()
     const meAfterPayload = await meAfterLogout.json()
     expect(meAfterPayload.isLoggedIn).toBe(false)
+  })
+
+  it('skips Convex upsert when deployment env lacks http protocol', async () => {
+    process.env.CONVEX_DEPLOYMENT = 'dev:hallowed-leopard-782'
+
+    const { verifyResponse } = await performSiweVerification()
+    expect(verifyResponse.status).toBe(200)
+    expect(mutationSpy).not.toHaveBeenCalled()
   })
 })

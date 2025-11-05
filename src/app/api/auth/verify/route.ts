@@ -53,13 +53,24 @@ export async function POST(request: Request) {
       process.env.NEXT_PUBLIC_CONVEX_URL
 
     if (convexUrl) {
-      const client = new ConvexHttpClient(convexUrl)
-      try {
-        await client.mutation(api.users.upsertFromSiwe, {
-          address: session.address
-        })
-      } catch (error) {
-        console.warn('Convex upsertFromSiwe failed', error)
+      const normalizedUrl = convexUrl.trim()
+      const isHttpUrl =
+        normalizedUrl.startsWith('https://') || normalizedUrl.startsWith('http://')
+
+      if (!isHttpUrl) {
+        console.warn(
+          'Skipping Convex upsertFromSiwe: expected http(s) deployment URL, received',
+          normalizedUrl
+        )
+      } else {
+        const client = new ConvexHttpClient(normalizedUrl)
+        try {
+          await client.mutation(api.users.upsertFromSiwe, {
+            address: session.address
+          })
+        } catch (error) {
+          console.warn('Convex upsertFromSiwe failed', error)
+        }
       }
     }
 
