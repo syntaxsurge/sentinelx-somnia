@@ -17,7 +17,8 @@
     "convex:redeploy": "pnpm convex:deploy && pnpm convex:dev",
     "contracts:sync-abis": "tsx scripts/sync-abis.ts",
     "test:contracts": "pnpm --filter sentinelx-hardhat test",
-    "policy:run": "tsx scripts/run-policy.ts"
+    "policy:run": "tsx scripts/run-policy.ts",
+    "test:e2e": "vitest run"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -83,6 +84,7 @@
     "prettier-plugin-tailwindcss": "^0.6.4",
     "tailwindcss": "^3.4.14",
     "tsx": "^4.20.6",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^4.0.7"
   }
 }

@@ -51,4 +51,20 @@ export async function POST(request: Request) {
   return NextResponse.json({ apiKeyId, apiKey: key }, { status: 201 })
 }
 
+export async function DELETE(request: Request) {
+  const client = getConvexClient()
+  const { searchParams } = new URL(request.url)
+  const apiKeyId = searchParams.get('apiKeyId')
+
+  if (!apiKeyId) {
+    return NextResponse.json(
+      { error: 'apiKeyId is required' },
+      { status: 400 }
+    )
+  }
+
+  await client.mutation('apiKeys:remove' as any, { apiKeyId })
+  return NextResponse.json({ ok: true })
+}
+
 export const revalidate = 0

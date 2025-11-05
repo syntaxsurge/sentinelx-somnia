@@ -165,6 +165,25 @@ POST /api/auth/logout  # destroys iron-session`}</Code>
               </p>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Automation & settings API</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-2 text-sm text-muted-foreground'>
+              <Code>{`GET  /api/api-keys?tenantId=...            # list hashed keys
+POST /api/api-keys                       # create + return plaintext key once
+DELETE /api/api-keys?apiKeyId=...        # revoke key
+POST /api/webhooks                       # add Slack/Discord/HTTP target
+DELETE /api/webhooks?webhookId=...       # remove target
+POST /api/guardian-operators             # register GuardianHub signer
+DELETE /api/guardian-operators?guardianId=...`}</Code>
+              <p className='text-xs'>
+                The Settings page consumes these routes for issuing automation
+                credentials, managing webhook fan-out, and keeping the guardian
+                roster current.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

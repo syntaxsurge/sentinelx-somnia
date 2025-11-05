@@ -40,6 +40,23 @@ export default defineSchema({
     label: v.string()
   }).index('by_tenant', ['tenantId']),
 
+  webhooks: defineTable({
+    tenantId: v.id('tenants'),
+    label: v.string(),
+    kind: v.string(),
+    destination: v.string(),
+    secret: v.optional(v.string()),
+    createdAt: v.number()
+  }).index('by_tenant', ['tenantId']),
+
+  guardianOperators: defineTable({
+    tenantId: v.id('tenants'),
+    address: v.string(),
+    role: v.optional(v.string()),
+    note: v.optional(v.string()),
+    createdAt: v.number()
+  }).index('by_tenant', ['tenantId']),
+
   users: defineTable({
     address: v.string(),
     lastLoginAt: v.number(),

@@ -9,10 +9,12 @@
  */
 
 import type * as apiKeys from "../apiKeys.js";
+import type * as guardianOperators from "../guardianOperators.js";
 import type * as incidents from "../incidents.js";
 import type * as monitors from "../monitors.js";
 import type * as tenants from "../tenants.js";
 import type * as users from "../users.js";
+import type * as webhooks from "../webhooks.js";
 
 import type {
   ApiFromModules,
@@ -30,10 +32,12 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   apiKeys: typeof apiKeys;
+  guardianOperators: typeof guardianOperators;
   incidents: typeof incidents;
   monitors: typeof monitors;
   tenants: typeof tenants;
   users: typeof users;
+  webhooks: typeof webhooks;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

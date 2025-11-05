@@ -9,8 +9,8 @@ import { api } from '@/convex/_generated/api'
 import { sessionOptions, type AuthSession } from '@/lib/session'
 
 function resolveDomain() {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return new URL(process.env.NEXT_PUBLIC_SITE_URL).host
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return new URL(process.env.NEXT_PUBLIC_BASE_URL).host
   }
   return process.env.VERCEL_URL ?? 'localhost:3000'
 }

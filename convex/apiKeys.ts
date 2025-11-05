@@ -26,6 +26,13 @@ export const create = mutation({
   }
 })
 
+export const remove = mutation({
+  args: { apiKeyId: v.id('apiKeys') },
+  handler: async (ctx, { apiKeyId }) => {
+    await ctx.db.delete(apiKeyId)
+  }
+})
+
 export const listAll = query({
   args: {},
   handler: async ctx => {

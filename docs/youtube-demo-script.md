@@ -41,19 +41,23 @@
 
 ## Segment 6 – Settings & Automation Prep
 
-1. **On-screen:** Open `/settings`; highlight the Automation, Webhooks, and Guardian sections.
-   - **Voice-over 11:** “Settings groups automation tasks: rotate API keys, wire webhook destinations, and document GuardianHub operator requirements.”
-2. **On-screen:** Return to `/dashboard` and highlight the workspace card linking to docs.
-   - **Voice-over 12:** “Everything routes back to the playbook—deployment checklists, cron setup, and REST payloads for integrating SentinelX into ops pipelines.”
+1. **On-screen:** Open `/settings`; in Automation enter `policy-runner-prod`, click “Generate API key”, copy the plaintext value, and show it listed with hash + revoke button.
+   - **Voice-over 11:** “Settings issues scoped automation credentials—labels map to audit trails, plaintext shows once, and revocation keeps Convex hashes clean.”
+2. **On-screen:** In Incident webhooks, add a Slack webhook URL, optional secret, show the saved card, and remove it.
+   - **Voice-over 12:** “Wire Slack, Discord, or HTTP webhooks. Secrets let downstream services validate each incident payload.”
+3. **On-screen:** In Guardian operators, add a wallet + role, reveal the roster table, and remove an entry.
+   - **Voice-over 13:** “Track GuardianHub signers with notes so you always know who can pause or unpause contracts.”
+4. **On-screen:** Return to `/dashboard` and highlight the workspace card linking to docs.
+   - **Voice-over 14:** “Everything routes back to the playbook—deployment checklists, cron setup, and REST payloads for integrating SentinelX into ops pipelines.”
 
 ## Segment 7 – Docs & REST Surface
 
 1. **On-screen:** Visit `/docs`, tab through Contracts, Deploy, and Policy Agent panels.
-   - **Voice-over 13:** “The docs page distills the guardian flow: Ignition deploys on Somnia, environment variables, policy runner cron, and express REST examples.”
+   - **Voice-over 15:** “The docs page distills the guardian flow: Ignition deploys on Somnia, environment variables, policy runner cron, and express REST examples.”
 2. **On-screen:** Run terminal commands calling `curl /api/status` and `curl /api/jobs/run-policy`.
-   - **Voice-over 14:** “Every dashboard action mirrors a REST endpoint. Automation can read status, list monitors, and trigger policy runs without touching the UI.”
+   - **Voice-over 16:** “Every dashboard action mirrors a REST endpoint. Automation can read status, list monitors, and trigger policy runs without touching the UI.”
 
 ## Segment 8 – Closing
 
 - **On-screen:** Return to the dashboard hero shot with KPI cards and incident timeline in view.
-- **Voice-over 15:** “That’s SentinelX: authenticate, create a tenant, register monitors, evaluate policy, and enforce guardian actions—all on Somnia Shannon Testnet.”
+- **Voice-over 17:** “That’s SentinelX: authenticate, create a tenant, register monitors, evaluate policy, and enforce guardian actions—all on Somnia Shannon Testnet.”

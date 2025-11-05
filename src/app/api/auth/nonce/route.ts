@@ -10,7 +10,7 @@ import { sessionOptions, type AuthSession } from '@/lib/session'
 export async function GET() {
   const cookieStore = await cookies()
   const session = await getIronSession<AuthSession>(cookieStore, sessionOptions)
-  const nonce = randomBytes(16).toString('base64url')
+  const nonce = randomBytes(16).toString('hex')
   session.nonce = nonce
   await session.save()
   return new NextResponse(nonce, {

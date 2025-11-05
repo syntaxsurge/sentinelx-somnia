@@ -12,6 +12,7 @@ type ToasterToast = {
   description?: React.ReactNode
   action?: React.ReactNode
   duration?: number
+  variant?: 'default' | 'destructive'
 }
 
 const actionTypes = {

@@ -14,9 +14,11 @@ automation, and a Convex-backed observability layer for Somnia applications.
   monitor tables, incident stream, API key issuance, and a manual policy
   trigger. REST endpoints (`/api/tenants`, `/api/monitors`, `/api/incidents`,
   `/api/api-keys`, `/api/status`, `/api/jobs/run-policy`) drive automation and integrations.
-- **Credential management** – Create scoped automation credentials from the
-  dashboard or REST API; secrets are returned once and stored as SHA-256 hashes
-  in Convex.
+- **Credential management** – Manage scoped automation credentials directly in
+  Settings (issue + revoke) or via REST. Plaintext keys display once; Convex
+  stores SHA-256 hashes only.
+- **Incident webhooks & guardians** – Configure Slack/Discord/HTTP targets and
+  maintain a GuardianHub operator roster with notes for pause/unpause coverage.
 - **Playbook** – `/docs` consolidates deployment commands, environment variable
   expectations, and REST payload examples for quick onboarding.
 - **Policy runner** – `src/jobs/policyRunner.ts` reads `SafeOracleRouter` on
@@ -45,6 +47,7 @@ automation, and a Convex-backed observability layer for Somnia applications.
 ```bash
 pnpm install
 pnpm dev               # launches Next.js
+pnpm test:e2e          # run Vitest end-to-end checks (auth + policy runner)
 
 # In another terminal (optional for contract interaction)
 cd blockchain
@@ -71,7 +74,9 @@ SESSION_SECRET=32+character_random_secret
 
 Optional settings (for agent integrations) can be added as needed. Set
 `SENTINELX_ROUTER_ADDRESS` to the deployed `SafeOracleRouter` address on Somnia
-Shannon Testnet so the policy runner can evaluate monitors.
+Shannon Testnet so the policy runner can evaluate monitors, and configure
+`CONVEX_DEPLOYMENT` / `NEXT_PUBLIC_CONVEX_URL` before hitting the management
+REST routes from scripts.
 
 If `NEXT_PUBLIC_WALLETCONNECT_ID` is omitted locally the app falls back to a
 demo project id and logs a warning—replace it with your WalletConnect Cloud id
@@ -87,7 +92,7 @@ before production.
 ## Repository layout
 
 - `src/app` – Next.js App Router with RainbowKit/SIWE auth, shadcn UI, and REST
-  integration.
+-  integration (dashboard, monitors, settings, docs, API routes).
 - `convex` – Schema plus mutations/queries for tenants, monitors, incidents, and
   API keys.
 - `blockchain` – Hardhat workspace with contracts, tests, and Ignition modules.
@@ -100,8 +105,8 @@ before production.
   `SOMNIA_RPC_URL` from `blockchain/.env`.
 - Run `pnpm lint:check-solidity` inside `blockchain/` after editing contracts.
 - Execute `pnpm typecheck` from the repo root before publishing changes.
-- Run `pnpm lint` (root) and `pnpm --filter sentinelx-hardhat test` (or
-  `cd blockchain && pnpm test`) prior to release.
+- Run `pnpm lint`, `pnpm test:e2e`, and `pnpm --filter sentinelx-hardhat test`
+  (or `cd blockchain && pnpm test`) prior to release.
 
 ## Next steps
 
