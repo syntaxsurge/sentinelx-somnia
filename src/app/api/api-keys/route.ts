@@ -1,32 +1,57 @@
-import { createHash, randomBytes } from 'crypto'
-
 import { NextResponse } from 'next/server'
 
-import { getConvexClient } from '@/lib/convexClient'
+import { getIronSession } from 'iron-session'
 
-function generateApiKey(): { key: string; hash: string } {
-  const key = randomBytes(24).toString('base64url')
-  const hash = createHash('sha256').update(key).digest('hex')
-  return { key, hash }
-}
+import { api } from '@/convex/_generated/api'
+import { getConvexClient } from '@/lib/convexClient'
+import { generateApiKey } from '@/lib/apiKeys'
+import { applySessionCookies, sessionOptions, type AuthSession } from '@/lib/session'
+import { type Id } from '@/convex/_generated/dataModel'
 
 export async function GET(request: Request) {
+  const sessionResponse = new NextResponse()
+  const session = await getIronSession<AuthSession>(
+    request,
+    sessionResponse,
+    sessionOptions
+  )
+
+  if (!session?.isLoggedIn || !session.address) {
+    const response = NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    return applySessionCookies(sessionResponse, response)
+  }
+
   const client = getConvexClient()
   const { searchParams } = new URL(request.url)
   const tenantId = searchParams.get('tenantId') ?? undefined
 
+  let keys
+
   if (tenantId) {
-    const keys = await client.query('apiKeys:list' as any, {
-      tenantId
+    keys = await client.query(api.apiKeys.list, {
+      tenantId: tenantId as Id<'tenants'>
     })
-    return NextResponse.json({ keys })
+  } else {
+    keys = await client.query(api.apiKeys.listAll, {})
   }
 
-  const keys = await client.query('apiKeys:listAll' as any, {})
-  return NextResponse.json({ keys })
+  const response = NextResponse.json({ keys })
+  return applySessionCookies(sessionResponse, response)
 }
 
 export async function POST(request: Request) {
+  const sessionResponse = new NextResponse()
+  const session = await getIronSession<AuthSession>(
+    request,
+    sessionResponse,
+    sessionOptions
+  )
+
+  if (!session?.isLoggedIn || !session.address) {
+    const response = NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    return applySessionCookies(sessionResponse, response)
+  }
+
   const client = getConvexClient()
   const payload = await request.json()
 
@@ -42,16 +67,29 @@ export async function POST(request: Request) {
 
   const { key, hash } = generateApiKey()
 
-  const apiKeyId = await client.mutation('apiKeys:create' as any, {
-    tenantId,
+  const apiKeyId = await client.mutation(api.apiKeys.create, {
+    tenantId: tenantId as Id<'tenants'>,
     label,
-    keyHash: hash
+    hash
   })
 
-  return NextResponse.json({ apiKeyId, apiKey: key }, { status: 201 })
+  const response = NextResponse.json({ apiKeyId, apiKey: key }, { status: 201 })
+  return applySessionCookies(sessionResponse, response)
 }
 
 export async function DELETE(request: Request) {
+  const sessionResponse = new NextResponse()
+  const session = await getIronSession<AuthSession>(
+    request,
+    sessionResponse,
+    sessionOptions
+  )
+
+  if (!session?.isLoggedIn || !session.address) {
+    const response = NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    return applySessionCookies(sessionResponse, response)
+  }
+
   const client = getConvexClient()
   const { searchParams } = new URL(request.url)
   const apiKeyId = searchParams.get('apiKeyId')
@@ -63,8 +101,9 @@ export async function DELETE(request: Request) {
     )
   }
 
-  await client.mutation('apiKeys:remove' as any, { apiKeyId })
-  return NextResponse.json({ ok: true })
+  await client.mutation(api.apiKeys.remove, { apiKeyId: apiKeyId as Id<'apiKeys'> })
+  const response = NextResponse.json({ ok: true })
+  return applySessionCookies(sessionResponse, response)
 }
 
 export const revalidate = 0

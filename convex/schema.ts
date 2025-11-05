@@ -89,10 +89,14 @@ export default defineSchema({
 
   apiKeys: defineTable({
     tenantId: v.id('tenants'),
-    keyHash: v.string(),
+    hash: v.string(),
+    label: v.string(),
     createdAt: v.number(),
-    label: v.string()
-  }).index('by_tenant', ['tenantId']),
+    lastUsedAt: v.optional(v.number()),
+    revokedAt: v.optional(v.number())
+  })
+    .index('by_tenant', ['tenantId'])
+    .index('by_hash', ['hash']),
 
   webhooks: defineTable({
     tenantId: v.id('tenants'),

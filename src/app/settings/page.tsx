@@ -40,8 +40,10 @@ import { useToast } from '@/components/ui/use-toast'
 type ApiKeyRecord = {
   _id: string
   label: string
-  keyHash: string
+  hash: string
   createdAt: number
+  lastUsedAt?: number
+  revokedAt?: number
 }
 
 type WebhookRecord = {
@@ -406,6 +408,7 @@ export default function SettingsPage() {
                       <tr>
                         <th className='px-3 py-2 font-medium'>Label</th>
                         <th className='px-3 py-2 font-medium'>Created</th>
+                        <th className='px-3 py-2 font-medium'>Last used</th>
                         <th className='px-3 py-2 font-medium'>Hash</th>
                         <th className='px-3 py-2 font-medium text-right'>Actions</th>
                       </tr>
@@ -417,8 +420,13 @@ export default function SettingsPage() {
                           <td className='px-3 py-2 text-muted-foreground'>
                             {new Date(key.createdAt).toLocaleString()}
                           </td>
+                          <td className='px-3 py-2 text-muted-foreground'>
+                            {key.lastUsedAt
+                              ? new Date(key.lastUsedAt).toLocaleString()
+                              : 'Never'}
+                          </td>
                           <td className='px-3 py-2 font-mono text-xs text-muted-foreground'>
-                            {key.keyHash.slice(0, 16)}…
+                            {key.hash.slice(0, 16)}…
                           </td>
                           <td className='px-3 py-2 text-right'>
                             <Button
