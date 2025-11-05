@@ -5,9 +5,11 @@ import {
   createPublicClient,
   createWalletClient,
   decodeFunctionData,
+  encodeFunctionData,
   getAddress,
   http,
   isAddress,
+  isAddressEqual,
   parseAbi
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -93,26 +95,6 @@ export async function POST(request: Request) {
     return applySessionCookies(sessionResponse, response)
   }
 
-  const target =
-    (intent.plan as any)?.target ??
-    (intent.plan?.arguments as any)?.target ??
-    null
-  const calldata = (intent.plan as any)?.calldata ?? null
-
-  if (
-    typeof target !== 'string' ||
-    !target.startsWith('0x') ||
-    target.length !== 42 ||
-    typeof calldata !== 'string' ||
-    !calldata.startsWith('0x')
-  ) {
-    const response = NextResponse.json(
-      { error: 'Missing executable target or calldata on action intent' },
-      { status: 400 }
-    )
-    return applySessionCookies(sessionResponse, response)
-  }
-
   const privateKey =
     process.env.EXECUTOR_PRIVATE_KEY ?? process.env.OPERATOR_PRIVATE_KEY
   if (!privateKey || !privateKey.startsWith('0x')) {
@@ -135,8 +117,11 @@ export async function POST(request: Request) {
 
   try {
     const chainConfig = await loadChainConfig()
-    const guardianHub = chainConfig.guardianHub.toLowerCase()
-    const agentInbox = chainConfig.agentInbox.toLowerCase()
+    const executionTarget = resolveExecutionPlan(intent.plan, {
+      guardianHub: chainConfig.guardianHub,
+      agentInbox: chainConfig.agentInbox
+    })
+
     const account = privateKeyToAccount(privateKey as `0x${string}`)
     const walletClient = createWalletClient({
       chain: somniaShannon,
@@ -147,17 +132,6 @@ export async function POST(request: Request) {
       chain: somniaShannon,
       transport: http(rpcUrl)
     })
-
-    const executionTarget = resolveExecutionPlan(
-      {
-        target,
-        calldata: calldata as `0x${string}`
-      },
-      {
-        guardianHub: chainConfig.guardianHub,
-        agentInbox: chainConfig.agentInbox
-      }
-    )
 
     if (
       executionTarget.guardable &&
@@ -219,21 +193,153 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('actions/execute error', error)
     const message = extractErrorMessage(error)
-    const status = error instanceof ContractFunctionRevertedError ? 400 : 500
+    const status =
+      error instanceof ContractFunctionRevertedError || error instanceof ActionPlanError
+        ? 400
+        : 500
     const response = NextResponse.json({ error: message }, { status })
     return applySessionCookies(sessionResponse, response)
   }
 }
 
+class ActionPlanError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ActionPlanError'
+  }
+}
+
 function resolveExecutionPlan(
-  plan: { target: string; calldata: `0x${string}` },
+  planPayload: unknown,
+  config: {
+    guardianHub: `0x${string}`
+    agentInbox: `0x${string}`
+  }
+): ExecutionPlan {
+  const byName = resolveExecutionPlanByName(planPayload, config)
+  if (byName) {
+    return byName
+  }
+
+  const fallback = resolveExecutionPlanFromCalldata(planPayload, config)
+  if (fallback) {
+    return fallback
+  }
+
+  throw new ActionPlanError('Action intent is missing executable calldata; regenerate the plan or execute manually.')
+}
+
+function resolveExecutionPlanByName(
+  planPayload: unknown,
+  config: {
+    guardianHub: `0x${string}`
+    agentInbox: `0x${string}`
+  }
+): ExecutionPlan | null {
+  if (!planPayload || typeof planPayload !== 'object') {
+    return null
+  }
+
+  const plan = planPayload as Record<string, unknown>
+  const name = typeof plan.name === 'string' ? plan.name : undefined
+  if (!name) {
+    return null
+  }
+
+  const args = (plan.arguments ?? {}) as Record<string, unknown>
+
+  switch (name) {
+    case 'propose_pause_market': {
+      const guardable =
+        pickAddress([
+          args.contract,
+          args.guardable,
+          args.contractAddress,
+          args.market,
+          (plan as any).guardable,
+          (plan as any).contract
+        ]) ??
+        (typeof plan.calldata === 'string' && plan.calldata.startsWith('0x')
+          ? tryDecodeGuardian(plan.calldata as `0x${string}`)?.guardable
+          : undefined)
+
+      if (!guardable) {
+        return null
+      }
+
+      const callArgs: readonly [`0x${string}`] = [guardable]
+      const useAgentInbox = shouldUseAgentInbox(plan, config.agentInbox)
+
+      if (useAgentInbox) {
+        const callData = encodeFunctionData({
+          abi: guardianAbi,
+          functionName: 'pauseTarget',
+          args: callArgs
+        })
+
+        return {
+          type: 'agentInbox',
+          functionName: 'execute',
+          args: [config.guardianHub, callData],
+          guardable
+        }
+      }
+
+      return {
+        type: 'guardian',
+        functionName: 'pauseTarget',
+        args: callArgs,
+        guardable
+      }
+    }
+    case 'propose_set_limit': {
+      throw new ActionPlanError(
+        'Router parameter tuning requires manual execution today. Adjust the SafeOracleRouter directly and mark the action resolved.'
+      )
+    }
+    default:
+      return null
+  }
+}
+
+function resolveExecutionPlanFromCalldata(
+  planPayload: unknown,
+  config: {
+    guardianHub: `0x${string}`
+    agentInbox: `0x${string}`
+  }
+): ExecutionPlan | null {
+  if (!planPayload || typeof planPayload !== 'object') {
+    return null
+  }
+
+  const plan = planPayload as Record<string, unknown>
+  const args = (plan.arguments ?? {}) as Record<string, unknown>
+  const target = pickAddress([plan.target, args.target])
+  const calldata =
+    typeof plan.calldata === 'string' && plan.calldata.startsWith('0x')
+      ? (plan.calldata as `0x${string}`)
+      : undefined
+
+  if (!target || !calldata) {
+    return null
+  }
+
+  return resolveExecutionPlanFromTargetAndCalldata(
+    { target, calldata },
+    config
+  )
+}
+
+function resolveExecutionPlanFromTargetAndCalldata(
+  plan: { target: `0x${string}`; calldata: `0x${string}` },
   config: {
     guardianHub: `0x${string}`
     agentInbox: `0x${string}`
   }
 ): ExecutionPlan {
   if (!isAddress(plan.target)) {
-    throw new Error('Action intent has an invalid target address')
+    throw new ActionPlanError('Action intent has an invalid target address')
   }
 
   const normalizedTarget = getAddress(plan.target)
@@ -241,34 +347,32 @@ function resolveExecutionPlan(
   const agentInboxAddress = getAddress(config.agentInbox)
 
   if (!plan.calldata || !plan.calldata.startsWith('0x')) {
-    throw new Error('Action intent is missing executable calldata')
+    throw new ActionPlanError('Action intent is missing executable calldata')
   }
 
   const guardianCall = tryDecodeGuardian(plan.calldata)
 
   if (guardianCall) {
     if (normalizedTarget !== guardianAddress) {
-      throw new Error('Guardian calls must target the configured GuardianHub')
+      throw new ActionPlanError('GuardianHub calls must target the configured GuardianHub address')
     }
 
-    const execution = {
+    return {
       type: 'guardian',
       functionName: guardianCall.functionName,
       args: guardianCall.args,
       guardable: guardianCall.guardable
-    } as const
-
-    return execution
+    }
   }
 
   if (normalizedTarget === agentInboxAddress) {
     const agentCall = tryDecodeAgentInbox(plan.calldata)
     if (!agentCall) {
-      throw new Error('Unsupported AgentInbox calldata')
+      throw new ActionPlanError('Unsupported AgentInbox calldata')
     }
 
     if (agentCall.args[0] !== guardianAddress) {
-      throw new Error('AgentInbox calls must relay to the configured GuardianHub')
+      throw new ActionPlanError('AgentInbox calls must relay to the configured GuardianHub')
     }
 
     let guardable: `0x${string}` | undefined
@@ -287,7 +391,55 @@ function resolveExecutionPlan(
     }
   }
 
-  throw new Error('Unsupported action intent target. Only GuardianHub or AgentInbox calls are allowed.')
+  throw new ActionPlanError(
+    'Unsupported action intent target. Only GuardianHub or AgentInbox calls are allowed.'
+  )
+}
+
+function coerceAddress(value: unknown): `0x${string}` | undefined {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  try {
+    return getAddress(value)
+  } catch {
+    return undefined
+  }
+}
+
+function pickAddress(values: unknown[]): `0x${string}` | undefined {
+  for (const value of values) {
+    const address = coerceAddress(value)
+    if (address) {
+      return address
+    }
+  }
+  return undefined
+}
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`
+
+function shouldUseAgentInbox(plan: Record<string, unknown>, agentInbox?: `0x${string}`): boolean {
+  if (!agentInbox || isAddressEqual(agentInbox, ZERO_ADDRESS)) {
+    return false
+  }
+
+  const execVia =
+    typeof plan.execVia === 'string' ? plan.execVia.toLowerCase() : undefined
+  if (execVia === 'agentinbox' || execVia === 'inbox') {
+    return true
+  }
+
+  const args = (plan.arguments ?? {}) as Record<string, unknown>
+  const explicitTarget = pickAddress([
+    plan.target,
+    args.target,
+    (plan as any).executor,
+    (plan as any).agentInbox
+  ])
+
+  return !!explicitTarget && isAddressEqual(explicitTarget, agentInbox)
 }
 
 function tryDecodeGuardian(
@@ -358,6 +510,10 @@ function tryDecodeAgentInbox(
 }
 
 function extractErrorMessage(error: unknown): string {
+  if (error instanceof ActionPlanError) {
+    return error.message
+  }
+
   if (error instanceof ContractFunctionRevertedError) {
     return error.reason ?? error.shortMessage ?? 'Contract reverted during execution'
   }
