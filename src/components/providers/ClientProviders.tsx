@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SiweMessage } from 'siwe'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { injected, coinbaseWallet } from 'wagmi/connectors'
+import { useSWRConfig } from 'swr'
 
 import { useAuthStatus } from '@/hooks/useSession'
 import { somniaShannon } from '@/lib/chain'
@@ -48,6 +49,7 @@ const wagmiConfig = walletConnectId && walletConnectId.length > 0
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   const status = useAuthStatus()
+  const { mutate } = useSWRConfig()
 
   useEffect(() => {
     const handler = (event: PromiseRejectionEvent) => {
@@ -100,13 +102,18 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
             credentials: 'include',
             body: JSON.stringify({ message, signature })
           })
-          return res.ok
+          if (res.ok) {
+            await mutate('/api/auth/me')
+            return true
+          }
+          return false
         },
         signOut: async () => {
           await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+          await mutate('/api/auth/me')
         }
       }),
-    []
+    [mutate]
   )
 
   return (
