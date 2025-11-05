@@ -6,13 +6,13 @@ import {
   CheckCircle2,
   Clock,
   Code2,
-  ExternalLink,
   Loader2,
   Play,
   ShieldCheck
 } from 'lucide-react'
 
 import { useMutation, useQuery } from 'convex/react'
+import { useAccount, usePublicClient, useSendTransaction } from 'wagmi'
 
 import { ActionsSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
@@ -24,7 +24,6 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { api } from '@/convex/_generated/api'
 import { useSession } from '@/hooks/useSession'
@@ -51,8 +50,10 @@ function ActionStateBadge({ state }: { state: string }) {
 
 export default function ActionsPage() {
   const { user, loading: sessionLoading } = useSession()
+  const { address } = useAccount()
+  const publicClient = usePublicClient()
+  const { sendTransactionAsync } = useSendTransaction()
   const { toast } = useToast()
-  const [txMap, setTxMap] = useState<Record<string, string>>({})
   const [pending, setPending] = useState<Record<string, boolean>>({})
   const intents = useQuery(api.actionIntents.listByState, {
     state: undefined,
@@ -91,47 +92,74 @@ export default function ActionsPage() {
     }
   }
 
-  const handleExecute = async (intentId: string) => {
-    const txHash = txMap[intentId]
-    if (!txHash) {
+  const handleExecute = async (intent: any) => {
+    if (!address) {
       toast({
-        title: 'Transaction hash required',
+        title: 'Wallet required',
+        description: 'Connect your wallet to execute guardian transactions.',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    const target =
+      (intent.plan?.target as string | undefined) ??
+      (intent.plan?.arguments?.target as string | undefined)
+    const calldata = intent.plan?.calldata as string | undefined
+
+    if (
+      !target ||
+      !target.startsWith('0x') ||
+      target.length !== 42 ||
+      !calldata ||
+      !calldata.startsWith('0x')
+    ) {
+      toast({
+        title: 'Missing contract data',
         description:
-          'Provide the on-chain transaction hash once the GuardianHub execution succeeds.',
+          'This plan is missing executable call data. Review the incident details for manual steps.',
         variant: 'destructive'
       })
       return
     }
 
-    if (!/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
-      toast({
-        title: 'Invalid hash format',
-        description: 'Transaction hashes must be 66 hex characters starting with 0x.',
-        variant: 'destructive'
-      })
-      return
-    }
-
-    setPending(prev => ({ ...prev, [intentId]: true }))
+    setPending(prev => ({ ...prev, [intent._id]: true }))
     try {
+      const hash = await sendTransactionAsync({
+        to: target as `0x${string}`,
+        data: calldata as `0x${string}`,
+        account: address
+      })
+
+      if (publicClient) {
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
+        if (receipt.status !== 'success') {
+          throw new Error('Guardian transaction reverted')
+        }
+      }
+
       await setState({
-        intentId: intentId as any,
+        intentId: intent._id as any,
         state: 'executed',
         actor: user?.address ?? 'operator',
-        txHash
+        txHash: hash
       })
       toast({
-        title: 'Action marked as executed',
-        description: 'The action has been successfully executed on-chain'
+        title: 'Action executed',
+        description: 'GuardianHub call was broadcast and confirmed on-chain.'
       })
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Please try again'
       toast({
         title: 'Execution failed',
-        description: error instanceof Error ? error.message : 'Please try again',
+        description: message.includes('User rejected')
+          ? 'Transaction was rejected in your wallet.'
+          : message,
         variant: 'destructive'
       })
     } finally {
-      setPending(prev => ({ ...prev, [intentId]: false }))
+      setPending(prev => ({ ...prev, [intent._id]: false }))
     }
   }
 
@@ -258,44 +286,29 @@ export default function ActionsPage() {
                     )}
                   </Button>
 
-                  <div className='flex-1 min-w-[280px] space-y-2'>
-                    <Label htmlFor={`tx-${intent._id}`} className='text-xs'>
-                      Transaction Hash
-                    </Label>
-                    <div className='flex items-center gap-2'>
-                      <Input
-                        id={`tx-${intent._id}`}
-                        placeholder='0x...'
-                        className='flex-1 font-mono text-xs'
-                        value={txMap[intent._id] ?? ''}
-                        onChange={event =>
-                          setTxMap(prev => ({
-                            ...prev,
-                            [intent._id]: event.target.value
-                          }))
-                        }
-                        disabled={intent.state === 'executed'}
-                      />
-                      <Button
-                        size='sm'
-                        className='gap-2'
-                        onClick={() => handleExecute(intent._id as string)}
-                        disabled={intent.state !== 'approved' || pending[intent._id]}
-                      >
-                        {pending[intent._id] ? (
-                          <>
-                            <Loader2 className='h-4 w-4 animate-spin' />
-                            Executing...
-                          </>
-                        ) : (
-                          <>
-                            <Play className='h-4 w-4' />
-                            Execute
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+                  <Button
+                    size='sm'
+                    className={cn(
+                      'gap-2',
+                      intent.state === 'approved'
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : ''
+                    )}
+                    onClick={() => handleExecute(intent)}
+                    disabled={intent.state !== 'approved' || pending[intent._id]}
+                  >
+                    {pending[intent._id] ? (
+                      <>
+                        <Loader2 className='h-4 w-4 animate-spin' />
+                        Executing...
+                      </>
+                    ) : (
+                      <>
+                        <Play className='h-4 w-4' />
+                        Execute
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </CardContent>

@@ -43,11 +43,8 @@ Authoritative walkthrough of the SentinelX prototype for Somnia Shannon. Hit the
 ## 5) Approve & execute (`/actions`) - Control plane (70s)
 - On-screen: Proposed intent inside Action queue.
 - Preferred path:
-  - Click **Approve & Execute**, confirm wallet transaction.
-  - Toast shows transaction hash; state flips to Executed.
-- Fallback (if UI execution disabled):
-  - Click **Approve**.
-  - Run the tx manually, paste hash into **Mark executed**, confirm.
+  - Click **Approve**, then hit **Execute**. Wallet confirms the GuardianHub transaction.
+  - Toast shows the status while the UI auto-closes the loop and records the on-chain hash.
 - Optional: Show `DemoPausable.paused()` or failed `doWork()` call to confirm the pause.
 - **Callout**: "AgentInbox relays only allowlisted calls. Execution hashes are recorded for auditability."
 

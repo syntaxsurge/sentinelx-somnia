@@ -442,7 +442,7 @@ export default function DocsPage() {
           </p>
           <CodePanel value={guardianSnippet} />
           <p className='text-xs text-muted-foreground'>
-            SentinelX emits action intents with the target contract + calldata. Operators approve in-app or via the policy runner CLI, then confirm the transaction hash to close the loop.
+            SentinelX emits action intents with the target contract + calldata. Operators approve and execute in-app (wallet signature) or via the policy runner CLI, and the UI records the on-chain hash automatically.
           </p>
         </section>
 
