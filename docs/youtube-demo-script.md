@@ -1,6 +1,11 @@
 # SentinelX Demo Video Script (Concise)
 
-Fast, task-first walkthrough of the AI ops workflow. Skip wallet/auth; go straight to pages, actions, and exact inputs.
+Fast, task‑first walkthrough of the infrastructure + AI agent workflow. Skip wallet/auth; go straight to pages, actions, and exact inputs.
+
+What you’ll see (Infra + AI):
+- Data plane (indexer): Polls SafeOracleRouter, stores telemetry, opens incidents.
+- AI plane (triage + plan): Generates severity, root cause, mitigations; proposes action intents.
+- Control plane (approvals + exec): Human approval and on‑chain execution via AgentInbox/GuardianHub.
 
 ---
 
@@ -8,6 +13,7 @@ Fast, task-first walkthrough of the AI ops workflow. Skip wallet/auth; go straig
 
 - On-screen: Show KPI cards, Monitors table, Daily brief, and Action queue.
 - Action: Click “Run policy evaluation”. A toast confirms; Daily brief/Incidents update.
+- Callout: Data plane — triggers `/api/indexer/run` to evaluate monitors and write telemetry/incidents.
 
 ## 2) Register a Monitor (`/monitors/new`)
 
@@ -28,11 +34,13 @@ Then open `/monitors` to show the row with status and last evaluation.
 
 - On-screen: Back to `/dashboard`, click “Run policy evaluation”.
 - Result: New incident appears in “Recent incidents” and “Daily brief”.
+- Callout: AI plane — incident includes AI Summary (severity, root cause, mitigations) from the agent.
 
 ## 4) Incident review (`/incidents` → click one row)
 
 - On-screen: Incident detail shows AI Summary (severity, root cause, mitigations), Telemetry snapshot, and Action intents.
 - Action: Click “Generate new plan”. New intent(s) appear with rationale and calldata when applicable.
+- Callout: AI plane — planner tool‑calls propose `pause` or parameter updates as Action Intents.
 
 ## 5) Approve and mark execution (`/actions`)
 
@@ -40,6 +48,7 @@ Then open `/monitors` to show the row with status and last evaluation.
 - Action: Click “Approve”.
 - Action: Paste tx hash from GuardianHub/AgentInbox execution → e.g. `0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
 - Action: Click “Mark executed”. State flips to Executed.
+- Callout: Control plane — operator approval plus recorded tx hash delivers safe autonomy.
 
 ## 6) Docs (`/docs`)
 
@@ -48,6 +57,7 @@ Then open `/monitors` to show the row with status and last evaluation.
   - Path: `/api/indexer/run`
   - Schedule: `*/1 * * * *`
 - Ask Copilot example: “How do I schedule the indexer on Vercel?”
+ - Callout: Data + AI — docs are embedded for grounded answers; cron keeps AI insights fresh.
 
 ## 7) Settings (optional, 15s)
 
