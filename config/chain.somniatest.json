@@ -1,9 +1,9 @@
 {
   "chainId": 50312,
   "name": "Somnia Shannon Testnet",
-  "guardianHub": "0xD50507b2a82eF548A3E4996BB91D66fDeDEACf09",
-  "agentInbox": "0x7b35F0D7322dfcd53204187679Ca6355d384dfec",
-  "oracleRouter": "0xcF0b20F049a9f726A3EB246276BcFe4f4b9C864B",
+  "guardianHub": "0x16Ba3F0Ece29c930977C2aF14EFe504F845F5aDB",
+  "agentInbox": "0x89CFE9834F353715d71c10EA22f143BF2962079f",
+  "oracleRouter": "0xbC814f1518E56fD7A9E5474A0362780243f3CB86",
   "demoOracle": "0x3dB282783Aa6B5cDb040c4a7939c6da007D3be1E",
   "demoPausable": "0xaA085D3505C097c0A5e0CD97AB0F52114cCa9967",
   "feeds": {
