@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import NextTopLoader from 'nextjs-toploader'
 
 import { EnsureTenantOnMount } from '@/components/auth/EnsureTenantOnMount'
-import { AppShell } from '@/components/layout/AppShell'
+import { ConditionalLayout } from '@/components/layout/ConditionalLayout'
 import { ClientProviders } from '@/components/providers/ClientProviders'
 import { ConvexProviderClient } from '@/components/providers/ConvexProvider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
@@ -35,7 +35,7 @@ export default function RootLayout({
             <ClientProviders>
               <NextTopLoader showSpinner={false} color='#2dd4bf' />
               <EnsureTenantOnMount />
-              <AppShell>{children}</AppShell>
+              <ConditionalLayout>{children}</ConditionalLayout>
               <SiteFooter />
               <Toaster />
             </ClientProviders>
