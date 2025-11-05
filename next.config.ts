@@ -46,11 +46,6 @@ const nextConfig: NextConfig = {
         source: '/demo',
         destination: 'https://www.youtube.com/watch?v=sH3gxoT4rTM',
         permanent: false
-      },
-      {
-        source: '/docs',
-        destination: 'https://docs.somnia.network',
-        permanent: false
       }
     ]
   },
