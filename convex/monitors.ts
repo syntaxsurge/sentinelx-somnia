@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 
-import { getCanonicalAddresses, isOverrideAllowed } from './config'
+import { getCanonicalAddresses } from './config'
 import { internalMutation, mutation, query } from './_generated/server'
 
 export const list = query({
@@ -42,62 +42,28 @@ export const create = mutation({
     }
 
     const canonical = getCanonicalAddresses()
-    const overrideAllowed = isOverrideAllowed()
     const canonicalFeed = canonical.feeds[args.oracleKey]
-    if (!overrideAllowed && !canonicalFeed) {
-      throw new Error(
-        `Oracle ${args.oracleKey} is not enabled without override`
-      )
+    if (!canonicalFeed) {
+      throw new Error(`Oracle ${args.oracleKey} is not configured`)
     }
 
-     const lower = <T extends string>(value: T) => value.toLowerCase()
+    const lower = <T extends string>(value: T) => value.toLowerCase()
 
-     const normalized = {
-       contractAddress: lower(args.contractAddress),
-       guardianAddress: lower(args.guardianAddress),
-       routerAddress: lower(args.routerAddress),
-       protofireFeed: lower(args.protofireFeed),
-       diaFeed: lower(args.diaFeed)
-     }
-
-     const canonicalNormalized = {
-       contractAddress: lower(canonical.demoPausable),
-       guardianAddress: lower(canonical.guardianHub),
-       routerAddress: lower(canonical.oracleRouter),
-       protofireFeed: canonicalFeed
-         ? lower(canonicalFeed.protofire as string)
-         : normalized.protofireFeed,
-       diaFeed: canonicalFeed
-         ? lower(canonicalFeed.dia as string)
-         : normalized.diaFeed
-     }
-
-     const overrideUsed =
-       normalized.contractAddress !== canonicalNormalized.contractAddress ||
-       normalized.guardianAddress !== canonicalNormalized.guardianAddress ||
-       normalized.routerAddress !== canonicalNormalized.routerAddress ||
-       normalized.protofireFeed !== canonicalNormalized.protofireFeed ||
-       normalized.diaFeed !== canonicalNormalized.diaFeed
-
-    if (overrideUsed && !overrideAllowed) {
-      throw new Error('Contract override is disabled for this deployment')
+    const values = {
+      contractAddress: lower(args.contractAddress),
+      guardianAddress: lower(canonical.guardianHub),
+      routerAddress: lower(canonical.oracleRouter),
+      protofireFeed: lower(canonicalFeed.protofire),
+      diaFeed: lower(canonicalFeed.dia)
     }
-
-    const values = overrideAllowed ? normalized : canonicalNormalized
 
     const { tenantId: _ignored, ...rest } = args
 
     const params = {
       ...(rest.params ?? {}),
-      agentInbox: overrideAllowed
-        ? rest.params?.agentInbox ?? canonical.agentInbox
-        : canonical.agentInbox,
-      demoOracle: overrideAllowed
-        ? rest.params?.demoOracle ?? canonical.demoOracle
-        : canonical.demoOracle,
-      demoPausable: overrideAllowed
-        ? rest.params?.demoPausable ?? canonical.demoPausable
-        : canonical.demoPausable
+      agentInbox: lower(canonical.agentInbox),
+      demoOracle: canonical.demoOracle,
+      demoPausable: canonical.demoPausable
     }
 
     return await ctx.db.insert('monitors', {

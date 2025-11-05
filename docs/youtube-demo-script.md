@@ -19,13 +19,15 @@ Authoritative walkthrough of the SentinelX prototype for Somnia Shannon. Hit the
 - **Callout**: "The policy runner hits `/api/indexer/run`, polls SafeOracleRouter, and stores telemetry + incidents in Convex."
 
 ## 2) Register monitor (`/monitors/new`) - Config defaults (55s)
-- On-screen: "Create Monitor" form with GuardianHub, AgentInbox, SafeOracleRouter, DemoOracle, and DemoPausable fields locked (read-only).
-- Inputs to fill:
+- On-screen: "Create Monitor" form showing editable policy fields and a second card labelled "SentinelX infrastructure" with read-only GuardianHub, AgentInbox, SafeOracleRouter, and feed addresses.
+- Action: Click **Seed demo values** to autofill the sample monitor (name, contract, thresholds) then fine-tune if needed.
+- Inputs to check:
   - Monitor name → `Somnia ETH/USD router guard`
+  - Guarded contract → `0x761D0dbB45654513AdF1BF6b5D217C0f8B3c5737`
   - Max deviation (bps) → `100`
   - Stale after (seconds) → `120`
 - Action: Submit, then show the new row on `/monitors`.
-- **Callout**: "Addresses come from `/api/config/chain`. Advanced override is admin-only and env-gated - safe defaults for hackathon judges."
+- **Callout**: "Core addresses stay read-only from `/api/config/chain`, so customers only plug in their guarded contract and policy thresholds."
 
 ## 3) Simulate incident (`/dashboard`) - Deterministic trigger (35s)
 - On-screen: **Simulate incident** button (top right).

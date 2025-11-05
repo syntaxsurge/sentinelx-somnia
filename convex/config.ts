@@ -55,19 +55,9 @@ export function getCanonicalAddresses(): CanonicalConfig {
   return {
     guardianHub: pickAddress('GUARDIAN_HUB', FALLBACK.guardianHub),
     agentInbox: pickAddress('AGENT_INBOX', FALLBACK.agentInbox),
-    oracleRouter: pickAddress(
-      'SAFE_ORACLE_ROUTER',
-      FALLBACK.oracleRouter
-    ),
+    oracleRouter: pickAddress('SAFE_ORACLE_ROUTER', FALLBACK.oracleRouter),
     demoOracle: pickAddress('DEMO_ORACLE', FALLBACK.demoOracle),
     demoPausable: pickAddress('DEMO_PAUSABLE', FALLBACK.demoPausable),
     feeds: FALLBACK.feeds
   }
-}
-
-export function isOverrideAllowed(): boolean {
-  return (
-    process.env.ALLOW_CONTRACT_OVERRIDE === 'true' ||
-    process.env.SENTINELX_ALLOW_CONTRACT_OVERRIDE === 'true'
-  )
 }

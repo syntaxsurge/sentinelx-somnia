@@ -258,12 +258,12 @@ export default function DocsPage() {
         <section id='quickstart' className='space-y-4'>
           <h2 className='text-2xl font-semibold tracking-tight'>Demo quickstart</h2>
           <p className='text-sm text-muted-foreground'>
-            Reproduce the full SentinelX loop in minutes. Demo mode binds pre-deployed GuardianHub, AgentInbox, DemoOracle, and DemoPausable contracts, keeping the registration form read-only while still letting advanced users override addresses with an admin toggle.
+            Reproduce the full SentinelX loop in minutes. Demo mode binds pre-deployed GuardianHub, AgentInbox, DemoOracle, and DemoPausable contracts. The form exposes only your monitor policy fields while core infrastructure stays read-only.
           </p>
           <ol className='list-decimal space-y-2 pl-6 text-sm text-muted-foreground'>
             <li>Open the dashboard, connect your Somnia wallet, and approve the SIWE prompt.</li>
             <li>Visit <em>Settings → API Keys</em>, create a key (for example <code className='rounded bg-muted px-1 font-mono text-xs'>policy-runner-demo</code>), and copy the plaintext secret.</li>
-            <li>Go to <em>Monitors → New</em>. GuardianHub, AgentInbox, SafeOracleRouter, and oracle feeds are locked from config—fill only the monitor name, max deviation bps, and freshness seconds, then submit.</li>
+            <li>Go to <em>Monitors → New</em>. Click <strong>Seed demo values</strong> to autofill the guarded contract and thresholds, or provide your own values. GuardianHub, AgentInbox, SafeOracleRouter, and feeds are read-only from config.</li>
             <li>Back on the dashboard, click <strong>Simulate incident</strong>. This calls <code className='rounded bg-muted px-1 font-mono text-xs'>POST /api/demo/simulate</code> and spikes the demo oracle so the policy runner opens an incident.</li>
             <li>Navigate to <em>Incidents</em>, open the newest entry, and generate a plan. The AI co-pilot will recommend pausing the demo contract and notifying guardians.</li>
             <li>Approve &amp; execute the action from <em>Actions</em>. AgentInbox relays the pause transaction and records the hash. Attempting <code className='rounded bg-muted px-1 font-mono text-xs'>doWork()</code> on DemoPausable now reverts because the contract is paused.</li>
@@ -283,7 +283,7 @@ export default function DocsPage() {
             </p>
             <CodePanel value={simulateCurl} />
             <p>
-              Set <code className='rounded bg-muted px-1 font-mono text-xs'>SENTINELX_ALLOW_CONTRACT_OVERRIDE=true</code> (and the Next.js public flag) only when partners need to bring their own contracts. Convex enforces the same toggle server-side.
+              SentinelX always enforces these canonical addresses server-side, so customers only provide their guarded contract and thresholds.
             </p>
           </div>
         </section>
@@ -331,7 +331,7 @@ export default function DocsPage() {
         <section id='monitors' className='space-y-4'>
           <h2 className='text-2xl font-semibold tracking-tight'>Register monitors</h2>
           <p className='text-sm text-muted-foreground'>
-            Monitors pin GuardianHub, AgentInbox, SafeOracleRouter, and dual-oracle feeds. By default the API ignores custom addresses and persists the canonical values from <code className='rounded bg-muted px-1 font-mono text-xs'>/api/config/chain</code>. Set <code className='rounded bg-muted px-1 font-mono text-xs'>SENTINELX_ALLOW_CONTRACT_OVERRIDE=true</code> (and enable the dashboard toggle) if a partner needs to override them; Convex validates the same toggle on mutation.
+            Monitors pin GuardianHub, AgentInbox, SafeOracleRouter, and dual-oracle feeds. SentinelX persists the canonical addresses from <code className='rounded bg-muted px-1 font-mono text-xs'>/api/config/chain</code>; requests only need to supply the guarded contract and policy thresholds.
           </p>
           <Tabs defaultValue='curl' className='mt-2'>
             <TabsList className='w-fit'>

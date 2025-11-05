@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 /// @title DemoOracle
-/// @notice Simple price oracle with owner-controlled price updates for demos.
+/// @notice Simple price oracle with owner-controlled updates for demo incidents.
 contract DemoOracle {
   address public owner;
   int256 public price;
@@ -38,7 +38,6 @@ contract DemoOracle {
     owner = newOwner;
   }
 
-  /// @notice Adapter for Chainlink-compatible feeds.
   function latestRoundData()
     external
     view

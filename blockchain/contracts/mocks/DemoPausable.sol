@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 /// @title DemoPausable
-/// @notice Guardable contract used to demonstrate SentinelX pause workflows.
+/// @notice Guarded contract used in the SentinelX demo to showcase pause flows.
 contract DemoPausable {
   address public owner;
   address public guardianHub;
@@ -55,7 +55,6 @@ contract DemoPausable {
     emit Unpaused(msg.sender);
   }
 
-  /// @notice Example protected function that illustrates pause state enforcement.
   function doWork() external whenNotPaused returns (uint256) {
     return block.number;
   }

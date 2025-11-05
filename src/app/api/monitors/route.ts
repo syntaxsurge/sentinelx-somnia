@@ -37,21 +37,13 @@ export async function POST(request: Request) {
   const contractAddress = sanitizeAddress(
     payload.contractAddress ?? config.demoPausable
   )
-  const guardianAddress = sanitizeAddress(
-    payload.guardianAddress ?? config.guardianHub
-  )
-  const routerAddress = sanitizeAddress(
-    payload.routerAddress ?? config.oracleRouter
-  )
+  const guardianAddress = sanitizeAddress(config.guardianHub)
+  const routerAddress = sanitizeAddress(config.oracleRouter)
+  const agentInbox = sanitizeAddress(config.agentInbox)
   const protofireFeed = sanitizeAddress(
-    payload.protofireFeed ?? config.feeds?.[oracleKey]?.protofire ?? ''
+    config.feeds?.[oracleKey]?.protofire ?? ''
   )
-  const diaFeed = sanitizeAddress(
-    payload.diaFeed ?? config.feeds?.[oracleKey]?.dia ?? ''
-  )
-  const agentInbox = sanitizeAddress(
-    payload.agentInbox ?? config.agentInbox
-  )
+  const diaFeed = sanitizeAddress(config.feeds?.[oracleKey]?.dia ?? '')
   const maxDeviationBps = Number(payload.maxDeviationBps)
   const staleAfterSeconds = Number(payload.staleAfterSeconds)
 
@@ -111,58 +103,13 @@ export async function POST(request: Request) {
     )
   }
 
-  const overrideAllowed =
-    process.env.ALLOW_CONTRACT_OVERRIDE === 'true' ||
-    process.env.SENTINELX_ALLOW_CONTRACT_OVERRIDE === 'true'
-
   const canonicalFeed = config.feeds[oracleKey]
-  if (!overrideAllowed && !canonicalFeed) {
+  if (!canonicalFeed) {
     return NextResponse.json(
-      { error: 'Oracle pair not available without override' },
+      { error: 'Oracle pair not available for this deployment' },
       { status: 400 }
     )
   }
-
-  const normalize = (value: string) => value.toLowerCase()
-
-  const provided = {
-    contractAddress: normalize(contractAddress),
-    guardianAddress: normalize(guardianAddress),
-    routerAddress: normalize(routerAddress),
-    agentInbox: normalize(agentInbox),
-    protofireFeed: normalize(protofireFeed),
-    diaFeed: normalize(diaFeed)
-  }
-
-  const canonical = {
-    contractAddress: normalize(config.demoPausable),
-    guardianAddress: normalize(config.guardianHub),
-    routerAddress: normalize(config.oracleRouter),
-    agentInbox: normalize(config.agentInbox),
-    protofireFeed: canonicalFeed
-      ? normalize(canonicalFeed.protofire)
-      : provided.protofireFeed,
-    diaFeed: canonicalFeed
-      ? normalize(canonicalFeed.dia)
-      : provided.diaFeed
-  }
-
-  const overrideUsed =
-    provided.contractAddress !== canonical.contractAddress ||
-    provided.guardianAddress !== canonical.guardianAddress ||
-    provided.routerAddress !== canonical.routerAddress ||
-    provided.agentInbox !== canonical.agentInbox ||
-    provided.protofireFeed !== canonical.protofireFeed ||
-    provided.diaFeed !== canonical.diaFeed
-
-  if (overrideUsed && !overrideAllowed) {
-    return NextResponse.json(
-      { error: 'Contract override disabled for this deployment' },
-      { status: 400 }
-    )
-  }
-
-  const selected = overrideAllowed ? provided : canonical
 
   const monitorId = await client.mutation(api.monitors.create, {
     tenantId,
@@ -172,16 +119,16 @@ export async function POST(request: Request) {
       oracleKey,
       maxDeviationBps,
       staleAfterSeconds,
-      agentInbox: selected.agentInbox,
+      agentInbox: agentInbox.toLowerCase(),
       demoOracle: config.demoOracle,
       demoPausable: config.demoPausable
     },
-    contractAddress: selected.contractAddress,
-    guardianAddress: selected.guardianAddress,
-    routerAddress: selected.routerAddress,
+    contractAddress: contractAddress.toLowerCase(),
+    guardianAddress: guardianAddress.toLowerCase(),
+    routerAddress: routerAddress.toLowerCase(),
     oracleKey,
-    protofireFeed: selected.protofireFeed,
-    diaFeed: selected.diaFeed,
+    protofireFeed: canonicalFeed.protofire.toLowerCase(),
+    diaFeed: canonicalFeed.dia.toLowerCase(),
     maxDeviationBps,
     staleAfterSeconds
   })

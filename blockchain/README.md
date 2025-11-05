@@ -12,11 +12,10 @@ Smart contracts and deployment scripts that back the SentinelX Somnia deployment
   guarded price + freshness signals for monitors.
 - **GuardablePausable.sol** – Lightweight mixin that exposes `pause` / `unpause`
   guarded by a SentinelX guardian.
-- **DemoOracle.sol** – Demo-only feed that lets the demo operator spike prices
-  for deterministic incident generation.
-- **DemoPausable.sol** – Guarded contract used in the demo flow to prove pauses.
 - **SOMIPaymentGuarded.sol** – Example paywall contract that consumes the
   GuardianHub guardrails.
+- **contracts/mocks/** – Contains `DemoOracle.sol` and `DemoPausable.sol`, the
+  demo-only contracts used to generate deterministic incidents.
 
 Generated artifacts are consumed by the Next.js frontend (ABI sync) and by the
 policy runner.
