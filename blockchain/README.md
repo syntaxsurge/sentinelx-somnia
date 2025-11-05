@@ -86,7 +86,7 @@ pnpm exec hardhat verify --network somniatestnet <DEPLOYED_ADDRESS> <constructor
 
 1. Deploy demo assets (`deploy-demo.ts`) with a wallet dedicated to the demo.
 2. Copy the addresses into `config/chain.somniatest.json`.
-3. Set `DEMO_MODE=true`, `NEXT_PUBLIC_DEMO_MODE=true`, and
+3. Set `NEXT_PUBLIC_DEMO_MODE=true` and
    `OPERATOR_PRIVATE_KEY=<demo operator>` in the Next.js environment.
 4. Keep the demo operator key funded with a small amount of gas to allow
    `/api/demo/simulate` to spike the oracle price on demand.

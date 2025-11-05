@@ -272,7 +272,7 @@ export default function DocsPage() {
           <div className='space-y-2 text-xs text-muted-foreground'>
             <p className='font-medium text-foreground'>Demo mode configuration</p>
             <p>
-              Enable demo mode with <code className='rounded bg-muted px-1 font-mono text-xs'>DEMO_MODE=true</code>, <code className='rounded bg-muted px-1 font-mono text-xs'>NEXT_PUBLIC_DEMO_MODE=true</code>, and a funded <code className='rounded bg-muted px-1 font-mono text-xs'>OPERATOR_PRIVATE_KEY</code> that can update the DemoOracle price.
+              Enable demo mode with <code className='rounded bg-muted px-1 font-mono text-xs'>NEXT_PUBLIC_DEMO_MODE=true</code> and a funded <code className='rounded bg-muted px-1 font-mono text-xs'>OPERATOR_PRIVATE_KEY</code> that can update the DemoOracle price.
             </p>
             <p>
               Canonical contract addresses are served from <code className='rounded bg-muted px-1 font-mono text-xs'>/api/config/chain</code>:

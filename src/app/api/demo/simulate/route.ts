@@ -8,7 +8,7 @@ import { loadChainConfig } from '@/lib/config'
 const demoOracleAbi = parseAbi(['function setPrice(int256 p) external'])
 
 export async function POST() {
-  if (process.env.DEMO_MODE !== 'true') {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE !== 'true') {
     return NextResponse.json({ error: 'Demo mode disabled' }, { status: 403 })
   }
 

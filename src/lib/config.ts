@@ -73,9 +73,7 @@ export async function loadChainConfig(): Promise<ChainConfig> {
   ])
   const demoOracle = selectAddress('DEMO_ORACLE', [base.demoOracle])
   const demoPausable = selectAddress('DEMO_PAUSABLE', [base.demoPausable])
-  const demoMode =
-    process.env.DEMO_MODE === 'true' ||
-    process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
   cachedConfig = {
     ...base,

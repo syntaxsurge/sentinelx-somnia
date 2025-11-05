@@ -3,7 +3,7 @@
 Authoritative walkthrough of the SentinelX prototype for Somnia Shannon. Hit the high notes - infra stability, AI co-pilot, and on-chain guardrails - within five minutes.
 
 ## Assumptions
-- Demo mode is enabled (`DEMO_MODE=true`, `NEXT_PUBLIC_DEMO_MODE=true`) with a funded `OPERATOR_PRIVATE_KEY`.
+- Demo mode is enabled (`NEXT_PUBLIC_DEMO_MODE=true`) with a funded `OPERATOR_PRIVATE_KEY`.
 - `config/chain.somniatest.json` (or env overrides) points at the deployed GuardianHub, AgentInbox, DemoOracle, and DemoPausable contracts.
 - You are already signed in with RainbowKit + SIWE before recording.
 - The Convex deployment is seeded with at least one tenant tied to your wallet.
