@@ -12,6 +12,7 @@ import type * as apiKeys from "../apiKeys.js";
 import type * as incidents from "../incidents.js";
 import type * as monitors from "../monitors.js";
 import type * as tenants from "../tenants.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   incidents: typeof incidents;
   monitors: typeof monitors;
   tenants: typeof tenants;
+  users: typeof users;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

@@ -10,6 +10,13 @@ import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import {
   Form,
   FormControl,
   FormField,
@@ -45,9 +52,11 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <p className='py-10 text-center text-sm text-muted-foreground'>
-        Loading session…
-      </p>
+      <Card className='mx-auto max-w-md'>
+        <CardContent className='py-12 text-center text-sm text-muted-foreground'>
+          Preparing onboarding…
+        </CardContent>
+      </Card>
     )
   }
 
@@ -62,37 +71,38 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className='mx-auto max-w-md space-y-6 py-16'>
-      <div className='space-y-2 text-center'>
-        <h1 className='text-3xl font-semibold'>Create your workspace</h1>
-        <p className='text-sm text-muted-foreground'>
-          We map every tenant to your Somnia address. Give it a name that your
-          operators recognize.
-        </p>
-      </div>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(handleSubmit)}
-          className='space-y-4 rounded-xl border border-border bg-card p-6'
-        >
-          <FormField
-            control={form.control}
-            name='name'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Workspace name</FormLabel>
-                <FormControl>
-                  <Input placeholder='Somnia Index Vaults' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type='submit' className='w-full'>
-            Continue
-          </Button>
-        </form>
-      </Form>
+    <div className='mx-auto max-w-lg'>
+      <Card>
+        <CardHeader className='space-y-2 text-center'>
+          <CardTitle className='text-3xl'>Create your workspace</CardTitle>
+          <CardDescription>
+            Each tenant maps to your wallet address. Name it for your Somnia
+            operators and start registering monitors.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-4'>
+              <FormField
+                control={form.control}
+                name='name'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Workspace name</FormLabel>
+                    <FormControl>
+                      <Input placeholder='Somnia Index Vaults' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type='submit' className='w-full'>
+                Continue
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

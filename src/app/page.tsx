@@ -2,32 +2,64 @@
 
 import Link from 'next/link'
 
+import { ShieldCheck, Radar, RefreshCw } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
 
 const highlights = [
   {
     title: 'Safe price surface',
-    body: 'Cross-check Protofire Chainlink and DIA adapters, expose guarded prices, status flags, and raw feed data for auditability.'
+    description:
+      'SafeOracleRouter compares Protofire Chainlink and DIA feeds, exposing guarded answers, status flags, and raw oracle metadata for audits.',
+    icon: ShieldCheck
   },
   {
     title: 'Guardian enforcement',
-    body: 'GuardianHub pauses and resumes guardable contracts in a single transaction so Somnia apps fail safe by default.'
+    description:
+      'GuardianHub pauses and unpauses critical contracts atomically, ensuring Somnia applications fail safe under deviation or stale data.',
+    icon: Radar
   },
   {
     title: 'Convex observability',
-    body: 'Tenants, monitors, and incidents persist in Convex for instant dashboards, SIWE-authenticated access, and automation.'
+    description:
+      'Tenants, monitors, and incidents persist in Convex with SIWE auth, powering dashboards, policy automation, and webhook fan-out.',
+    icon: RefreshCw
+  }
+]
+
+const architecture = [
+  {
+    title: 'Next.js App Router',
+    description:
+      'Marketing shell, dashboard, and REST endpoints run on Next.js 15 with Tailwind + shadcn/ui for accessible, responsive interfaces.'
+  },
+  {
+    title: 'RainbowKit + SIWE',
+    description:
+      'WalletConnect v2 with custom RainbowKit authentication adapter keeps sessions in iron-session and syncs to Convex.'
+  },
+  {
+    title: 'Somnia Shannon Testnet',
+    description:
+      'Monitors guard Somnia contracts via SafeOracleRouter, with policy runs calling latest(bytes32) and logging incidents.'
   }
 ]
 
 export default function Home() {
   return (
-    <section className='flex flex-col items-center gap-12 py-16 text-center'>
-      <div className='max-w-3xl space-y-6'>
-        <span className='inline-flex items-center justify-center rounded-full border border-brand-teal/40 bg-brand-teal/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-brand-teal'>
+    <section className='space-y-16 py-16'>
+      <div className='mx-auto flex max-w-4xl flex-col items-center gap-6 text-center'>
+        <span className='inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-muted-foreground'>
           Somnia Guardian Stack
         </span>
-        <h1 className='text-4xl font-semibold leading-tight sm:text-5xl'>
+        <h1 className='text-4xl font-semibold tracking-tight sm:text-5xl'>
           Dual-oracle circuit breaker for Somnia dApps
         </h1>
         <p className='text-lg text-muted-foreground'>
@@ -36,25 +68,37 @@ export default function Home() {
           data causes loss.
         </p>
         <div className='flex flex-wrap items-center justify-center gap-3'>
-          <Link href='/dashboard'>
-            <Button size='lg'>Open dashboard</Button>
-          </Link>
-          <Link href='/docs'>
-            <Button size='lg' variant='secondary'>
-              Read docs
-            </Button>
-          </Link>
+          <Button asChild size='lg'>
+            <Link href='/dashboard'>Open dashboard</Link>
+          </Button>
+          <Button asChild size='lg' variant='secondary'>
+            <Link href='/docs'>Read docs</Link>
+          </Button>
         </div>
       </div>
-      <div className='grid w-full max-w-5xl gap-4 md:grid-cols-3'>
+
+      <div className='grid gap-4 md:grid-cols-3'>
         {highlights.map(item => (
+          <Card key={item.title} className='relative overflow-hidden'>
+            <CardHeader className='space-y-3'>
+              <span className='inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground'>
+                <item.icon className='h-5 w-5' />
+              </span>
+              <CardTitle>{item.title}</CardTitle>
+              <CardDescription>{item.description}</CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+
+      <div className='mx-auto grid max-w-5xl gap-4 md:grid-cols-3'>
+        {architecture.map(item => (
           <Card key={item.title}>
             <CardHeader>
-              <CardTitle>{item.title}</CardTitle>
+              <CardTitle className='text-lg'>{item.title}</CardTitle>
+              <CardDescription>{item.description}</CardDescription>
             </CardHeader>
-            <CardContent className='text-sm text-muted-foreground'>
-              {item.body}
-            </CardContent>
+            <CardContent />
           </Card>
         ))}
       </div>

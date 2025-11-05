@@ -5,9 +5,23 @@ import { useParams } from 'next/navigation'
 
 import { useQuery } from 'convex/react'
 
+import { IncidentTimeline } from '@/components/dashboard/IncidentTimeline'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
+
+const statusVariant: Record<string, 'default' | 'secondary' | 'destructive'> = {
+  safe: 'secondary',
+  guarded: 'default',
+  attention: 'destructive'
+}
 
 export default function MonitorDetailPage() {
   const params = useParams<{ id: string }>()
@@ -22,121 +36,92 @@ export default function MonitorDetailPage() {
 
   if (!monitor) {
     return (
-      <p className='py-10 text-center text-sm text-muted-foreground'>
-        Loading monitor…
-      </p>
+      <Card className='mx-auto max-w-md'>
+        <CardContent className='py-12 text-center text-sm text-muted-foreground'>
+          Loading monitor…
+        </CardContent>
+      </Card>
     )
   }
 
   const incidentList = incidents ?? []
 
   return (
-    <div className='space-y-8 py-8'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-3xl font-semibold'>{monitor.oracleKey}</h1>
+    <div className='space-y-8'>
+      <div className='flex flex-col gap-4 md:flex-row md:items-start md:justify-between'>
+        <div className='space-y-1'>
+          <p className='text-xs uppercase tracking-wide text-muted-foreground'>
+            Oracle monitor
+          </p>
+          <h1 className='text-3xl font-semibold tracking-tight'>
+            {monitor.oracleKey}
+          </h1>
           <p className='text-sm text-muted-foreground'>
-            Monitor ID: {monitor._id}
+            Monitor ID: <span className='font-mono text-xs'>{monitor._id}</span>
           </p>
         </div>
-        <Badge
-          variant={monitor.status === 'attention' ? 'destructive' : 'default'}
-        >
-          {monitor.status ?? 'unknown'}
-        </Badge>
+        <div className='flex items-center gap-3'>
+          <Badge variant={statusVariant[monitor.status ?? ''] ?? 'default'}>
+            {monitor.status ?? 'unknown'}
+          </Badge>
+          <Button asChild variant='secondary'>
+            <Link href='/monitors'>All monitors</Link>
+          </Button>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Configuration</CardTitle>
+          <CardDescription>
+            Dual-oracle wiring and GuardianHub enforcement for this contract.
+          </CardDescription>
         </CardHeader>
-        <CardContent className='grid gap-2 text-sm text-muted-foreground md:grid-cols-2'>
+        <CardContent className='grid gap-4 text-sm text-muted-foreground md:grid-cols-2'>
           <div>
-            <strong>Contract</strong>
+            <p className='text-xs uppercase tracking-wide'>Guarded contract</p>
             <p className='font-mono text-xs'>{monitor.contractAddress}</p>
           </div>
           <div>
-            <strong>Guardian</strong>
+            <p className='text-xs uppercase tracking-wide'>Guardian hub</p>
             <p className='font-mono text-xs'>{monitor.guardianAddress}</p>
           </div>
           <div>
-            <strong>SafeOracleRouter</strong>
+            <p className='text-xs uppercase tracking-wide'>SafeOracleRouter</p>
             <p className='font-mono text-xs'>{monitor.routerAddress}</p>
           </div>
           <div>
-            <strong>Protofire feed</strong>
+            <p className='text-xs uppercase tracking-wide'>Policy window</p>
+            <p>
+              ≤ {monitor.maxDeviationBps} bps deviation · stale after{' '}
+              {monitor.staleAfterSeconds}s
+            </p>
+          </div>
+          <div>
+            <p className='text-xs uppercase tracking-wide'>Protofire feed</p>
             <p className='font-mono text-xs'>{monitor.protofireFeed}</p>
           </div>
           <div>
-            <strong>DIA adapter</strong>
+            <p className='text-xs uppercase tracking-wide'>DIA adapter</p>
             <p className='font-mono text-xs'>{monitor.diaFeed}</p>
-          </div>
-          <div>
-            <strong>Policy</strong>
-            <p>
-              Deviation ≤ {monitor.maxDeviationBps} bps · stale after{' '}
-              {monitor.staleAfterSeconds}s
-            </p>
           </div>
         </CardContent>
       </Card>
 
-      <div className='space-y-3'>
+      <section className='space-y-4'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-2xl font-semibold'>Recent incidents</h2>
+          <h2 className='text-2xl font-semibold tracking-tight'>
+            Incident timeline
+          </h2>
           <Link
             href='/dashboard'
-            className='text-sm text-primary hover:underline'
+            className='text-sm font-medium text-primary hover:underline'
           >
             Back to dashboard
           </Link>
         </div>
-        <div className='space-y-3'>
-          {incidentList.length === 0 ? (
-            <p className='rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground'>
-              No incidents logged yet. Run the policy evaluation to generate
-              one.
-            </p>
-          ) : (
-            incidentList.map(incident => (
-              <Card key={incident._id}>
-                <CardContent className='flex flex-col gap-2 py-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between'>
-                  <div className='space-y-1'>
-                    <p className='text-foreground'>
-                      {incident.summary ?? 'No summary provided.'}
-                    </p>
-                    <div className='flex flex-wrap items-center gap-3 text-xs'>
-                      <span>
-                        {new Date(incident.occurredAt).toLocaleString()}
-                      </span>
-                      <Badge
-                        variant={incident.safe ? 'secondary' : 'destructive'}
-                      >
-                        {incident.safe ? 'Safe' : 'Unsafe'}
-                      </Badge>
-                      <Badge
-                        variant={incident.bothFresh ? 'default' : 'outline'}
-                      >
-                        {incident.bothFresh ? 'Both fresh' : 'Stale feed'}
-                      </Badge>
-                      {incident.txHash ? (
-                        <a
-                          href={`https://shannon-explorer.somnia.network/tx/${incident.txHash}`}
-                          target='_blank'
-                          rel='noreferrer'
-                          className='text-primary hover:underline'
-                        >
-                          View tx
-                        </a>
-                      ) : null}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-      </div>
+        <IncidentTimeline incidents={incidentList} />
+      </section>
     </div>
   )
 }

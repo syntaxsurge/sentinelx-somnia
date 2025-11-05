@@ -111,9 +111,12 @@ pnpm exec hardhat ignition deploy ./ignition/modules/sentinelx.ts --network somn
             </CardHeader>
             <CardContent>
               <Code>{`# .env.local
+NEXT_PUBLIC_APP_NAME=SentinelX
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_WALLETCONNECT_ID=your_walletconnect_project_id
-SESSION_SECRET=32+character_random_value
 NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+CONVEX_DEPLOYMENT=https://your-deployment.convex.cloud
+SESSION_SECRET=32+character_random_value
 NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network`}</Code>
             </CardContent>
           </Card>
@@ -142,6 +145,23 @@ NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network`}</Code>
                 The policy runner reads SafeOracleRouter.latest, updates monitor
                 status, records incidents, and can call GuardianHub when safe is
                 false.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>RainbowKit authentication surface</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-2 text-sm text-muted-foreground'>
+              <Code>{`GET  /api/auth/nonce   # issues SIWE nonce and seeds session
+POST /api/auth/verify  # verifies signature, stores wallet + chain
+GET  /api/auth/me      # returns { isLoggedIn, address, chainId }
+POST /api/auth/logout  # destroys iron-session`}</Code>
+              <p className='text-xs'>
+                Client providers call these endpoints from RainbowKit’s custom
+                authentication adapter. Successful verify upserts the wallet in
+                Convex and keeps the dashboard synchronized for multi-tab
+                sessions.
               </p>
             </CardContent>
           </Card>

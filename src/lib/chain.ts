@@ -1,29 +1,31 @@
-import type { Chain } from 'wagmi/chains'
+import { defineChain } from 'viem'
 
-export const somniaShannon: Chain = {
+export const somniaShannon = defineChain({
   id: 50312,
   name: 'Somnia Shannon Testnet',
+  network: 'somnia-shannon',
   nativeCurrency: {
     name: 'Somnia Test Token',
     symbol: 'STT',
     decimals: 18
   },
   rpcUrls: {
-    default: { http: ['https://dream-rpc.somnia.network'] },
-    public: { http: ['https://dream-rpc.somnia.network'] }
+    default: { http: [process.env.NEXT_PUBLIC_SOMNIA_RPC_URL!] },
+    public: { http: [process.env.NEXT_PUBLIC_SOMNIA_RPC_URL!] }
   },
   blockExplorers: {
     default: {
-      name: 'Shannon Explorer',
+      name: 'Somnia Explorer',
       url: 'https://shannon-explorer.somnia.network'
     }
   },
   testnet: true
-}
+})
 
-export const somniaMainnet: Chain = {
+export const somniaMainnet = defineChain({
   id: 5031,
   name: 'Somnia',
+  network: 'somnia',
   nativeCurrency: {
     name: 'Somnia',
     symbol: 'SOMI',
@@ -39,4 +41,4 @@ export const somniaMainnet: Chain = {
       url: 'https://explorer.somnia.network'
     }
   }
-}
+})

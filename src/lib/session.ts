@@ -27,11 +27,33 @@ if (!rawSecret || rawSecret.length < 32) {
 }
 
 export const sessionOptions: SessionOptions = {
-  cookieName: 'sentinelx_session',
+  cookieName: 'sentinelx_siwe',
   password: resolvedSecret!,
   cookieOptions: {
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    httpOnly: true,
+    path: '/'
   }
 }
 
-export type SessionUser = { address: `0x${string}` } | null
+export type AuthSession = {
+  nonce?: string
+  address?: `0x${string}`
+  chainId?: number
+  isLoggedIn?: boolean
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __sentinelxSessionSecret: string | undefined
+}
+
+declare module 'iron-session' {
+  interface IronSessionData {
+    nonce?: string
+    address?: `0x${string}`
+    chainId?: number
+    isLoggedIn?: boolean
+  }
+}

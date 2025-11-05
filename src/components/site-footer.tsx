@@ -17,10 +17,10 @@ const footerLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className='border-t border-white/10 bg-background/80'>
-      <div className='mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6'>
-        <p className='text-xs uppercase tracking-[0.25em] text-brand-teal'>
-          SentinelX · Somnia Guardian
+    <footer className='border-t border-border/60 bg-background/70'>
+      <div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6'>
+        <p className='text-xs uppercase tracking-[0.3em] text-muted-foreground'>
+          SentinelX · Somnia Guardian Stack
         </p>
         <div className='flex flex-wrap items-center gap-4'>
           {footerLinks.map(link => (
@@ -29,13 +29,13 @@ export function SiteFooter() {
               href={link.href}
               target='_blank'
               rel='noreferrer'
-              className='transition hover:text-brand-teal'
+              className='hover:text-foreground'
             >
               {link.label}
             </a>
           ))}
-          <Link href='/docs' className='transition hover:text-brand-teal'>
-            Playbook
+          <Link href='/docs' className='hover:text-foreground'>
+            Docs
           </Link>
         </div>
       </div>

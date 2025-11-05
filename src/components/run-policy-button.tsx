@@ -45,9 +45,7 @@ export function RunPolicyButton() {
           </>
         )}
       </Button>
-      {message ? (
-        <p className='text-xs text-brand-teal-light'>{message}</p>
-      ) : null}
+      {message ? <p className='text-xs text-primary'>{message}</p> : null}
     </div>
   )
 }

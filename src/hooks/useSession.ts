@@ -1,30 +1,61 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
-type SessionValue = { address: `0x${string}` } | null
+import useSWR from 'swr'
+
+type SessionPayload = {
+  isLoggedIn: boolean
+  address: `0x${string}` | null
+  chainId: number | null
+}
+
+const sessionFetcher = async (url: string): Promise<SessionPayload> => {
+  const response = await fetch(url, { cache: 'no-store' })
+  if (!response.ok) {
+    return { isLoggedIn: false, address: null, chainId: null }
+  }
+  const data = await response.json()
+  return {
+    isLoggedIn: Boolean(data?.isLoggedIn),
+    address: data?.address ?? null,
+    chainId: data?.chainId ?? null
+  }
+}
+
+export type SessionStatus = 'loading' | 'authenticated' | 'unauthenticated'
+
+export function useAuthStatus(): SessionStatus {
+  const { data, isLoading } = useSWR('/api/auth/me', sessionFetcher, {
+    revalidateOnFocus: false
+  })
+
+  if (isLoading) return 'loading'
+  return data?.isLoggedIn ? 'authenticated' : 'unauthenticated'
+}
 
 export function useSession() {
-  const [user, setUser] = useState<SessionValue>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchSession = useCallback(async () => {
-    const response = await fetch('/api/siwe/me', { cache: 'no-store' })
-    if (!response.ok) {
-      setUser(null)
-      return
-    }
-    const data = await response.json()
-    setUser(data.user ?? null)
-  }, [])
-
-  useEffect(() => {
-    fetchSession().finally(() => setLoading(false))
-  }, [fetchSession])
+  const { data, isLoading, mutate } = useSWR('/api/auth/me', sessionFetcher, {
+    revalidateOnFocus: false
+  })
 
   const refresh = useCallback(async () => {
-    await fetchSession()
-  }, [fetchSession])
+    await mutate()
+  }, [mutate])
 
-  return { user, loading, refresh }
+  const user =
+    data?.isLoggedIn && data.address
+      ? { address: data.address, chainId: data.chainId }
+      : null
+
+  return {
+    user,
+    loading: isLoading,
+    status: isLoading
+      ? ('loading' as const)
+      : data?.isLoggedIn
+        ? ('authenticated' as const)
+        : ('unauthenticated' as const),
+    refresh
+  }
 }

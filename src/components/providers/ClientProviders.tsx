@@ -1,42 +1,20 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import {
+  RainbowKitAuthenticationProvider,
   RainbowKitProvider,
-  darkTheme,
+  createAuthenticationAdapter,
   getDefaultConfig
 } from '@rainbow-me/rainbowkit'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import '@rainbow-me/rainbowkit/styles.css'
-import { WagmiProvider, createConfig, http } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { SiweMessage } from 'siwe'
+import { WagmiProvider } from 'wagmi'
 
-import { somniaShannon } from '@/lib/chains'
-
-if (typeof window === 'undefined') {
-  import('fake-indexeddb')
-    .then(mod => {
-      const { indexedDB, IDBKeyRange } = mod as {
-        indexedDB: IDBFactory
-        IDBKeyRange: typeof globalThis.IDBKeyRange
-      }
-      if (typeof globalThis.indexedDB === 'undefined') {
-        Object.defineProperty(globalThis, 'indexedDB', {
-          value: indexedDB,
-          configurable: false,
-          enumerable: false
-        })
-      }
-      if (typeof globalThis.IDBKeyRange === 'undefined') {
-        Object.defineProperty(globalThis, 'IDBKeyRange', {
-          value: IDBKeyRange,
-          configurable: false,
-          enumerable: false
-        })
-      }
-    })
-    .catch(error => {
-      console.warn('Failed to polyfill indexedDB for SSR:', error)
-    })
-}
+import { useAuthStatus } from '@/hooks/useSession'
+import { somniaShannon } from '@/lib/chain'
 
 const queryClient = new QueryClient()
 
@@ -52,34 +30,60 @@ if (!process.env.NEXT_PUBLIC_WALLETCONNECT_ID) {
   )
 }
 
-const wagmiConfig = (() => {
-  if (typeof window === 'undefined') {
-    return createConfig({
-      chains: [somniaShannon],
-      transports: {
-        [somniaShannon.id]: http('https://dream-rpc.somnia.network')
-      },
-      ssr: true,
-      connectors: []
-    })
-  }
-
-  return getDefaultConfig({
-    appName: 'SentinelX',
-    projectId: walletConnectId,
-    chains: [somniaShannon],
-    transports: {
-      [somniaShannon.id]: http('https://dream-rpc.somnia.network')
-    },
-    ssr: true
-  })
-})()
+const wagmiConfig = getDefaultConfig({
+  appName: 'SentinelX',
+  projectId: walletConnectId,
+  chains: [somniaShannon],
+  ssr: true
+})
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
+  const status = useAuthStatus()
+
+  const authAdapter = useMemo(
+    () =>
+      createAuthenticationAdapter({
+        getNonce: async () => {
+          const res = await fetch('/api/auth/nonce', { cache: 'no-store' })
+          return await res.text()
+        },
+        createMessage: ({ nonce, address, chainId }) =>
+          new SiweMessage({
+            domain: window.location.host,
+            address,
+            statement: 'Sign in to SentinelX.',
+            uri: window.location.origin,
+            version: '1',
+            chainId,
+            nonce
+          }),
+        getMessageBody: ({ message }) =>
+          message instanceof SiweMessage
+            ? message.prepareMessage()
+            : new SiweMessage(message).prepareMessage(),
+        verify: async ({ message, signature }) => {
+          const res = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, signature })
+          })
+          return res.ok
+        },
+        signOut: async () => {
+          await fetch('/api/auth/logout', { method: 'POST' })
+        }
+      }),
+    []
+  )
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={darkTheme()}>{children}</RainbowKitProvider>
+        <RainbowKitAuthenticationProvider adapter={authAdapter} status={status}>
+          <RainbowKitProvider modalSize='compact'>
+            {children}
+          </RainbowKitProvider>
+        </RainbowKitAuthenticationProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )

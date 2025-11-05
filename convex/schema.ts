@@ -38,5 +38,11 @@ export default defineSchema({
     keyHash: v.string(),
     createdAt: v.number(),
     label: v.string()
-  }).index('by_tenant', ['tenantId'])
+  }).index('by_tenant', ['tenantId']),
+
+  users: defineTable({
+    address: v.string(),
+    lastLoginAt: v.number(),
+    nickname: v.optional(v.string())
+  }).index('by_address', ['address'])
 })

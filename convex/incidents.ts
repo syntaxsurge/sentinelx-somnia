@@ -20,6 +20,39 @@ export const list = query({
   }
 })
 
+export const timelineForTenant = query({
+  args: {
+    tenantId: v.id('tenants'),
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, { tenantId, limit }) => {
+    const monitors = await ctx.db
+      .query('monitors')
+      .withIndex('by_tenant', q => q.eq('tenantId', tenantId))
+      .collect()
+
+    if (monitors.length === 0) return []
+
+    const perMonitorLimit = Math.max(3, Math.ceil((limit ?? 10) / monitors.length))
+
+    const incidentLists = await Promise.all(
+      monitors.map(async monitor => {
+        const rows = await ctx.db
+          .query('incidents')
+          .withIndex('by_monitor', q => q.eq('monitorId', monitor._id))
+          .order('desc')
+          .take(perMonitorLimit)
+        return rows
+      })
+    )
+
+    const incidents = incidentLists.flat()
+    incidents.sort((a, b) => b.occurredAt - a.occurredAt)
+
+    return incidents.slice(0, limit ?? 10)
+  }
+})
+
 export const record = mutation({
   args: {
     monitorId: v.union(v.id('monitors'), v.string()),

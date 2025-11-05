@@ -1,87 +1,59 @@
 # SentinelX Demo Video Script
 
-This script outlines a 7–8 minute walkthrough of SentinelX Somnia Guardian. Each voice-over line is paired with the visual or interaction the audience should see at that moment.
+7–8 minute walkthrough highlighting the production SentinelX guardian stack. Each beat pairs on-screen actions with voice-over.
 
 ---
 
-## Segment 1 – Ecosystem Intro
+## Segment 1 – Landing + Value Prop
 
-1. **On-screen:** Start on the SentinelX landing hero (`/`), slowly pan across the headline, architecture blocks, and the primary CTA “Launch dashboard”.
-   - **Voice-over 1:** “SentinelX is a guardian stack for the Somnia network. It hardens price feeds by cross‑checking Protofire and DIA, logs incidents in Convex, and coordinates guardian actions so protocols fail safe—not open.”
+1. **On-screen:** Start on `/` and sweep across the hero headline, Wallet/Docs CTAs, and the three highlight cards.
+   - **Voice-over 1:** “SentinelX hardens Somnia dApps with a dual-oracle circuit breaker. SafeOracleRouter cross-checks Protofire and DIA, while GuardianHub enforces pauses so protocols fail safe.”
+2. **On-screen:** Scroll to the architecture cards that outline Next.js, RainbowKit SIWE, and Somnia integration.
+   - **Voice-over 2:** “The stack runs on Next.js 15 with shadcn/ui, RainbowKit authentication, and Convex for observability. Everything you see in the UI is also exposed over REST for automation.”
 
+## Segment 2 – Connect & Workspace Onboarding
 
-## Segment 2 – Dashboard Tour (Tenants, Monitors, Incidents)
+1. **On-screen:** Tap the Connect button in the header, pick a wallet, and sign the RainbowKit SIWE prompt.
+   - **Voice-over 3:** “Authentication uses RainbowKit’s custom SIWE adapter. The modal handles wallet connect, nonce fetch, message signing, and iron-session cookies.”
+2. **On-screen:** Automatically land on the onboarding card; enter the workspace name and submit.
+   - **Voice-over 4:** “Each tenant maps to your Somnia address. Let’s name this workspace `Somnia Index Vaults` so every operator knows what they’re protecting.”
 
-1. **On-screen:** Navigate to `/dashboard`; show the Operations header, stats, and “Run policy” button.
-   - **Voice-over 2:** “The dashboard is the control plane: tenants scope ownership, monitors watch your contracts and feed pair, and incidents capture every evaluation.”
-2. **On-screen:** In “Create tenant”, add a new tenant.
-   - **Voice-over 3:** “Let’s add a tenant that represents our application or team. The owner address maps to operators.”
-   - Field inputs — type exactly:
-     - Tenant name: `Somnia Index Vaults`
-     - Owner address: `0xA0C2E2aB4B7E3A0b9C0F44E5F3a6C9F10F9A1E21`
-3. **On-screen:** In “Register monitor”, paste the deployed addresses and set the feed pair and thresholds. Click “Register monitor”.
-   - **Voice-over 4:** “A monitor links a guardable contract, our GuardianHub, and the SafeOracleRouter with a specific oracle key and feed pair. We’ll start with ETH/USD.”
-   - Field inputs — type exactly:
-     - Guarded contract: (paste) `<SOMIPaymentGuarded from deploy>`
-     - Guardian hub: (paste) `<GuardianHub from deploy>`
-     - SafeOracleRouter: (paste) `<SafeOracleRouter from deploy>`
-     - Oracle key: `ETH/USD`
-     - Protofire feed: `0xd9132c1d762D432672493F640a63B758891B449e`
-     - DIA feed: `0x786c7893F8c26b80d42088749562eDb50Ba9601E`
-     - Max deviation (bps): `100`
-     - Staleness window (seconds): `180`
-4. **On-screen:** Show the Monitors table with the newly added row and the Incident stream (empty initially).
-   - **Voice-over 5:** “New monitors appear here with their current status. The incident stream will populate as the policy runs.”
+## Segment 3 – Dashboard Overview
 
-## Segment 3 – Policy Run & Incident Logging
+1. **On-screen:** Show the refreshed `/dashboard` view with KPI cards, Monitors table, workspace card, and incident timeline.
+   - **Voice-over 5:** “The operations view gives us KPIs, a monitors table, workspace metadata, and a live incident timeline. Everything is responsive and dark-mode ready.”
+2. **On-screen:** Point to KPI cards (Active monitors, Attention required, Unique guardians, Recent incidents).
+   - **Voice-over 6:** “KPIs summarize monitors, highlight attention-needed statuses, count unique GuardianHub operators, and show the ten most recent incidents.”
 
-1. **On-screen:** Click `Run policy` in the header. The toast appears; then the Incident stream updates with a new entry.
-   - **Voice-over 6:** “The policy runner queries SafeOracleRouter.latest for our key, checks freshness and deviation, updates the monitor status, and writes a detailed incident to Convex.”
-2. **On-screen:** Click the latest incident card; highlight Safe/ Fresh flags and the summary text.
-   - **Voice-over 7:** “Here you see whether both feeds are fresh, if the price was marked safe, and a human‑readable summary for operators.”
+## Segment 4 – Register a Monitor
 
-## Segment 4 – Provision API Key for Automation
+1. **On-screen:** Navigate to `/monitors/new`, paste contract, guardian, router, and accept the ETH/USD defaults. Submit the form.
+   - **Voice-over 7:** “Registering a monitor wires the guardable contract, GuardianHub, and SafeOracleRouter with a chosen oracle key. Defaults include Protofire and DIA addresses on Somnia Shannon.”
+2. **On-screen:** After redirect, open `/monitors` to show the registry table with the new entry.
+   - **Voice-over 8:** “The registry lists every monitor with status, contract, guardian, and when it was added. From here you can jump into incident detail.”
 
-1. **On-screen:** In the right column, open “Provision API key”, choose the tenant, add a label, and click `Generate API key`. Copy the key to clipboard.
-   - **Voice-over 8:** “We issue an API key for automation jobs or CI. The plaintext key is shown once. Convex stores only a SHA‑256 hash.”
-   - Field inputs — type exactly:
-     - Tenant: `Somnia Index Vaults`
-     - Label: `policy-runner-prod`
-2. **On-screen:** Scroll to the API keys table; point out the label, tenant, and truncated hash.
-   - **Voice-over 9:** “Keys are scoped to tenants. Rotate them regularly and remove unused credentials.”
+## Segment 5 – Incident Triage
 
-## Segment 5 – Demo Contract Behavior (Guarded Paywall)
+1. **On-screen:** Back on `/dashboard`, click `Run policy`. Show the toast, then the incident timeline updating.
+   - **Voice-over 9:** “Manual runs hit `/api/jobs/run-policy`. It calls SafeOracleRouter.latest, evaluates deviation and freshness, updates monitor status, and appends an incident record.”
+2. **On-screen:** Click into the monitor detail (`/monitors/[id]`) and scroll through the Incident Timeline cards.
+   - **Voice-over 10:** “Each incident spells out Safe vs Unsafe, whether both feeds were fresh, timestamp, summary, and a deep link to the Somnia explorer.”
 
-1. **On-screen:** Open a terminal and call the `payToAccess` function on `SOMIPaymentGuarded` with exactly 0.01 SOMI. Show success.
-   - **Voice-over 10:** “Our sample contract is guardable and requires an exact SOMI payment. When not paused, payToAccess succeeds.”
-   - Commands — type exactly (replace address):
-     - `cast send <SOMIPaymentGuarded> "payToAccess()" --value 0.01ether --rpc-url $SOMNIA_RPC_URL --private-key $PRIVATE_KEY`
-2. **On-screen:** Pause the target via GuardianHub, then call `payToAccess` again and show it reverts with `GUARDIAN_PAUSED`.
-   - **Voice-over 11:** “If policy flags a risk, operators can pause via GuardianHub. The contract’s guard blocks entrypoints until conditions are safe again.”
-   - Commands — type exactly (replace addresses):
-     - `cast send <GuardianHub> "pauseTarget(address)" <SOMIPaymentGuarded> --rpc-url $SOMNIA_RPC_URL --private-key $PRIVATE_KEY`
-     - `cast send <SOMIPaymentGuarded> "payToAccess()" --value 0.01ether --rpc-url $SOMNIA_RPC_URL --private-key $PRIVATE_KEY`
+## Segment 6 – Settings & Automation Prep
 
-## Segment 6 – REST API & Health Check
+1. **On-screen:** Open `/settings`; highlight the Automation, Webhooks, and Guardian sections.
+   - **Voice-over 11:** “Settings groups automation tasks: rotate API keys, wire webhook destinations, and document GuardianHub operator requirements.”
+2. **On-screen:** Return to `/dashboard` and highlight the workspace card linking to docs.
+   - **Voice-over 12:** “Everything routes back to the playbook—deployment checklists, cron setup, and REST payloads for integrating SentinelX into ops pipelines.”
 
-1. **On-screen:** Open terminal and call the REST endpoints with curl. Show JSON responses.
-   - **Voice-over 12:** “Every feature in the UI is mirrored by a simple REST surface. Here are the most useful ones.”
-   - Commands — type exactly:
-     - `curl -s http://localhost:3000/api/status | jq`
-     - `curl -s http://localhost:3000/api/tenants | jq`
-     - `curl -s http://localhost:3000/api/monitors | jq`
-     - `curl -s -X POST http://localhost:3000/api/jobs/run-policy | jq`
+## Segment 7 – Docs & REST Surface
 
-## Segment 7 – Docs & Playbook
+1. **On-screen:** Visit `/docs`, tab through Contracts, Deploy, and Policy Agent panels.
+   - **Voice-over 13:** “The docs page distills the guardian flow: Ignition deploys on Somnia, environment variables, policy runner cron, and express REST examples.”
+2. **On-screen:** Run terminal commands calling `curl /api/status` and `curl /api/jobs/run-policy`.
+   - **Voice-over 14:** “Every dashboard action mirrors a REST endpoint. Automation can read status, list monitors, and trigger policy runs without touching the UI.”
 
-1. **On-screen:** Open `/docs` and scroll through the deployment steps, env vars, and API examples.
-   - **Voice-over 13:** “The playbook covers deployment, environment setup, and all REST payloads so operators can onboard quickly and safely.”
+## Segment 8 – Closing
 
-## Segment 8 – Optional: Feed Pair Tuning
-
-1. **On-screen:** Briefly open the Ignition deploy notes or a script where you call `configureFeed` on the router for another key like `BTC/USD`.
-   - **Voice-over 14:** “You can register multiple keys on SafeOracleRouter and run separate monitors. For each, set deviation and staleness based on your risk model.”
-
-## Segment 9 – Thank You
-
-- **Voice-over 15:** “Thanks for watching the SentinelX demo. You’ve seen the full guardian path—deploy, monitor, evaluate, and enforce—on Somnia.”
+- **On-screen:** Return to the dashboard hero shot with KPI cards and incident timeline in view.
+- **Voice-over 15:** “That’s SentinelX: authenticate, create a tenant, register monitors, evaluate policy, and enforce guardian actions—all on Somnia Shannon Testnet.”

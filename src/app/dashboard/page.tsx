@@ -5,15 +5,11 @@ import Link from 'next/link'
 import { useQuery } from 'convex/react'
 
 import { RunPolicyButton } from '@/components/run-policy-button'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { IncidentTimeline } from '@/components/dashboard/IncidentTimeline'
+import { KpiCards } from '@/components/dashboard/KpiCards'
+import { MonitorsTable } from '@/components/dashboard/MonitorsTable'
 import { api } from '@/convex/_generated/api'
 import { useSession } from '@/hooks/useSession'
 
@@ -27,50 +23,78 @@ export default function DashboardPage() {
     api.monitors.listForTenant,
     tenant?._id ? { tenantId: tenant._id } : 'skip'
   )
+  const timeline = useQuery(
+    api.incidents.timelineForTenant,
+    tenant?._id ? { tenantId: tenant._id, limit: 10 } : 'skip'
+  )
 
   if (loading) {
     return (
-      <p className='py-10 text-center text-sm text-muted-foreground'>
-        Loading session…
-      </p>
+      <Card className='mx-auto max-w-md'>
+        <CardContent className='py-12 text-center text-sm text-muted-foreground'>
+          Loading your workspace…
+        </CardContent>
+      </Card>
     )
   }
 
   if (!user?.address) {
     return (
-      <div className='mx-auto max-w-md space-y-4 py-16 text-center'>
-        <h2 className='text-2xl font-semibold'>Connect wallet</h2>
-        <p className='text-sm text-muted-foreground'>
-          Connect and sign a message to access the SentinelX dashboard.
-        </p>
-      </div>
+      <Card className='mx-auto max-w-md'>
+        <CardHeader>
+          <CardTitle>Connect wallet</CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-4 text-sm text-muted-foreground'>
+          <p>
+            Connect your Somnia wallet and complete SIWE to unlock the Guardian
+            operations center.
+          </p>
+          <p>Use the connect button in the header to start.</p>
+        </CardContent>
+      </Card>
     )
   }
 
   if (!tenant) {
     return (
-      <div className='mx-auto max-w-md space-y-4 py-16 text-center'>
-        <h2 className='text-2xl font-semibold'>Create a workspace</h2>
-        <p className='text-sm text-muted-foreground'>
-          You don’t have a tenant yet. Head to onboarding to create one.
-        </p>
-        <Link href='/onboarding'>
-          <Button>Create workspace</Button>
-        </Link>
-      </div>
+      <Card className='mx-auto max-w-md'>
+        <CardHeader>
+          <CardTitle>Create a workspace</CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-4 text-sm text-muted-foreground'>
+          <p>
+            SentinelX maps each tenant to your wallet address. Create one to
+            start registering monitors, API keys, and incident webhooks.
+          </p>
+          <Button asChild>
+            <Link href='/onboarding'>Launch onboarding</Link>
+          </Button>
+        </CardContent>
+      </Card>
     )
   }
 
   const monitorList = monitors ?? []
+  const timelineItems = timeline ?? []
+
+  const attentionCount = monitorList.filter(
+    monitor => monitor.status === 'attention'
+  ).length
+  const uniqueGuardians = new Set(
+    monitorList.map(monitor => monitor.guardianAddress)
+  ).size
 
   return (
-    <div className='space-y-10 py-8'>
-      <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
+    <div className='space-y-10'>
+      <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
         <div>
-          <h1 className='text-3xl font-semibold'>Monitors</h1>
+          <h1 className='text-3xl font-semibold tracking-tight'>
+            Somnia operations
+          </h1>
           <p className='text-sm text-muted-foreground'>
-            Track every guardable contract, oracle pair, and guardian binding
-            for tenant <span className='font-mono'>{tenant.name}</span>.
+            Tenant <span className='font-mono'>{tenant.name}</span> on Somnia
+            Shannon Testnet. Stay ahead of oracle drift, guardian pauses, and
+            incident triage.
           </p>
         </div>
         <div className='flex items-center gap-3'>
@@ -81,74 +105,72 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
-        {monitorList.map(monitor => (
-          <Card key={monitor._id}>
-            <CardHeader>
-              <CardTitle className='flex items-center justify-between text-base'>
-                <span>{monitor.oracleKey}</span>
-                <Badge
-                  variant={
-                    monitor.status === 'attention' ? 'destructive' : 'default'
-                  }
-                >
-                  {monitor.status ?? 'unknown'}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-2 text-sm text-muted-foreground'>
-              <div>
-                <strong>Contract:</strong>{' '}
-                <span className='font-mono'>
-                  {monitor.contractAddress.slice(0, 6)}…
-                  {monitor.contractAddress.slice(-4)}
-                </span>
-              </div>
-              <div>
-                <strong>Guardian:</strong>{' '}
-                <span className='font-mono'>
-                  {monitor.guardianAddress.slice(0, 6)}…
-                  {monitor.guardianAddress.slice(-4)}
-                </span>
-              </div>
-              <div className='space-y-1'>
-                <p>
-                  <strong>Protofire:</strong>{' '}
-                  <span className='font-mono text-xs'>
-                    {monitor.protofireFeed}
-                  </span>
-                </p>
-                <p>
-                  <strong>DIA:</strong>{' '}
-                  <span className='font-mono text-xs'>{monitor.diaFeed}</span>
-                </p>
-              </div>
-              <p>
-                <strong>Rules:</strong> ≤ {monitor.maxDeviationBps} bps
-                deviation · stale after {monitor.staleAfterSeconds}s
+      <KpiCards
+        items={[
+          { title: 'Active monitors', value: String(monitorList.length) },
+          {
+            title: 'Attention required',
+            value: String(attentionCount),
+            hint: 'Unsafe status across active monitors'
+          },
+          {
+            title: 'Unique guardians',
+            value: String(uniqueGuardians),
+            hint: 'GuardianHub operators bound to monitors'
+          },
+          {
+            title: 'Recent incidents',
+            value: String(timelineItems.length),
+            hint: 'Last 10 evaluations recorded'
+          }
+        ]}
+      />
+
+      <div className='grid gap-6 lg:grid-cols-[2fr,1fr]'>
+        <MonitorsTable monitors={monitorList} />
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-lg'>Workspace</CardTitle>
+          </CardHeader>
+          <CardContent className='space-y-3 text-sm text-muted-foreground'>
+            <div>
+              <p className='text-xs uppercase tracking-wide text-muted-foreground'>
+                Owner address
               </p>
-            </CardContent>
-            <CardFooter className='flex items-center justify-between'>
-              <Link
-                href={`/monitors/${monitor._id}`}
-                className='text-sm font-semibold text-brand-teal hover:underline'
-              >
-                View incidents
-              </Link>
-              <span className='text-xs text-muted-foreground'>
-                Added {new Date(monitor.createdAt).toLocaleDateString()}
-              </span>
-            </CardFooter>
-          </Card>
-        ))}
+              <p className='font-mono text-sm'>{tenant.owner}</p>
+            </div>
+            <div>
+              <p className='text-xs uppercase tracking-wide text-muted-foreground'>
+                Created
+              </p>
+              <p>{new Date(tenant.createdAt).toLocaleString()}</p>
+            </div>
+            <p>
+              Register monitors to cover every guardable contract. Run the
+              policy agent on demand or wire it into Vercel cron for continuous
+              protection.
+            </p>
+            <Button asChild variant='outline' className='w-full'>
+              <Link href='/docs'>Implementation guide</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
-      {monitorList.length === 0 ? (
-        <div className='rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground'>
-          No monitors registered yet. Create your first monitor to start
-          tracking oracle health.
+      <section className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-2xl font-semibold tracking-tight'>
+            Recent incidents
+          </h2>
+          <Link
+            href='/monitors'
+            className='text-sm font-medium text-primary hover:underline'
+          >
+            Browse monitors
+          </Link>
         </div>
-      ) : null}
+        <IncidentTimeline incidents={timelineItems} />
+      </section>
     </div>
   )
 }
