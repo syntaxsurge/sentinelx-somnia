@@ -5,6 +5,7 @@ const SentinelXModule = buildModule('SentinelXModule', m => {
 
   const guardianHub = m.contract('GuardianHub', [owner])
   const safeOracleRouter = m.contract('SafeOracleRouter', [owner])
+  const agentInbox = m.contract('AgentInbox', [owner])
 
   const accessFeeWei = m.getParameter('accessFeeWei', 10n ** 16n) // 0.01 SOMI
   const somiPaymentGuarded = m.contract('SOMIPaymentGuarded', [
@@ -14,7 +15,7 @@ const SentinelXModule = buildModule('SentinelXModule', m => {
 
   m.call(guardianHub, 'registerTarget', [somiPaymentGuarded])
 
-  return { guardianHub, safeOracleRouter, somiPaymentGuarded }
+  return { guardianHub, safeOracleRouter, agentInbox, somiPaymentGuarded }
 })
 
 export default SentinelXModule
