@@ -132,12 +132,14 @@ export async function runSentinelIndexer(
       ? envRouter.trim()
       : undefined
   let demoMode = false
+  let guardianFallback: string | undefined
   try {
     const chainConfig = await loadChainConfig()
     demoMode = chainConfig.demoMode
     if (!routerFallback) {
       routerFallback = chainConfig.oracleRouter
     }
+    guardianFallback = chainConfig.guardianHub
   } catch (error) {
     console.warn('Unable to load chain config during policy run; continuing without demo hints.', error)
   }
@@ -148,6 +150,8 @@ export async function runSentinelIndexer(
   for (const monitor of monitors) {
     processed += 1
     const routerAddress = monitor.routerAddress ?? routerFallback
+    const guardianAddress =
+      guardianFallback ?? monitor.guardianAddress
     const evaluatedAt = Date.now()
 
     if (!routerAddress) {
@@ -283,7 +287,7 @@ export async function runSentinelIndexer(
           mitigations: summary.mitigations,
           monitor: {
             contractAddress: monitor.contractAddress,
-            guardianAddress: monitor.guardianAddress,
+            guardianAddress,
             routerAddress,
             name: monitor.name,
             oracleKey: monitor.oracleKey
@@ -295,9 +299,9 @@ export async function runSentinelIndexer(
         const augmented = {
           ...proposal,
           arguments: {
-            ...proposal.arguments,
+           ...proposal.arguments,
             target:
-              (proposal.arguments as any).target ?? monitor.guardianAddress,
+              (proposal.arguments as any).target ?? guardianAddress,
             contract:
               (proposal.arguments as any).contract ?? monitor.contractAddress
           }
@@ -316,12 +320,12 @@ export async function runSentinelIndexer(
           })
           planPayload = {
             ...augmented,
-            target: monitor.guardianAddress,
+            target: guardianAddress,
             calldata
           } as any
           rationale = `${
             augmented.arguments.rationale ?? 'Pause guarded contract.'
-          } Execute pause(${monitor.contractAddress}) on GuardianHub ${monitor.guardianAddress}.`
+          } Execute pause(${monitor.contractAddress}) on GuardianHub ${guardianAddress}.`
         }
 
         await convex.mutation('actionIntents:create' as any, {

@@ -12,6 +12,7 @@ import {
   sessionOptions,
   type AuthSession
 } from '@/lib/session'
+import { loadChainConfig } from '@/lib/config'
 
 export async function POST(request: Request) {
   const sessionResponse = new NextResponse()
@@ -96,6 +97,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    const chainConfig = await loadChainConfig()
+    const guardianHub = chainConfig.guardianHub.toLowerCase()
+    const agentInbox = chainConfig.agentInbox.toLowerCase()
+
     const account = privateKeyToAccount(privateKey as `0x${string}`)
     const walletClient = createWalletClient({
       chain: somniaShannon,
@@ -107,8 +112,19 @@ export async function POST(request: Request) {
       transport: http(rpcUrl)
     })
 
+    const selector = calldata.slice(0, 10).toLowerCase()
+    const normalizedTarget = (target as string).toLowerCase()
+
+    let resolvedTarget = target as `0x${string}`
+    const guardianSelectors = new Set(['0x76a67a51', '0x4609c87a'])
+    if (guardianSelectors.has(selector)) {
+      resolvedTarget = chainConfig.guardianHub
+    } else if (normalizedTarget === guardianHub || normalizedTarget === agentInbox) {
+      resolvedTarget = normalizedTarget === guardianHub ? chainConfig.guardianHub : chainConfig.agentInbox
+    }
+
     const hash = await walletClient.sendTransaction({
-      to: target as `0x${string}`,
+      to: resolvedTarget,
       data: calldata as `0x${string}`
     })
 
