@@ -78,8 +78,21 @@ function selectAddress(
       return null
     }
 
+    const trimmed = value.trim()
+    const candidates: string[] = [trimmed]
+    if (trimmed !== trimmed.toLowerCase()) {
+      candidates.push(trimmed.toLowerCase())
+    }
+
     try {
-      return getAddress(value as `0x${string}`)
+      for (const candidate of candidates) {
+        try {
+          return getAddress(candidate as `0x${string}`)
+        } catch {
+          continue
+        }
+      }
+      throw new Error('checksum mismatch')
     } catch (error) {
       console.warn(`Invalid address for ${envKey}: ${value}`, error)
       return null

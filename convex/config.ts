@@ -1,3 +1,7 @@
+import { getAddress } from 'viem'
+
+type HexAddress = `0x${string}`
+
 type FeedConfig = {
   protofire: string
   dia: string
@@ -34,6 +38,20 @@ const FALLBACK: CanonicalConfig = {
   }
 }
 
+function canonicalize(address: string): string {
+  const trimmed = address.trim()
+  if (!trimmed.startsWith('0x') || trimmed.length !== 42) {
+    throw new Error(`Invalid address format: ${address}`)
+  }
+
+  const lower = trimmed.toLowerCase()
+  try {
+    return getAddress(trimmed as HexAddress)
+  } catch {
+    return getAddress(lower as HexAddress)
+  }
+}
+
 function pickAddress(key: string, fallback: string): string {
   const candidates = [
     process.env[key],
@@ -43,8 +61,12 @@ function pickAddress(key: string, fallback: string): string {
   ]
 
   for (const candidate of candidates) {
-    if (candidate && candidate.startsWith('0x') && candidate.length === 42) {
-      return candidate
+    if (!candidate) continue
+
+    try {
+      return canonicalize(candidate)
+    } catch {
+      continue
     }
   }
 
