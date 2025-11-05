@@ -151,29 +151,6 @@ export async function POST(request: Request) {
       })
     }
 
-    if (
-      executionTarget.guardable &&
-      !(
-        await publicClient.readContract({
-          address: chainConfig.guardianHub,
-          abi: guardianAbi,
-          functionName: 'registered',
-          args: [executionTarget.guardable]
-        })
-      )
-    ) {
-      const { request: registerRequest } = await publicClient.simulateContract({
-        address: chainConfig.guardianHub,
-        abi: guardianAbi,
-        functionName: 'registerTarget',
-        args: [executionTarget.guardable],
-        account
-      })
-
-      const registerHash = await walletClient.writeContract(registerRequest)
-      await publicClient.waitForTransactionReceipt({ hash: registerHash })
-    }
-
     let executeRequest: Parameters<typeof walletClient.writeContract>[0]
     if (executionTarget.type === 'guardian') {
       const { request } = await publicClient.simulateContract({

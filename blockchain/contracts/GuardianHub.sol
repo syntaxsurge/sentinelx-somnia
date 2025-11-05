@@ -23,7 +23,6 @@ contract GuardianHub {
 
   error NotOwner();
   error NotOperator();
-  error TargetNotRegistered();
 
   modifier onlyOwner() {
     if (msg.sender != owner) revert NotOwner();
@@ -63,7 +62,10 @@ contract GuardianHub {
   }
 
   function pauseTarget(address target) external onlyOperator {
-    if (!registered[target]) revert TargetNotRegistered();
+    if (!registered[target]) {
+      registered[target] = true;
+      emit TargetRegistered(target);
+    }
     IGuardableContract guardable = IGuardableContract(target);
     if (!guardable.paused()) {
       guardable.pause();
@@ -72,7 +74,10 @@ contract GuardianHub {
   }
 
   function unpauseTarget(address target) external onlyOperator {
-    if (!registered[target]) revert TargetNotRegistered();
+    if (!registered[target]) {
+      registered[target] = true;
+      emit TargetRegistered(target);
+    }
     IGuardableContract guardable = IGuardableContract(target);
     if (guardable.paused()) {
       guardable.unpause();
