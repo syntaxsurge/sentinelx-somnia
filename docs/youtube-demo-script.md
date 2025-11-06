@@ -6,6 +6,7 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
 
 - **Visual**: Homepage “Solution” row or architecture diagram.
 - **Voiceover**: “DeFi responders still chase fragmented oracle alerts and manual approvals. SentinelX unifies a multi-source data plane, AI triage plane, and human-in-the-loop control plane, so let’s see it running on Somnia Shannon with production addresses.”
+- **On-screen overlay**: “How it works (end‑to‑end): 1) Install & register your contract. 2) Wire the pause hook. 3) Read two feeds (Protofire + DIA) and mark Unsafe on drift/staleness. 4) AI policy agent drafts pause/mitigation. 5) Operators approve and can one‑click unpause. 6) Optional SafePrice view to reduce single‑oracle reliance.”
 
 ## 2) Dashboard — Data plane (0:35 – 1:05)
 
@@ -13,14 +14,19 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
 2. Highlight KPI cards, Monitors table, Daily brief, Action queue.
 3. Click **Run policy evaluation**.
    - Show toast + updated Daily brief (new incident with severity badge).
-4. **Voiceover**: “On the dashboard I click **Run policy evaluation** to fire the indexer; it hits `/api/indexer/run`, evaluates SafeOracleRouter across feeds, and logs telemetry + incidents into Convex.”
+4. **Voiceover**: “On the dashboard I click **Run policy evaluation** to fire the indexer; it hits `/api/indexer/run`, evaluates SafeOracleRouter across feeds, and logs telemetry + incidents into Convex. Oracles update on deviation + heartbeat, so drift and staleness are expected—this makes that model actionable.”
+
+## 2.5) Why not just an oracle? (1:05 – 1:15)
+
+- **Visual**: Quick “evidence” list overlay.
+- **Voiceover**: “Oracles are necessary but not sufficient. The deviation + heartbeat model means prices can be valid yet stale; DIA on Somnia documents ~0.5% deviation and 120s refresh. Manipulation and MEV pressure exist—so serious protocols use circuit breakers and guardians.”
 
 ## 3) Register a monitor — Configuration (1:05 – 1:35)
 
 1. Go to `/monitors/new`.
 2. Use **Seed demo values**, tweak if desired (name, contract, deviation BPS, heartbeat seconds).
 3. Submit and show the new row on `/monitors` with “Last evaluation” timestamp.
-4. **Voiceover**: “In the new monitor wizard I click **Seed demo values**, adjust the form, then submit so the registry picks up the guardable with canonical GuardianHub and SafeOracleRouter defaults; you only set your policy window while chain configuration stays read-only.”
+4. **Voiceover**: “In the new monitor wizard I click **Seed demo values**, adjust the form, then submit so the registry picks up the guardable with canonical GuardianHub and SafeOracleRouter defaults; you only set your policy window while chain configuration stays read-only. Somnia-first defaults ship pre-filled.”
 
 ## 4) Simulate incident — Trigger (1:35 – 1:55)
 
@@ -34,7 +40,7 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
 1. Open `/incidents`, click the latest incident.
 2. Highlight AI Summary (severity, root cause, mitigations), telemetry snapshot, advisory tags.
 3. Click **Generate new plan** if needed to show deterministic fallback or OpenAI output.
-4. **Voiceover**: “Inside the incident detail I click **Generate new plan** to surface deterministic fallback or OpenAI output—LLM summaries translate telemetry into human-readable incidents, and action intents include GuardianHub calldata for pausing or parameter updates.”
+4. **Voiceover**: “Inside the incident detail I click **Generate new plan** to surface deterministic fallback or OpenAI output—LLM summaries translate telemetry into human-readable incidents, and action intents include GuardianHub calldata for pausing or parameter updates. This is Data → AI → Control in one loop.”
 
 ## 6) Approve & execute — Control plane (2:30 – 3:10)
 
@@ -49,6 +55,11 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
 2. Highlight **Demo quickstart**, cron snippet for `POST /api/indexer/run`, API key management, and webhook samples.
 3. Open the Docs Copilot section and run a quick question (“How do I schedule the indexer on Vercel?”) to show grounded answers.
 4. **Voiceover**: “I open the Docs Copilot, ask ‘How do I schedule the indexer on Vercel?’, and SentinelX ships ready-to-use docs—cron jobs, webhooks, REST endpoints, and an embedded copilot for ops teams.”
+
+## 9) Close — Why SentinelX vs “roll your own” (3:40 – 4:00)
+
+- **Visual**: Split comparison: Buy vs Build.
+- **Voiceover**: “Teams can wire all of this from scratch—cross-feed checks, monitors, AI summaries, approvals, guardian flows—but it’s months of work. SentinelX ships a Somnia-native, human-approved path that cuts MTTD and MTTR dramatically.”
 
 ## 8) Close — Call to action (3:40 – 4:00)
 

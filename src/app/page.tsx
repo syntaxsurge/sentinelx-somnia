@@ -11,7 +11,12 @@ import {
   Clock,
   Layers,
   ShieldCheck,
-  Workflow
+  Workflow,
+  Zap,
+  ListChecks,
+  ArrowLeftRight,
+  PauseCircle,
+  FileCheck
 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -145,6 +150,124 @@ const featureCards = [
   }
 ]
 
+const howItWorks = [
+  {
+    step: 'Install & register',
+    text:
+      'Install SentinelX and register your Somnia contract (vault, marketplace, etc.) in the web app.',
+    icon: ListChecks
+  },
+  {
+    step: 'Wire pause hook',
+    text:
+      'Paste a tiny mixin or inherit a base so your contract can be paused by SentinelX if risk is detected.',
+    icon: PauseCircle
+  },
+  {
+    step: 'Read two feeds',
+    text:
+      'SentinelX reads two on-chain price feeds (Protofire/Chainlink + DIA) for the same asset and marks Unsafe if they drift or go stale.',
+    icon: ArrowLeftRight
+  },
+  {
+    step: 'AI policy agent',
+    text:
+      'Simple rules + LLM summary decide whether to pause via the on-chain guardian and draft mitigations.',
+    icon: BrainCircuit
+  },
+  {
+    step: 'Operator control',
+    text:
+      'Dashboard shows incident timelines and decisions; operators can one‑click unpause when conditions recover.',
+    icon: ShieldCheck
+  },
+  {
+    step: 'SafePrice output',
+    text:
+      'Optionally expose a SafePrice view (median/guarded) in your app to reduce reliance on a single oracle.',
+    icon: FileCheck
+  }
+]
+
+const gapEvidence = [
+  {
+    title: 'Deviation + heartbeat means expected staleness',
+    text:
+      'Feeds update on deviation thresholds or on a heartbeat—staleness and drift are normal operating states, not edge cases (see Chainlink model).'
+  },
+  {
+    title: 'Somnia DIA defaults are concrete',
+    text:
+      'DIA recommends ~0.5% deviation and 120s refresh with a 24h heartbeat; a price can be “valid” yet stale up to the heartbeat.'
+  },
+  {
+    title: 'Manipulation and MEV pressure exists',
+    text:
+      'Flash-loan manipulation and MEV can skew edge conditions. Circuit breakers and guardians exist to buy time in real incidents.'
+  }
+]
+
+const sentinelxDiff = [
+  {
+    title: 'Multi-source guardrails',
+    text:
+      'Compare DIA + Protofire/Chainlink and enforce deviation/heartbeat health; open incidents when feeds disagree or go stale.',
+    icon: ArrowLeftRight
+  },
+  {
+    title: 'Data → AI → Control',
+    text:
+      'Data plane writes telemetry/incidents, AI plane drafts summaries and Action Intents, control plane executes with human approval and tx hashes.',
+    icon: BrainCircuit
+  },
+  {
+    title: 'Time-to-respond value',
+    text:
+      'Ships a production runbook in a box for Somnia—cut MTTD/MTTR without rebuilding monitors, approvals, and guardian flows from scratch.',
+    icon: Zap
+  },
+  {
+    title: 'Somnia-first defaults',
+    text:
+      'Pre-filled addresses and DIA’s update model baked in; infra settings are read-only by default with advanced overrides for power users.',
+    icon: Layers
+  },
+  {
+    title: 'Auditability & safety',
+    text:
+      'Every propose → approve → execute step is recorded; allowlists ensure only intended calldata reaches chain.',
+    icon: ShieldCheck
+  }
+]
+
+const buyVsBuild = [
+  {
+    job: 'Detect stale / divergent feeds',
+    build: 'You must build it',
+    buy: 'Built-in monitors (deviation/heartbeat, cross-feed)'
+  },
+  {
+    job: 'Explain incidents fast',
+    build: 'Manual triage',
+    buy: 'AI summaries (severity, root cause, mitigations)'
+  },
+  {
+    job: 'Decide safe next step',
+    build: 'Ad-hoc runbooks',
+    buy: 'Structured Action Intents (pause/tune params)'
+  },
+  {
+    job: 'Execute safely on-chain',
+    build: 'Write your own guardian infra',
+    buy: 'GuardianHub/AgentInbox + approvals + tx recording'
+  },
+  {
+    job: 'Prove you handled it',
+    build: 'Manual notes',
+    buy: 'Audit trail (who approved, which tx)'
+  }
+]
+
 export default function Home() {
   return (
     <main className='min-h-screen bg-gradient-to-b from-black via-[#050b14] to-black text-slate-100'>
@@ -265,6 +388,35 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How it works */}
+      <section className='border-t border-white/10 bg-[#050a13]/90'>
+        <div className='mx-auto max-w-6xl px-4 py-16'>
+          <div className='mb-10 max-w-4xl space-y-3'>
+            <h2 className='text-3xl font-semibold tracking-tight sm:text-4xl'>
+              How it works (end‑to‑end)
+            </h2>
+            <p className='text-base text-slate-400 sm:text-lg'>
+              A layman’s walkthrough from install to safe execution on Somnia.
+            </p>
+          </div>
+          <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
+            {howItWorks.map(item => (
+              <Card key={item.step} className='border-white/10 bg-white/5 backdrop-blur-sm'>
+                <CardHeader className='space-y-3'>
+                  <div className='inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-teal/20 text-brand-teal-light'>
+                    <item.icon className='h-6 w-6' />
+                  </div>
+                  <CardTitle className='text-lg text-slate-100'>{item.step}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className='text-sm leading-relaxed text-slate-400'>{item.text}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className='mx-auto max-w-6xl px-4 py-16 lg:py-20'>
         <div className='grid gap-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]'>
           <div className='space-y-6'>
@@ -322,6 +474,105 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why not “just use an oracle”? */}
+      <section className='border-t border-white/10 bg-[#050a13]/90'>
+        <div className='mx-auto max-w-6xl px-4 py-16'>
+          <div className='mb-10 max-w-4xl space-y-3'>
+            <h2 className='text-3xl font-semibold tracking-tight sm:text-4xl'>
+              Why not “just integrate an oracle”?
+            </h2>
+            <p className='text-base text-slate-400 sm:text-lg'>
+              Teams already use oracles. SentinelX handles what surrounds them: guardrails, monitoring, triage, and safe execution.
+            </p>
+          </div>
+          <div className='grid gap-6 md:grid-cols-3'>
+            {gapEvidence.map(item => (
+              <Card key={item.title} className='border-white/10 bg-white/5 backdrop-blur-sm'>
+                <CardHeader className='space-y-2'>
+                  <CardTitle className='text-base text-slate-100'>{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className='text-sm text-slate-400'>{item.text}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What’s different */}
+      <section className='mx-auto max-w-6xl px-4 py-16 lg:py-20'>
+        <div className='mb-10 max-w-4xl space-y-3'>
+          <h2 className='text-3xl font-semibold tracking-tight sm:text-4xl'>
+            What SentinelX does that a single oracle doesn’t
+          </h2>
+          <p className='text-base text-slate-400 sm:text-lg'>
+            Concrete guardrails and a production runbook—wired for Somnia.
+          </p>
+        </div>
+        <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
+          {sentinelxDiff.map(item => (
+            <Card key={item.title} className='border-white/10 bg-white/5 backdrop-blur-sm'>
+              <CardHeader className='space-y-3'>
+                <div className='inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-teal/20 text-brand-teal-light'>
+                  <item.icon className='h-6 w-6' />
+                </div>
+                <CardTitle className='text-lg text-slate-100'>{item.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className='text-sm text-slate-400'>{item.text}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Buy vs Build */}
+      <section className='border-t border-white/10 bg-[#050a13]/90'>
+        <div className='mx-auto max-w-6xl px-4 py-16'>
+          <div className='mb-8'>
+            <h2 className='text-3xl font-semibold tracking-tight sm:text-4xl'>Buy vs Build</h2>
+            <p className='mt-2 text-base text-slate-400 sm:text-lg'>
+              The job-to-be-done comparison for Somnia teams.
+            </p>
+          </div>
+          <div className='grid gap-4'>
+            {buyVsBuild.map(row => (
+              <Card key={row.job} className='border-white/10 bg-white/5 backdrop-blur-sm'>
+                <CardContent className='grid grid-cols-1 gap-3 p-4 sm:grid-cols-3 sm:items-center'>
+                  <div className='text-sm font-medium text-slate-200'>{row.job}</div>
+                  <div className='text-sm text-slate-400 sm:text-center'>
+                    <span className='rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs uppercase tracking-wide'>
+                      Just integrate oracle
+                    </span>
+                    <span className='ml-2'>{row.build}</span>
+                  </div>
+                  <div className='text-sm text-slate-100 sm:text-right'>
+                    <span className='rounded-full border border-brand-teal/20 bg-brand-teal/10 px-2 py-0.5 text-xs uppercase tracking-wide text-brand-teal-light'>
+                      SentinelX
+                    </span>
+                    <span className='ml-2 text-slate-300'>{row.buy}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* One-line value prop */}
+      <section className='mx-auto max-w-6xl px-4 py-14'>
+        <Card className='border-white/10 bg-white/5 backdrop-blur-sm'>
+          <CardContent className='flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between'>
+            <p className='max-w-3xl text-base text-slate-200'>
+              On Somnia, SentinelX is the reliability layer above your oracles—detecting drift/staleness across sources, auto-drafting safe responses with AI, and letting your team approve a one‑click on‑chain fix.
+            </p>
+            <Button asChild variant='secondary' className='gap-2'>
+              <Link href='/docs'>See how it’s wired</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
       <section className='border-y border-white/10 bg-[#040910]'>
         <div className='mx-auto max-w-6xl px-4 py-16'>
           <div className='mb-12 space-y-4 text-center'>
