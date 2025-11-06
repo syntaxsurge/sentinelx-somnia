@@ -5,6 +5,12 @@ It compares Protofire (Chainlink) and DIA feeds, turns the deviation/heartbeat
 model into incidents, and lets human operators approve the on-chain fix through
 GuardianHub + AgentInbox.
 
+## Links
+
+- Live App: https://sentinelx-somnia.vercel.app/
+- Demo Video: https://youtu.be/w3V9QJQPVlI
+- Source Code: https://github.com/syntaxsurge/sentinelx-somnia
+
 ---
 
 ## Problem & Solution
@@ -34,6 +40,17 @@ GuardianHub + AgentInbox.
    addresses manually.
 4. **Auditability** – Every propose → approve → execute step is recorded with
    transaction hashes so teams can prove they handled outages safely.
+
+---
+
+## Hackathon Tracks Fit
+
+- DeFi Agents
+  - Multi-source price guardrails for Somnia assets (DIA + Protofire/Chainlink) turn oracle drift and staleness into actionable incidents with AI summaries and mitigations.
+  - Human-in-the-loop execution via GuardianHub/AgentInbox mirrors production DeFi guardian patterns, enabling safe pause/tuning with recorded tx hashes.
+- Infra Agents
+  - A reusable monitoring + action framework: indexer, REST APIs (`/api/indexer/run`, `/api/ai/*`, `/api/monitors`, `/api/incidents`), Convex persistence, and a Messenger‑style Docs Copilot available across the AppShell.
+  - Contracts (SafeOracleRouter, GuardianHub, AgentInbox), CLI policy runner, and docs ingestion pipeline make it straightforward to design, deploy, and scale AI agents on Somnia.
 
 ---
 
