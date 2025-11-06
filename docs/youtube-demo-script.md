@@ -17,11 +17,6 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
    - Show toast + updated Daily brief (new incident with severity badge).
 6. **Voiceover**: “I first connect my Somnia wallet and create a workspace if needed. On the dashboard I click **Run policy evaluation** to fire the indexer; it hits `/api/indexer/run`, evaluates SafeOracleRouter across feeds, and logs telemetry + incidents into Convex. Oracles update on deviation + heartbeat, so drift and staleness are expected—this makes that model actionable.”
 
-## 2.5) Why not just an oracle? (1:05 – 1:15)
-
-- **Visual**: Quick “evidence” list overlay.
-- **Voiceover**: “Oracles are necessary but not sufficient. The deviation + heartbeat model means prices can be valid yet stale; DIA on Somnia documents ~0.5% deviation and 120s refresh. Manipulation and MEV pressure exist—so serious protocols use circuit breakers and guardians.”
-
 ## 3) Register a monitor — Configuration (1:05 – 1:35)
 
 1. Go to `/monitors/new`.

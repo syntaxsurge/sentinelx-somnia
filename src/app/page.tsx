@@ -300,11 +300,7 @@ export default function Home() {
               </li>
             </ul>
             <div className='flex flex-wrap gap-4'>
-              <Button
-                asChild
-                size='lg'
-                className='gap-2 bg-brand-teal px-7 text-base text-background hover:bg-brand-teal-light'
-              >
+              <Button asChild size='lg' className='gap-2 px-7 text-base'>
                 <Link href='/dashboard'>
                   Open dashboard
                   <ArrowRight className='h-4 w-4' />
@@ -640,10 +636,7 @@ export default function Home() {
             </p>
           </div>
           <div className='flex flex-wrap gap-3'>
-            <Button
-              asChild
-              className='gap-2 bg-brand-teal px-6 text-base text-background hover:bg-brand-teal-light'
-            >
+            <Button asChild className='gap-2 px-6 text-base'>
               <Link href='/onboarding'>
                 Create a workspace
                 <ArrowRight className='h-4 w-4' />
