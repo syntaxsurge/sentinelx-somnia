@@ -223,9 +223,12 @@ export function DocsCopilotWidget() {
   if (!isMounted) return null
 
   return (
-    <div className='pointer-events-none fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 font-sans md:bottom-8 md:right-8'>
+    <div className='pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 font-sans sm:bottom-6 sm:right-6 md:bottom-8 md:right-8'>
       {isOpen ? (
-        <div className='pointer-events-auto w-[min(380px,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-border/80 bg-background/90 shadow-xl shadow-black/30 backdrop-blur supports-[backdrop-filter]:bg-background/70'>
+        <div
+          className='pointer-events-auto flex w-[min(420px,calc(100vw-1.5rem))] max-w-xl flex-col overflow-hidden rounded-3xl border border-border/70 bg-background/95 shadow-2xl shadow-black/40 backdrop-blur-md supports-[backdrop-filter]:bg-background/80'
+          style={{ maxHeight: 'min(calc(100vh - 5rem), 560px)' }}
+        >
           <CopilotChatPanel onClose={close} />
         </div>
       ) : null}
@@ -234,6 +237,7 @@ export function DocsCopilotWidget() {
         size='icon'
         onClick={() => (isOpen ? close() : open())}
         className='pointer-events-auto h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition hover:scale-105 hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary'
+        aria-label={isOpen ? 'Close Docs Copilot' : 'Open Docs Copilot'}
       >
         <span className='text-base font-semibold'>SX</span>
       </Button>
@@ -267,11 +271,11 @@ function CopilotChatPanel({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Card className='border-0 bg-transparent text-sm text-foreground shadow-none'>
-      <CardHeader className='space-y-3 border-b border-border/60 bg-muted/40 px-5 py-4'>
+    <Card className='flex h-full flex-col border-0 bg-transparent text-sm text-foreground shadow-none'>
+      <CardHeader className='space-y-3 border-b border-border/60 bg-gradient-to-r from-muted/60 via-muted/30 to-muted/60 px-5 py-4 backdrop-blur'>
         <div className='flex items-center justify-between gap-3'>
           <div className='flex items-center gap-3'>
-            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-sm'>
+            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/40'>
               SX
             </div>
             <div>
@@ -309,7 +313,7 @@ function CopilotChatPanel({ onClose }: { onClose: () => void }) {
               type='button'
               variant='secondary'
               size='sm'
-              className='h-8 rounded-full border border-border/60 bg-muted/60 px-3 text-[11px] font-medium text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+              className='h-8 rounded-full border border-border/60 bg-muted/60 px-3 text-[11px] font-medium text-muted-foreground transition hover:-translate-y-0.5 hover:bg-muted/80 hover:text-foreground'
               onClick={() => handleQuickPrompt(prompt)}
             >
               {prompt}
@@ -317,10 +321,11 @@ function CopilotChatPanel({ onClose }: { onClose: () => void }) {
           ))}
         </div>
       </CardHeader>
-      <CardContent className='space-y-4 bg-background/80 px-0 pb-0 pt-0'>
+      <CardContent className='flex flex-1 flex-col space-y-4 bg-background/85 px-0 pb-0 pt-0 backdrop-blur-sm'>
         <div
           ref={scrollRef}
-          className='flex max-h-[380px] min-h-[280px] flex-col gap-4 overflow-y-auto px-5 py-5'
+          className='flex min-h-[200px] flex-1 flex-col gap-4 overflow-y-auto px-5 py-5'
+          style={{ maxHeight: 'min(55vh, 360px)' }}
         >
           {messages.map(message => (
             <MessageBubble key={message.id} message={message} />
@@ -349,9 +354,19 @@ function CopilotChatPanel({ onClose }: { onClose: () => void }) {
               onChange={event => setInput(event.target.value)}
               placeholder='Ask about monitors, incidents, automation, or integration flows...'
               className='w-full resize-none rounded-2xl border border-border/60 bg-card px-4 py-3 text-sm text-foreground shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0'
+              onKeyDown={event => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault()
+                  const question = input.trim()
+                  if (question && !isLoading) {
+                    void sendQuestion(question)
+                    setInput('')
+                  }
+                }
+              }}
             />
-            <div className='flex items-center justify-between text-[11px] text-muted-foreground'>
-              <span>Shift + Enter for new line</span>
+            <div className='flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground sm:flex-nowrap'>
+              <span className='text-muted-foreground/80'>Shift + Enter for new line</span>
               <Button
                 type='submit'
                 disabled={disabled}

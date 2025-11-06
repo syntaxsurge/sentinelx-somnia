@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { embedText, getOpenAI } from '@/lib/ai/openai'
+import { docsCopilotFallback } from '@/lib/docs/copilot-fallback'
 import { getConvexServerClient } from '@/lib/convexServer'
 
 function cosineSimilarity(a: number[], b: number[]) {
@@ -39,13 +40,39 @@ export async function POST(request: Request) {
     source: string
   }>
 
-  const ranked = chunks
+  let ranked = chunks
     .map(chunk => ({
       ...chunk,
       score: cosineSimilarity(embedding, chunk.embedding)
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, Math.max(1, Math.min(limit, 8)))
+
+  if (ranked.length === 0) {
+    const normalized = question.toLowerCase()
+
+    const scoredFallback = docsCopilotFallback
+      .map(entry => {
+        const hits = entry.keywords.reduce((score, keyword) => {
+          return score + (normalized.includes(keyword.toLowerCase()) ? 1 : 0)
+        }, 0)
+        return { entry, hits }
+      })
+      .filter(item => item.hits > 0)
+      .sort((a, b) => b.hits - a.hits)
+
+    const fallbackSelection = (scoredFallback.length > 0
+      ? scoredFallback.map(item => item.entry)
+      : docsCopilotFallback
+    ).slice(0, Math.max(1, Math.min(limit, 5)))
+
+    ranked = fallbackSelection.map((entry, index) => ({
+      chunk: entry.content,
+      embedding: [],
+      source: entry.source,
+      score: scoredFallback.length > 0 ? 1 - index * 0.1 : 0.5 - index * 0.05
+    })) as typeof ranked
+  }
 
   const context = ranked
     .map(chunk => `Source: ${chunk.source}\n${chunk.chunk}`)
