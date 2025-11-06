@@ -2,18 +2,6 @@
 
 End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the problem (backed by research), then show how SentinelX solves it across the data, AI, and control planes.
 
-## 0) Cold open — Problem & Research (0:00 – 0:20)
-
-1. **Visual**: Homepage hero + problem cards. Overlay key stats.
-2. **Voiceover**
-   - “On-chain price feeds don’t stream continuously—they refresh when deviation thresholds or heartbeat timers fire. Chainlink documents this explicitly for data feeds.”  
-   - “On Somnia, DIA recommends 0.5% deviation, 120-second freshness, and a 24-hour heartbeat. Combining feeds without guardrails creates drift and stale reads.”  
-   - “Add MEV and historic oracle manipulation incidents and you get a reliability gap. SentinelX closes it with AI-assisted guardrails for Somnia.”
-3. **On-screen citations**
-   - `docs.chain.link/data-feeds`
-   - `docs.somnia.network/.../dia-price-feeds`
-   - `docs.flashbots.net/flashbots-auction/overview`
-
 ## 1) SentinelX architecture snapshot (0:20 – 0:35)
 
 - **Visual**: Homepage “Solution” row or architecture diagram.
