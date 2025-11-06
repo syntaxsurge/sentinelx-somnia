@@ -9,11 +9,13 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
 
 ## 2) Dashboard — Data plane (0:35 – 1:05)
 
-1. Navigate to `/dashboard`.
-2. Highlight KPI cards, Monitors table, Daily brief, Action queue.
-3. Click **Run policy evaluation**.
+1. Connect wallet with RainbowKit and approve the SIWE prompt.
+2. If prompted, create a workspace on `/onboarding` (name + owner wallet), then continue.
+3. Navigate to `/dashboard`.
+4. Highlight KPI cards, Monitors table, Daily brief, Action queue.
+5. Click **Run policy evaluation**.
    - Show toast + updated Daily brief (new incident with severity badge).
-4. **Voiceover**: “On the dashboard I click **Run policy evaluation** to fire the indexer; it hits `/api/indexer/run`, evaluates SafeOracleRouter across feeds, and logs telemetry + incidents into Convex. Oracles update on deviation + heartbeat, so drift and staleness are expected—this makes that model actionable.”
+6. **Voiceover**: “I first connect my Somnia wallet and create a workspace if needed. On the dashboard I click **Run policy evaluation** to fire the indexer; it hits `/api/indexer/run`, evaluates SafeOracleRouter across feeds, and logs telemetry + incidents into Convex. Oracles update on deviation + heartbeat, so drift and staleness are expected—this makes that model actionable.”
 
 ## 2.5) Why not just an oracle? (1:05 – 1:15)
 
