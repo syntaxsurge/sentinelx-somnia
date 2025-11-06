@@ -398,7 +398,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   const classes = useMemo(
     () =>
       cn(
-        'relative max-w-[78%] rounded-3xl px-4 py-3 text-sm leading-relaxed shadow-sm transition-all',
+        'relative w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] rounded-3xl px-4 py-3 text-sm leading-relaxed shadow-sm transition-all',
         isUser
           ? 'ml-auto bg-primary text-primary-foreground shadow-primary/20'
           : 'mr-auto bg-muted/80 text-foreground'
@@ -414,7 +414,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     () => ({
       pre: ({ node, ...props }) => (
         <pre
-          className='max-h-64 overflow-x-auto overflow-y-auto rounded-xl border border-border/40 bg-background/80 p-4 text-xs text-muted-foreground'
+          className='max-h-64 w-full overflow-y-auto overflow-x-hidden whitespace-pre-wrap break-words rounded-xl border border-border/40 bg-background/80 p-4 text-xs text-muted-foreground'
           {...props}
         />
       ),
@@ -431,7 +431,13 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           )
         }
         return (
-          <code className={cn('block text-xs leading-relaxed', className)} {...props}>
+          <code
+            className={cn(
+              'block whitespace-pre-wrap break-words break-all text-xs leading-relaxed',
+              className
+            )}
+            {...props}
+          >
             {children}
           </code>
         )
@@ -461,13 +467,13 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   )
 
   return (
-    <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
+    <div className={cn('flex min-w-0', isUser ? 'justify-end' : 'justify-start')}>
       <div className='flex flex-col gap-2'>
         <div className={classes}>
           {isUser ? (
             <p className='whitespace-pre-wrap break-words'>{message.content}</p>
           ) : (
-            <div className='prose prose-invert max-w-none text-sm'>
+            <div className='prose prose-invert w-full max-w-none break-words text-sm'>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw, rehypeHighlight]}
