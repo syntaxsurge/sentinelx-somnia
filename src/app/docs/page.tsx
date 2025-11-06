@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
-import { DocsCopilotChat } from '@/components/docs/docs-copilot-chat'
 import { DocsSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -462,11 +461,33 @@ export default function DocsPage() {
           <div className='space-y-3'>
             <h2 className='text-2xl font-semibold tracking-tight'>Docs Copilot</h2>
             <p className='text-sm text-muted-foreground'>
-              Chat with the SentinelX docs directly inside the product. The Messenger-style copilot below routes questions to the embedded knowledge base so every answer stays grounded in the published documentation.
+              Launch the floating chat head in the lower-right corner to speak with SentinelX documentation from anywhere in the app. The Messenger-style copilot keeps your history as you move between Dashboard, Monitors, Incidents, Actions, Settings, and Docs.
             </p>
           </div>
           <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]'>
-            <DocsCopilotChat />
+            <div className='flex h-fit flex-col gap-4 rounded-2xl border border-border/60 bg-background/70 p-6 shadow-sm'>
+              <div>
+                <h3 className='text-sm font-semibold uppercase tracking-wide text-muted-foreground'>
+                  What you can ask
+                </h3>
+                <ul className='mt-3 space-y-2 text-sm text-muted-foreground'>
+                  <li>“How do I schedule the indexer on Vercel?”</li>
+                  <li>“What payload should I send to create a monitor?”</li>
+                  <li>“How are guardian approvals recorded on-chain?”</li>
+                  <li>“What environment variables are required before deployment?”</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className='text-sm font-semibold uppercase tracking-wide text-muted-foreground'>
+                  Why it feels native
+                </h3>
+                <ul className='mt-3 space-y-2 text-sm text-muted-foreground'>
+                  <li>Messenger-style UI with quick prompts and reset control.</li>
+                  <li>Conversation history stored locally so it persists across navigation.</li>
+                  <li>Grounded answers cite embedded Markdown sources with similarity scores.</li>
+                </ul>
+              </div>
+            </div>
             <div className='flex h-fit flex-col gap-4 rounded-2xl border border-border/60 bg-background/70 p-6 shadow-sm'>
               <div>
                 <h3 className='text-sm font-semibold uppercase tracking-wide text-muted-foreground'>

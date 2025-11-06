@@ -3,6 +3,10 @@ import NextTopLoader from 'nextjs-toploader'
 
 import { EnsureTenantOnMount } from '@/components/auth/EnsureTenantOnMount'
 import { ConditionalLayout } from '@/components/layout/ConditionalLayout'
+import {
+  DocsCopilotProvider,
+  DocsCopilotWidget
+} from '@/components/docs/docs-copilot-widget'
 import { ClientProviders } from '@/components/providers/ClientProviders'
 import { ConvexProviderClient } from '@/components/providers/ConvexProvider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
@@ -33,11 +37,14 @@ export default function RootLayout({
         <ThemeProvider>
           <ConvexProviderClient>
             <ClientProviders>
-              <NextTopLoader showSpinner={false} color='#2dd4bf' />
-              <EnsureTenantOnMount />
-              <ConditionalLayout>{children}</ConditionalLayout>
-              <SiteFooter />
-              <Toaster />
+              <DocsCopilotProvider>
+                <NextTopLoader showSpinner={false} color='#2dd4bf' />
+                <EnsureTenantOnMount />
+                <ConditionalLayout>{children}</ConditionalLayout>
+                <SiteFooter />
+                <DocsCopilotWidget />
+                <Toaster />
+              </DocsCopilotProvider>
             </ClientProviders>
           </ConvexProviderClient>
         </ThemeProvider>

@@ -6,7 +6,6 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
 
 - **Visual**: Homepage “Solution” row or architecture diagram.
 - **Voiceover**: “DeFi responders still chase fragmented oracle alerts and manual approvals. SentinelX unifies a multi-source data plane, AI triage plane, and human-in-the-loop control plane, so let’s see it running on Somnia Shannon with production addresses.”
-- **On-screen overlay**: “How it works (end‑to‑end): 1) Install & register your contract. 2) Wire the pause hook. 3) Read two feeds (Protofire + DIA) and mark Unsafe on drift/staleness. 4) AI policy agent drafts pause/mitigation. 5) Operators approve and can one‑click unpause. 6) Optional SafePrice view to reduce single‑oracle reliance.”
 
 ## 2) Dashboard — Data plane (0:35 – 1:05)
 
