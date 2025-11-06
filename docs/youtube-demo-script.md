@@ -32,7 +32,7 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
 1. Open `/incidents`, click the latest incident.
 2. Highlight AI Summary (severity, root cause, mitigations), telemetry snapshot, advisory tags.
 3. Click **Generate new plan** if needed to show deterministic fallback or OpenAI output.
-4. **Voiceover**: “Inside the incident detail I click **Generate new plan** to surface deterministic fallback or OpenAI output—LLM summaries translate telemetry into human-readable incidents, and action intents include GuardianHub calldata for pausing or parameter updates. This is Data → AI → Control in one loop.”
+4. **Voiceover**: “Inside the incident detail I click **Generate new plan** to surface OpenAI output—LLM summaries translate telemetry into human-readable incidents, and action intents include GuardianHub calldata for pausing or parameter updates.”
 
 ## 6) Approve & execute — Control plane (2:30 – 3:10)
 
