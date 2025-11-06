@@ -1,119 +1,163 @@
-# SentinelX
+# SentinelX — Reliability Layer for Somnia Oracles
 
-SentinelX is an infrastructure layer that protects Somnia builders from oracle
-drift and stale data. We are assembling a guarded price surface, guardian
-automation, and a Convex-backed observability layer for Somnia applications.
+SentinelX is a Somnia-native guardrail that keeps oracle-driven dApps honest.
+It compares Protofire (Chainlink) and DIA feeds, turns the deviation/heartbeat
+model into incidents, and lets human operators approve the on-chain fix through
+GuardianHub + AgentInbox.
 
-## Feature overview
+---
 
-- **Safe price surfaces** – `SafeOracleRouter` merges Protofire + DIA price
-  sources on Somnia Shannon Testnet and exposes freshness/deviation flags for
-  SentinelX monitors.
+## Problem & Solution
+
+### The reliability gap on Somnia
+
+- **Deviation + heartbeat ≠ real-time** – Chainlink-style feeds update when a
+  deviation threshold or heartbeat hits. On Somnia, DIA recommends ~0.5%
+  deviation with a 120s refresh and 24h heartbeat, so “valid” prices can still
+  be stale.
+- **Manipulation & MEV pressure** – Flash loans and MEV can skew prices long
+  enough to drain liquidity pools. Mature protocols rely on circuit breakers
+  and guardians, but most teams don’t ship the surrounding SRE tooling.
+- **Missing runbooks** – Comparing feeds, drafting mitigations, approving
+  on-chain actions, and logging audit trails takes time teams don’t have.
+
+### SentinelX response
+
+1. **Multi-source guardrails** – Monitors enforce deviation and heartbeat
+   health across DIA + Protofire/Chainlink feeds, opening incidents when values
+   drift or go stale.
+2. **Data → AI → Control** – The policy runner writes telemetry, the AI layer
+   drafts severity/root-cause/mitigation summaries plus Action Intents, and the
+   control plane executes via GuardianHub after operator approval.
+3. **Somnia-first defaults** – Contracts, RPC URLs, and demo toggles ship in the
+   env template; operators can dive straight into the dashboard without wiring
+   addresses manually.
+4. **Auditability** – Every propose → approve → execute step is recorded with
+   transaction hashes so teams can prove they handled outages safely.
+
+---
+
+## Layman’s End-to-End Flow
+
+1. **Install & register** – Install SentinelX and register your vault,
+   marketplace, or other guardable contract in the web app.
+2. **Wire the pause hook** – Inherit the GuardablePausable mixin (or paste the
+   helper) so GuardianHub can pause when risk is detected.
+3. **Read two feeds** – SentinelX watches Protofire + DIA for the same asset and
+   flags “Unsafe” if prices diverge or go stale.
+4. **AI policy agent** – Simple rules plus an LLM summary decide whether to
+   pause and draft mitigations.
+5. **Operator control** – The dashboard shows incident timelines, approvals,
+   and offers one-click unpause when conditions recover.
+6. **SafePrice output** – Exposure to a single oracle drops; apps can surface
+   the guarded SafePrice to end users.
+
+---
+
+## Feature Overview
+
+- **Safe price surfaces** – `SafeOracleRouter` merges Protofire + DIA feeds on
+  Somnia Shannon and returns deviation/freshness flags for each monitor.
 - **AI incident triage** – The indexer (`/api/indexer/run` or `pnpm policy:run`)
-  analyzes every monitor pass, calls OpenAI for summaries + mitigations, and
-  opens incidents with severity, root cause, and advisory tags.
-- **Action queue & AgentInbox** – Action intents store AI playbooks including
-  GuardianHub calldata (e.g. `pause(address target)`). Operators approve and
-  record execution hashes before AgentInbox relays on-chain.
-- **Telemetry & observability** – Convex tracks telemetry rows, incident
-  timelines, approvals, and status transitions so the dashboard daily brief,
-  monitors table, and incident console stay fresh.
-- **Docs copilot** – `/docs` includes an embedded AI copilot backed by Convex
-  vector search over local markdown (`pnpm docs:ingest`).
-- **Credential & auth surface** – RainbowKit/Wagmi + SIWE handle wallet auth,
-  and Settings manages API keys, webhooks, and Guardian operators with hashed
-  storage and single-view plaintext.
+  evaluates monitors, calls OpenAI (with deterministic fallbacks), and opens
+  incidents with severity, root cause, mitigations, and advisory tags.
+- **Action queue & AgentInbox** – Action intents store GuardianHub calldata
+  (pause, tune params). Operators approve, execute, and SentinelX records tx
+  hashes for auditability.
+- **Telemetry & observability** – Convex persists telemetry rows, incident
+  timelines, approvals, and status transitions, powering the dashboard and
+  timeline views.
+- **Docs Copilot everywhere** – A Messenger-style chat head lives bottom-right
+  across the entire app. It uses `/api/ai/ask`, Convex embeddings, and a
+  curated fallback corpus, with quick prompts, markdown rendering, and local
+  history.
+- **Credentials & auth** – RainbowKit + Wagmi v2 run SIWE; Settings issues
+  tenant-scoped API keys and webhooks (hashed, single-view plaintext).
 
-## Milestone log
+---
 
-- **Phase 1** – SafeOracleRouter + GuardianHub integration, Convex tenancy, and
-  RainbowKit/SIWE authentication.
-- **Phase 2** – AI-powered incident pipeline (summaries, mitigations, action
-  intents) with telemetry storage and AgentInbox contract.
-- **Phase 3** – Sidebar dashboard redesign, incidents/actions consoles, Docs
-  Copilot, and vectorized documentation ingestion.
-
-## Quick start
+## Quick Start
 
 ```bash
 pnpm install
-pnpm dev               # launches Next.js
-pnpm docs:ingest       # optional - embed docs for the AI copilot
+pnpm dev                # Next.js app with App Router
+pnpm docs:ingest        # optional – embed docs for the Copilot
 
-# In another terminal (optional for contract interaction)
-cd blockchain
-pnpm install
-pnpm compile
+# Optional: run the policy runner or contracts
+pnpm policy:run         # CLI agent loop (needs API key + env)
+cd blockchain && pnpm install && pnpm compile
 ```
 
-Visit `http://localhost:3000` to review the current SentinelX overview and
-dashboard (`/dashboard`).
+Visit `http://localhost:3000` and connect a Somnia wallet with RainbowKit.
 
-## Environment variables
+---
 
-Copy `.env.example` to `.env.local` and set the following values:
+## Environment Variables
+
+1. Copy `.env.example` → `.env.local` (Next.js) and, if needed,
+   `blockchain/.env.example` → `blockchain/.env`.
+2. Populate the following keys:
 
 ```env
 NEXT_PUBLIC_APP_NAME=SentinelX
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network
-NEXT_PUBLIC_WALLETCONNECT_ID=your_walletconnect_project_id
-CONVEX_DEPLOYMENT=https://your-deployment.convex.cloud
-NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
-OPENAI_API_KEY=sk-...
-SESSION_SECRET=32+character_random_secret
 
-# SentinelX contract addresses
-NEXT_PUBLIC_SAFE_ORACLE_ROUTER=0xrouterAddress
-NEXT_PUBLIC_GUARDIAN_HUB=0xguardianHub
-NEXT_PUBLIC_AGENT_INBOX=0xinboxAddress
-NEXT_PUBLIC_DEMO_ORACLE=0xdemoOracle
-NEXT_PUBLIC_DEMO_PAUSABLE=0xdemoPausable
+# Somnia Testnet
+NEXT_PUBLIC_SOMNIA_CHAIN_ID=50312
+NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network
+NEXT_PUBLIC_SOMNIA_EXPLORER_URL=https://shannon-explorer.somnia.network
+
+# Oracle addresses (Shannon Testnet defaults, override for mainnet)
+NEXT_PUBLIC_PROTOFIRE_ETH_USD=0xd9132c1d762D432672493F640a63B758891B449e
+NEXT_PUBLIC_DIA_WETH_USD=0x786c7893F8c26b80d42088749562eDb50Ba9601E
+
+# SentinelX contracts (fill after deployment)
+NEXT_PUBLIC_GUARDIAN_HUB=
+NEXT_PUBLIC_AGENT_INBOX=
+NEXT_PUBLIC_SAFE_ORACLE_ROUTER=
+NEXT_PUBLIC_DEMO_ORACLE=
+NEXT_PUBLIC_DEMO_PAUSABLE=
+
+# Auth & services
+NEXT_PUBLIC_WALLETCONNECT_ID=your_walletconnect_project_id
+SESSION_SECRET=openssl rand -hex 32
+OPENAI_API_KEY=sk-...
+
+# Optional toggles
+NEXT_PUBLIC_DEMO_MODE=true
 ```
 
-Provide `CONVEX_DEPLOYMENT` or `NEXT_PUBLIC_CONVEX_URL` so both server routes
-and client components can resolve the Convex instance.
+- Provide a WalletConnect ID from
+  [cloud.walletconnect.com](https://cloud.walletconnect.com/app) for production.
+- Demo mode enables the dashboard “Simulate incident” button and `/api/demo/simulate`.
+- For contract deployment and policy runner automation set `SOMNIA_RPC_URL`,
+  `SOMNIA_PRIVATE_KEY`, and `EXECUTOR_PRIVATE_KEY` in the appropriate `.env`.
 
-If `NEXT_PUBLIC_WALLETCONNECT_ID` is omitted locally the app falls back to a
-demo project id and logs a warning—replace it with your WalletConnect Cloud id
-before production.
+---
 
-- `NEXT_PUBLIC_WALLETCONNECT_ID`: visit
-  [cloud.walletconnect.com](https://cloud.walletconnect.com/app), create a free
-  project, and paste the Project ID value here.
-- `SESSION_SECRET`: generate a 32+ character random string (for example,
-  `openssl rand -hex 32`). SentinelX generates a throwaway value in development
-  if you omit it, but production builds must set it explicitly.
-
-## Repository layout
+## Repository Layout
 
 - `src/app` – Next.js App Router (AppShell, dashboard, monitors, incidents,
   actions, settings, docs, API routes).
-- `convex` – Schema and functions for tenants, monitors, telemetry, incidents,
-  action intents, doc embeddings, API keys, webhooks, guardians, and users.
-- `src/jobs` – Shared indexer logic consumed by the CLI (`policy:run`) and
-  serverless endpoint (`/api/indexer/run`).
-- `blockchain` – Hardhat workspace with SentinelX contracts (SafeOracleRouter,
-  GuardianHub, AgentInbox) and tests.
-- `scripts` – Utilities for ABI sync, Convex dev tasks, policy runner CLI, and
-  documentation ingestion (`pnpm docs:ingest`).
+- `src/components/docs` – Messenger-style Docs Copilot widget shared across the
+  app.
+- `src/jobs` – Indexer + AI orchestration shared by CLI and API.
+- `convex` – Schema/functions for tenants, monitors, telemetry, incidents,
+  action intents, doc embeddings, API keys, webhooks, guardians, users.
+- `blockchain` – Hardhat contracts (`GuardianHub`, `SafeOracleRouter`,
+  `AgentInbox`, demos) + tests.
+- `scripts` – Convex helpers, policy runner, deploy scripts, docs ingestion.
 
-## Security checklist
+---
 
-- Never commit private keys. The Hardhat workspace reads `PRIVATE_KEY` and
-  `SOMNIA_RPC_URL` from `blockchain/.env`.
-- Run `pnpm lint:check-solidity` inside `blockchain/` after editing contracts.
-- Execute `pnpm typecheck` from the repo root before publishing changes.
-- Run `pnpm lint` and `pnpm --filter sentinelx-hardhat test`
-  (or `cd blockchain && pnpm test`) prior to release.
+## Security & Quality Checklist
 
-## Next steps
-
-Upcoming milestones include:
-
-- Broader monitor types (latency, log volume) feeding the same AI pipeline.
-- Native execution from AgentInbox with generated calldata for additional
-  GuardianHub methods.
-- Slack/Discord webhook templates that consume incident + action intent data.
-- Visualization overlays (sparklines, histograms) powered by the telemetry
-  table.
+- **Secrets** – Never commit private keys. Hardhat reads `SOMNIA_PRIVATE_KEY`
+  and `SOMNIA_RPC_URL` from `blockchain/.env`.
+- **Type safety** – Run `pnpm typecheck` before opening a PR.
+- **Lint/tests** – `pnpm lint`, `pnpm test:e2e`, and
+  `pnpm --filter sentinelx-hardhat test` for Solidity.
+- **Contracts** – After editing Solidity, run `pnpm lint:check-solidity` inside
+  `blockchain/`.
+- **Docs Copilot embeddings** – Refresh after updating docs with
+  `pnpm docs:ingest` so `/api/ai/ask` has the latest context.
