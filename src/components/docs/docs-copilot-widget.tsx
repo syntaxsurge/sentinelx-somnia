@@ -7,10 +7,16 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
+  type HTMLAttributes
 } from 'react'
 
 import { cn } from '@/lib/utils'
+
+import ReactMarkdown, { type Components } from 'react-markdown'
+import rehypeHighlight from 'rehype-highlight'
+import rehypeRaw from 'rehype-raw'
+import remarkGfm from 'remark-gfm'
 
 import { Button } from '../ui/button'
 import {
@@ -20,6 +26,8 @@ import {
   CardHeader,
   CardTitle
 } from '../ui/card'
+
+import 'highlight.js/styles/tokyo-night-dark.css'
 
 type ChatMessage = {
   id: string
@@ -201,7 +209,7 @@ export function useDocsCopilot() {
 }
 
 export function DocsCopilotWidget() {
-  const { isOpen, toggle, open, close } = useDocsCopilot()
+  const { isOpen, open, close } = useDocsCopilot()
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
@@ -257,6 +265,7 @@ function CopilotChatPanel({ onClose }: { onClose: () => void }) {
   }, [messages, isLoading])
 
   const disabled = isLoading || input.trim().length === 0
+  const showQuickPrompts = messages.length <= 1
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -273,8 +282,8 @@ function CopilotChatPanel({ onClose }: { onClose: () => void }) {
   return (
     <Card className='flex h-full flex-col border-0 bg-transparent text-sm text-foreground shadow-none'>
       <CardHeader className='space-y-3 border-b border-border/60 bg-gradient-to-r from-muted/60 via-muted/30 to-muted/60 px-5 py-4 backdrop-blur'>
-        <div className='flex items-center justify-between gap-3'>
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div className='flex items-center gap-3'>
             <div className='flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/40'>
               SX
             </div>
@@ -306,20 +315,22 @@ function CopilotChatPanel({ onClose }: { onClose: () => void }) {
             </Button>
           </div>
         </div>
-        <div className='flex flex-wrap gap-2'>
-          {quickPrompts.map(prompt => (
-            <Button
-              key={prompt}
-              type='button'
-              variant='secondary'
-              size='sm'
-              className='h-8 rounded-full border border-border/60 bg-muted/60 px-3 text-[11px] font-medium text-muted-foreground transition hover:-translate-y-0.5 hover:bg-muted/80 hover:text-foreground'
-              onClick={() => handleQuickPrompt(prompt)}
-            >
-              {prompt}
-            </Button>
-          ))}
-        </div>
+        {showQuickPrompts ? (
+          <div className='flex flex-wrap gap-2'>
+            {quickPrompts.map(prompt => (
+              <Button
+                key={prompt}
+                type='button'
+                variant='secondary'
+                size='sm'
+                className='h-8 rounded-full border border-border/60 bg-muted/60 px-3 text-[11px] font-medium text-muted-foreground transition hover:-translate-y-0.5 hover:bg-muted/80 hover:text-foreground'
+                onClick={() => handleQuickPrompt(prompt)}
+              >
+                {prompt}
+              </Button>
+            ))}
+          </div>
+        ) : null}
       </CardHeader>
       <CardContent className='flex flex-1 flex-col space-y-4 bg-background/85 px-0 pb-0 pt-0 backdrop-blur-sm'>
         <div
@@ -345,7 +356,7 @@ function CopilotChatPanel({ onClose }: { onClose: () => void }) {
 
         <form
           onSubmit={handleSubmit}
-          className='border-t border-border/60 bg-muted/30 px-5 py-4'
+          className='sticky bottom-0 border-t border-border/60 bg-muted/30 px-5 py-4'
         >
           <div className='space-y-3'>
             <textarea
@@ -395,11 +406,77 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     [isUser]
   )
 
+  type MarkdownCodeProps = HTMLAttributes<HTMLElement> & {
+    inline?: boolean
+  }
+
+  const markdownComponents = useMemo<Components>(
+    () => ({
+      pre: ({ node, ...props }) => (
+        <pre
+          className='max-h-64 overflow-x-auto overflow-y-auto rounded-xl border border-border/40 bg-background/80 p-4 text-xs text-muted-foreground'
+          {...props}
+        />
+      ),
+      code: ({ inline, className, children, ...props }: MarkdownCodeProps) => {
+        const needsWrapper = !inline && !String(children).includes('\n')
+        if (inline || needsWrapper) {
+          return (
+            <code
+              className={cn('rounded-md bg-black/30 px-1.5 py-0.5 text-xs', className)}
+              {...props}
+            >
+              {children}
+            </code>
+          )
+        }
+        return (
+          <code className={cn('block text-xs leading-relaxed', className)} {...props}>
+            {children}
+          </code>
+        )
+      },
+      p: ({ node, ...props }) => (
+        <p className='whitespace-pre-wrap break-words text-sm leading-relaxed' {...props} />
+      ),
+      ul: ({ node, ...props }) => (
+        <ul className='ml-4 list-disc space-y-1 text-sm text-foreground' {...props} />
+      ),
+      ol: ({ node, ...props }) => (
+        <ol className='ml-4 list-decimal space-y-1 text-sm text-foreground' {...props} />
+      ),
+      table: ({ node, ...props }) => (
+        <div className='overflow-x-auto'>
+          <table className='w-full border-collapse text-xs' {...props} />
+        </div>
+      ),
+      th: ({ node, ...props }) => (
+        <th className='border border-border/30 bg-muted/50 px-2 py-1 text-left font-semibold' {...props} />
+      ),
+      td: ({ node, ...props }) => (
+        <td className='border border-border/20 px-2 py-1 align-top text-foreground/90' {...props} />
+      )
+    }),
+    []
+  )
+
   return (
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div className='flex flex-col gap-2'>
         <div className={classes}>
-          <p>{message.content}</p>
+          {isUser ? (
+            <p className='whitespace-pre-wrap break-words'>{message.content}</p>
+          ) : (
+            <div className='prose prose-invert max-w-none text-sm'>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                components={markdownComponents}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
+          )}
         </div>
         {message.sources && message.sources.length ? (
           <div className='flex flex-wrap gap-2 pl-1 text-[11px] text-muted-foreground'>
