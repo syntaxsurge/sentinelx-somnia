@@ -3,51 +3,51 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
 
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 25% 30%;
+  --muted: 216 34% 17%;
+  --muted-foreground: 215 20% 80%;
 
-  --accent: 188 74% 48%;
-  --accent-foreground: 196 100% 12%;
-  --accent-dark: 188 76% 39%;
-  --accent-darker: 188 76% 22%;
+  --accent: 188 76% 45%;
+  --accent-foreground: 0 0% 100%;
+  --accent-dark: 188 78% 33%;
+  --accent-darker: 188 83% 20%;
 
-  --primary: 188 76% 39%;
+  --primary: 188 76% 45%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 240 5% 95%;
-  --secondary-foreground: 222 47% 11%;
+  --secondary: 218 27% 20%;
+  --secondary-foreground: 210 40% 98%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card: 222 47% 13%;
+  --card-foreground: 210 40% 98%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
 
-  --border: 215 23% 85%;
-  --input: 214 20% 80%;
-  --ring: 188 76% 39%;
+  --border: 218 27% 28%;
+  --input: 218 27% 22%;
+  --ring: 188 76% 45%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --brand-teal: 188 76% 39%;
-  --brand-teal-light: 188 70% 68%;
-  --brand-teal-lighter: 188 70% 80%;
-  --brand-teal-dark: 188 76% 28%;
+  --brand-teal: 188 76% 45%;
+  --brand-teal-light: 188 76% 55%;
+  --brand-teal-lighter: 188 76% 68%;
+  --brand-teal-dark: 188 76% 30%;
   --brand-teal-darker: 188 76% 18%;
 
-  --brand-orange: 24 95% 56%;
-  --brand-orange-light: 24 95% 66%;
-  --brand-orange-lighter: 24 95% 76%;
-  --brand-orange-dark: 24 95% 46%;
-  --brand-orange-darker: 24 95% 36%;
+  --brand-orange: 24 95% 58%;
+  --brand-orange-light: 24 95% 65%;
+  --brand-orange-lighter: 24 95% 75%;
+  --brand-orange-dark: 24 95% 45%;
+  --brand-orange-darker: 24 95% 35%;
 
   --radius: 0.75rem;
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 .dark {
