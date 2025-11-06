@@ -53,7 +53,6 @@ const STORAGE_KEY = 'sentinelx.docsCopilot.messages'
 const OPEN_KEY = 'sentinelx.docsCopilot.isOpen'
 
 const quickPrompts = [
-  'How do I schedule the indexer on Vercel?',
   'What payload do I send to create a monitor?',
   'How are guardian approvals recorded?'
 ]

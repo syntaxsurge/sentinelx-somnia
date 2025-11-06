@@ -471,7 +471,6 @@ export default function DocsPage() {
                   What you can ask
                 </h3>
                 <ul className='mt-3 space-y-2 text-sm text-muted-foreground'>
-                  <li>“How do I schedule the indexer on Vercel?”</li>
                   <li>“What payload should I send to create a monitor?”</li>
                   <li>“How are guardian approvals recorded on-chain?”</li>
                   <li>“What environment variables are required before deployment?”</li>

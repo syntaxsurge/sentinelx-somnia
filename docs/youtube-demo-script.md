@@ -45,7 +45,7 @@ End-to-end walkthrough for the Somnia Infra + AI Agents track. Open with the pro
 
 1. Visit `/docs`.
 2. Highlight **Demo quickstart**, cron snippet for `POST /api/indexer/run`, API key management, and webhook samples.
-3. Open the Docs Copilot section and run a quick question (“How do I schedule the indexer on Vercel?”) to show grounded answers.
+3. Open the Docs Copilot section and run a quick question to show grounded answers.
 4. **Voiceover**: “I open the Docs Copilot, ask ‘What payload do I send to create a monitor?’, and SentinelX ships ready-to-use docs.”
 
 ## 8) Close — Call to action (3:40 – 4:00)
