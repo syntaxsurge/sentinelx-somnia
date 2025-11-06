@@ -14,7 +14,7 @@
   --accent-dark: 188 78% 33%;
   --accent-darker: 188 83% 20%;
 
-  --primary: 188 76% 45%;
+  --primary: 188 76% 25%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 218 27% 20%;
@@ -33,11 +33,11 @@
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --brand-teal: 188 76% 45%;
-  --brand-teal-light: 188 76% 55%;
-  --brand-teal-lighter: 188 76% 68%;
-  --brand-teal-dark: 188 76% 30%;
-  --brand-teal-darker: 188 76% 18%;
+  --brand-teal: 188 76% 25%;
+  --brand-teal-light: 188 76% 38%;
+  --brand-teal-lighter: 188 76% 48%;
+  --brand-teal-dark: 188 76% 20%;
+  --brand-teal-darker: 188 76% 14%;
 
   --brand-orange: 24 95% 58%;
   --brand-orange-light: 24 95% 65%;
@@ -62,7 +62,7 @@
   --accent-dark: 188 78% 33%;
   --accent-darker: 188 83% 20%;
 
-  --primary: 188 76% 45%;
+  --primary: 188 76% 25%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 218 27% 20%;
@@ -81,11 +81,11 @@
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --brand-teal: 188 76% 45%;
-  --brand-teal-light: 188 76% 55%;
-  --brand-teal-lighter: 188 76% 68%;
-  --brand-teal-dark: 188 76% 30%;
-  --brand-teal-darker: 188 76% 18%;
+  --brand-teal: 188 76% 25%;
+  --brand-teal-light: 188 76% 38%;
+  --brand-teal-lighter: 188 76% 48%;
+  --brand-teal-dark: 188 76% 20%;
+  --brand-teal-darker: 188 76% 14%;
 
   --brand-orange: 24 95% 58%;
   --brand-orange-light: 24 95% 65%;
