@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+import { DocsCopilotChat } from '@/components/docs/docs-copilot-chat'
 import { DocsSkeleton } from '@/components/skeletons/page-skeletons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -457,23 +458,38 @@ export default function DocsPage() {
           </p>
         </section>
 
-        <section id='copilot' className='space-y-4'>
-          <h2 className='text-2xl font-semibold tracking-tight'>Docs Copilot</h2>
-          <p className='text-sm text-muted-foreground'>
-            The Docs Copilot endpoint <code className='rounded bg-muted px-1 font-mono text-xs'>POST /api/ai/ask</code> retrieves embedded Markdown guidance from Convex and answers grounded questions.
-            Use it to embed SentinelX support directly into your operations tooling.
-          </p>
-          <p className='text-sm text-muted-foreground'>
-            Sample payload:
-          </p>
-          <CodePanel
-            value={`curl -X POST ${BASE_URL}/api/ai/ask \\
+        <section id='copilot' className='space-y-6'>
+          <div className='space-y-3'>
+            <h2 className='text-2xl font-semibold tracking-tight'>Docs Copilot</h2>
+            <p className='text-sm text-muted-foreground'>
+              Chat with the SentinelX docs directly inside the product. The Messenger-style copilot below routes questions to the embedded knowledge base so every answer stays grounded in the published documentation.
+            </p>
+          </div>
+          <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]'>
+            <DocsCopilotChat />
+            <div className='flex h-fit flex-col gap-4 rounded-2xl border border-border/60 bg-background/70 p-6 shadow-sm'>
+              <div>
+                <h3 className='text-sm font-semibold uppercase tracking-wide text-muted-foreground'>
+                  API reference
+                </h3>
+                <p className='mt-2 text-sm text-muted-foreground'>
+                  The copilot UI calls <code className='rounded bg-muted px-1 font-mono text-xs'>POST /api/ai/ask</code>.
+                  Provide a <code className='rounded bg-muted px-1 font-mono text-xs'>question</code> string and receive grounded answers with source scores.
+                </p>
+              </div>
+              <div className='space-y-2 text-sm text-muted-foreground'>
+                <p>Sample payload:</p>
+                <CodePanel
+                  value={`curl -X POST ${BASE_URL}/api/ai/ask \\
   -H "content-type: application/json" \\
   -d '{ "question": "How do I trigger the indexer cron?" }'`}
-          />
-          <p className='text-xs text-muted-foreground'>
-            Responses include <code className='rounded bg-muted px-1 font-mono text-xs'>{'{ answer, sources: [] }'}</code> with similarity scores for transparency.
-          </p>
+                />
+              </div>
+              <p className='text-xs text-muted-foreground'>
+                Responses include <code className='rounded bg-muted px-1 font-mono text-xs'>{'{ answer, sources: [] }'}</code> with similarity scores so you can display provenance alongside every response.
+              </p>
+            </div>
+          </div>
         </section>
       </main>
     </div>
